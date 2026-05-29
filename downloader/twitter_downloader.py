@@ -9,8 +9,8 @@ from typing import Callable, Optional
 
 class TwitterDownloader:
     def __init__(self, user_id: str, download_path: str, 
-                 proxy: str = "http://127.0.0.1:7890",
-                 cookie: str = "auth_token=57e0355a3d8af03456b2363bc2e2414bd196ec3d; ct0=c5b52759848ec617418a1f8efd3ed113ceac195f8f6d4007bce0385b0b3f6abd342a12c9e77a4532ed056fb637d982328f96f2d2058b35214eff48b1806d9e151f266998a83a99a8e2a89554e9141aca",
+                 proxy: str = "",
+                 cookie: str = "",
                  progress_callback: Optional[Callable] = None):
         self.user_id = user_id
         self.download_path = download_path

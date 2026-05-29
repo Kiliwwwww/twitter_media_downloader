@@ -60,8 +60,8 @@ def init_db():
         
         # 插入默认配置
         default_configs = [
-            ('proxy', 'http://127.0.0.1:7890', '代理地址'),
-            ('cookie', 'auth_token=57e0355a3d8af03456b2363bc2e2414bd196ec3d; ct0=c5b52759848ec617418a1f8efd3ed113ceac195f8f6d4007bce0385b0b3f6abd342a12c9e77a4532ed056fb637d982328f96f2d2058b35214eff48b1806d9e151f266998a83a99a8e2a89554e9141aca', '推特Cookie（auth_token和ct0）'),
+            ('proxy', '', '代理地址（如: http://127.0.0.1:7890）'),
+            ('cookie', '', '推特Cookie（auth_token和ct0）'),
         ]
         
         for key, value, description in default_configs:
