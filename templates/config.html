@@ -64,16 +64,21 @@
             background: #f8f9fa;
             border-radius: 8px;
         }
-        .config-item label {
-            display: block;
+        .config-item .label-row {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        .config-item .label-row label {
             font-weight: 600;
-            margin-bottom: 8px;
             color: #303133;
+            font-size: 14px;
+            margin: 0;
         }
         .config-item .hint {
             color: #909399;
             font-size: 12px;
-            margin-top: 4px;
+            margin-top: 6px;
         }
     </style>
 </head>
@@ -98,7 +103,25 @@
                     
                     <div class="content-section" v-loading="loading">
                         <div v-for="(cfg, index) in configList" :key="cfg.key" class="config-item">
-                            <label>{{ cfg.description || cfg.key }}</label>
+                            <div class="label-row">
+                                <label>{{ cfg.description || cfg.key }}</label>
+                                <el-tooltip v-if="cfg.key === 'cookie'" placement="right" :width="300" style="margin-left: 8px;">
+                                    <template #content>
+                                        <div style="line-height: 1.6;">
+                                            <p style="margin: 0 0 8px 0;"><strong>获取方式：</strong></p>
+                                            <p style="margin: 0 0 4px 0;">1. 登录 x.com</p>
+                                            <p style="margin: 0 0 4px 0;">2. 打开浏览器开发者工具 (F12)</p>
+                                            <p style="margin: 0 0 4px 0;">3. 切换到 Application/存储 标签</p>
+                                            <p style="margin: 0 0 4px 0;">4. 在 Cookies 中找到 x.com</p>
+                                            <p style="margin: 0;">5. 复制 auth_token 和 ct0 的值</p>
+                                        </div>
+                                    </template>
+                                    <el-tag type="info" size="small" style="cursor: help;">
+                                        <el-icon><QuestionFilled /></el-icon>
+                                        如何获取？
+                                    </el-tag>
+                                </el-tooltip>
+                            </div>
                             <textarea
                                 v-if="cfg.key === 'cookie'"
                                 v-model="configList[index].value"
