@@ -386,7 +386,52 @@
         .status-pending { background: #FEF3C7; color: #D97706; }
         .status-downloading { background: #DBEAFE; color: #2563EB; }
         .status-completed { background: #D1FAE5; color: #059669; }
-        .status-failed { background: #FEE2E2; color: #DC2626; }
+        .status-failed { 
+            background: #FEE2E2; 
+            color: #DC2626;
+            cursor: help;
+            position: relative;
+        }
+        .error-hint {
+            display: inline-flex;
+            cursor: help;
+            position: relative;
+        }
+        .error-tooltip {
+            position: absolute;
+            bottom: calc(100% + 8px);
+            left: 50%;
+            transform: translateX(-50%);
+            width: 280px;
+            padding: 12px;
+            background: #1F2937;
+            color: white;
+            font-size: 12px;
+            font-weight: 400;
+            border-radius: 8px;
+            white-space: normal;
+            word-break: break-all;
+            line-height: 1.5;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.2s ease;
+            z-index: 100;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+        .error-tooltip::after {
+            content: '';
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            border: 6px solid transparent;
+            border-top-color: #1F2937;
+        }
+        .error-hint:hover .error-tooltip,
+        .status-failed:hover .error-tooltip {
+            opacity: 1;
+            visibility: visible;
+        }
         
         /* 分页 */
         .pagination-wrapper {
@@ -537,8 +582,14 @@
                                 <div class="history-user">
                                     {{ item.user_name || '未知用户' }}
                                     <span class="history-user-id">@{{ item.user_id }}</span>
-                                    <span class="status-tag" :class="'status-' + item.status">
+                                    <span 
+                                        class="status-tag" 
+                                        :class="'status-' + item.status"
+                                    >
                                         {{ getStatusText(item.status) }}
+                                        <span v-if="item.status === 'failed' && item.error_message" class="error-tooltip">
+                                            {{ item.error_message }}
+                                        </span>
                                     </span>
                                 </div>
                                 <div class="history-meta">

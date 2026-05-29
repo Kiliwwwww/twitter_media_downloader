@@ -61,7 +61,8 @@ def init_db():
         # 插入默认配置
         default_configs = [
             ('proxy', '', '代理地址（如: http://127.0.0.1:7890）'),
-            ('cookie', '', 'Cookie（auth_token和ct0）'),
+            ('auth_token', '', 'auth_token'),
+            ('ct0', '', 'ct0'),
         ]
         
         for key, value, description in default_configs:

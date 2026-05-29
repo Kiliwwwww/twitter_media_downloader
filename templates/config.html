@@ -466,7 +466,7 @@
                             </svg>
                             {{ cfg.description || cfg.key }}
                         </label>
-                        <div v-if="cfg.key === 'cookie'" class="tip-wrapper">
+                        <div v-if="cfg.key === 'auth_token' || cfg.key === 'ct0'" class="tip-wrapper">
                             <span class="tip-tag">
                                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                     <circle cx="12" cy="12" r="10"/>
@@ -481,23 +481,15 @@
                                     <li>打开浏览器开发者工具 (F12)</li>
                                     <li>切换到 Application/存储 标签</li>
                                     <li>在 Cookies 中找到 twitter.com</li>
-                                    <li>复制 auth_token 和 ct0 的值</li>
+                                    <li>分别复制 auth_token 和 ct0 的值</li>
                                 </ul>
                             </div>
                         </div>
                     </div>
-                    <textarea
-                        v-if="cfg.key === 'cookie'"
-                        class="config-input"
-                        v-model="configList[index].value"
-                        rows="3"
-                        placeholder="请输入Cookie（auth_token和ct0）"
-                    ></textarea>
                     <input
-                        v-else
                         class="config-input"
                         v-model="configList[index].value"
-                        :placeholder="'请输入' + (cfg.description || cfg.key)"
+                        :placeholder="cfg.key === 'auth_token' ? '请输入auth_token值' : (cfg.key === 'ct0' ? '请输入ct0值' : '请输入' + (cfg.description || cfg.key))"
                         @keyup.enter="saveConfigs"
                     >
                     <div v-if="cfg.updated_at" class="config-hint">

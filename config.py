@@ -24,6 +24,10 @@ class Config:
     
     @classmethod
     def get_cookie(cls) -> str:
-        """获取Cookie配置（从数据库）"""
+        """获取Cookie配置（从数据库拼接）"""
         from database import get_config
-        return get_config('cookie') or ''
+        auth_token = get_config('auth_token') or ''
+        ct0 = get_config('ct0') or ''
+        if auth_token and ct0:
+            return f'auth_token={auth_token}; ct0={ct0};'
+        return ''

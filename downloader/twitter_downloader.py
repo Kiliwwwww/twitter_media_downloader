@@ -99,26 +99,27 @@ class TwitterDownloader:
                 self.request_count += 1
                 
                 if response.status_code != 200:
-                    print(f'请求失败，状态码: {response.status_code}')
-                    print(f'响应内容: {response.text[:500]}')
-                    return False
+                    error_msg = f'HTTP {response.status_code}'
+                    try:
+                        error_data = response.json()
+                        if 'errors' in error_data:
+                            error_msg += f': {error_data["errors"][0].get("message", "")}'
+                    except:
+                        pass
+                    raise Exception(error_msg)
                 
                 raw_data = response.json()
                 
                 # 检查是否有错误
                 if 'errors' in raw_data:
-                    print(f'API返回错误: {raw_data["errors"]}')
-                    return False
+                    error_msg = raw_data['errors'][0].get('message', 'Unknown error')
+                    error_code = raw_data['errors'][0].get('code', '')
+                    raise Exception(f'API Error {error_code}: {error_msg}')
                 
                 if 'data' not in raw_data:
-                    print(f'响应中没有data字段，响应内容: {str(raw_data)[:500]}')
-                    return False
-                
-                # 打印响应结构以便调试
-                print(f'API响应: {json.dumps(raw_data, indent=2)[:1000]}')
+                    raise Exception('响应中没有data字段')
                 
                 user_result = raw_data['data']['user']['result']
-                print(f'user_result keys: {user_result.keys()}')
                 
                 self.user_info['rest_id'] = user_result.get('rest_id') or user_result.get('id')
                 self.user_info['name'] = user_result.get('legacy', {}).get('name')
@@ -131,9 +132,7 @@ class TwitterDownloader:
                 return True
         except Exception as e:
             print(f'获取用户信息失败: {e}')
-            import traceback
-            traceback.print_exc()
-            return False
+            raise
     
     def get_heighest_video_quality(self, variants) -> str:
         if len(variants) == 1:
