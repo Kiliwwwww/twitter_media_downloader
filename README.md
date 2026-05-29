@@ -24,6 +24,8 @@ twitter_download_server/
 ├── services.py            # 业务逻辑
 ├── run.py                 # 启动脚本
 ├── requirements.txt       # 依赖列表
+├── Dockerfile             # Docker镜像配置
+├── docker-compose.yml     # Docker Compose配置
 ├── README.md              # 项目说明
 ├── start.sh               # Linux/Mac启动脚本
 ├── start.bat              # Windows启动脚本
@@ -40,13 +42,14 @@ twitter_download_server/
         └── app.js
 ```
 
-## 安装依赖
+## 运行项目
 
+### 方式一：直接运行
+
+**安装依赖：**
 ```bash
 pip install -r requirements.txt
 ```
-
-## 运行项目
 
 **Linux/Mac:**
 ```bash
@@ -61,6 +64,27 @@ start.bat
 **或直接运行:**
 ```bash
 python run.py
+```
+
+### 方式二：Docker 运行
+
+**使用 Docker Compose（推荐）：**
+```bash
+docker-compose up -d
+```
+
+**或使用 Docker 命令：**
+```bash
+# 构建镜像
+docker build -t twitter-downloader .
+
+# 运行容器
+docker run -d \
+  -p 12345:12345 \
+  -v $(pwd)/downloads:/app/downloads \
+  -v $(pwd)/data.db:/app/data.db \
+  --name twitter-downloader \
+  twitter-downloader
 ```
 
 访问 http://localhost:12345 即可使用。

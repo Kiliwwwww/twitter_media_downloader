@@ -1,0 +1,12 @@
+version: '3.8'
+
+services:
+  twitter-downloader:
+    build: .
+    container_name: twitter-downloader
+    ports:
+      - "12345:12345"
+    volumes:
+      - ./downloads:/app/downloads
+      - ./data.db:/app/data.db
+    restart: unless-stopped
