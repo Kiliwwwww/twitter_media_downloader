@@ -60,6 +60,15 @@ class TwitterDownloader:
         self.max_concurrent_requests = 8
         self.img_format = 'orig'
         self.orig_format = True
+        
+        # 处理代理配置
+        self._proxy = proxy if proxy and proxy.strip() else None
+    
+    def _get_client(self) -> httpx.AsyncClient:
+        """创建httpx客户端，支持可选代理"""
+        if self._proxy:
+            return httpx.AsyncClient(proxy=self._proxy)
+        return httpx.AsyncClient()
     
     def quote_url(self, url: str) -> str:
         return url.replace('{', '%7B').replace('}', '%7D')
@@ -85,7 +94,7 @@ class TwitterDownloader:
         url = f'https://twitter.com/i/api/graphql/xc8f1g7BYqr6VTzTbvNlGw/UserByScreenName?variables={{"screen_name":"{self.user_info["screen_name"]}","withSafetyModeUserFields":false}}&features={{"hidden_profile_likes_enabled":false,"hidden_profile_subscriptions_enabled":false,"responsive_web_graphql_exclude_directive_enabled":true,"verified_phone_label_enabled":false,"subscriptions_verification_info_verified_since_enabled":true,"highlights_tweets_tab_ui_enabled":true,"creator_subscriptions_tweet_preview_api_enabled":true,"responsive_web_graphql_skip_user_profile_image_extensions_enabled":false,"responsive_web_graphql_timeline_navigation_enabled":true}}&fieldToggles={{"withAuxiliaryUserLabels":false}}'
         
         try:
-            async with httpx.AsyncClient(proxy=self.proxy) as client:
+            async with self._get_client() as client:
                 response = await client.get(self.quote_url(url), headers=self.headers, timeout=30.0)
                 self.request_count += 1
                 
@@ -105,10 +114,16 @@ class TwitterDownloader:
                     print(f'响应中没有data字段，响应内容: {str(raw_data)[:500]}')
                     return False
                 
-                self.user_info['rest_id'] = raw_data['data']['user']['result']['rest_id']
-                self.user_info['name'] = raw_data['data']['user']['result']['legacy']['name']
-                self.user_info['statuses_count'] = raw_data['data']['user']['result']['legacy']['statuses_count']
-                self.user_info['media_count'] = raw_data['data']['user']['result']['legacy']['media_count']
+                # 打印响应结构以便调试
+                print(f'API响应: {json.dumps(raw_data, indent=2)[:1000]}')
+                
+                user_result = raw_data['data']['user']['result']
+                print(f'user_result keys: {user_result.keys()}')
+                
+                self.user_info['rest_id'] = user_result.get('rest_id') or user_result.get('id')
+                self.user_info['name'] = user_result.get('legacy', {}).get('name')
+                self.user_info['statuses_count'] = user_result.get('legacy', {}).get('statuses_count')
+                self.user_info['media_count'] = user_result.get('legacy', {}).get('media_count')
                 
                 # 更新总文件数（估算）
                 self.total_files = min(self.user_info['media_count'] or 100, 500)
@@ -233,7 +248,7 @@ class TwitterDownloader:
             url = url_top + url_bottom
         
         try:
-            async with httpx.AsyncClient(proxy=self.proxy) as client:
+            async with self._get_client() as client:
                 response = await client.get(self.quote_url(url), headers=self.headers, timeout=30.0)
                 self.request_count += 1
                 
@@ -306,7 +321,7 @@ class TwitterDownloader:
         count = 0
         while True:
             try:
-                async with httpx.AsyncClient(proxy=self.proxy) as client:
+                async with self._get_client() as client:
                     response = await client.get(self.quote_url(url), timeout=(3.05, 16))
                     if response.status_code == 404:
                         raise Exception('404')

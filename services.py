@@ -134,15 +134,39 @@ class DownloadService:
             )
     
     def _create_zip(self, task: DownloadTask):
-        """创建ZIP压缩文件"""
+        """创建ZIP压缩文件，按文件类型分类"""
+        # 文件类型分类
+        video_exts = {'.mp4', '.mov', '.avi', '.mkv', '.webm', '.gif'}
+        image_exts = {'.jpg', '.jpeg', '.png', '.webp', '.bmp'}
+        
+        def get_category(filename: str) -> str:
+            """根据文件扩展名返回分类文件夹名"""
+            ext = os.path.splitext(filename)[1].lower()
+            if ext in video_exts:
+                return 'videos'
+            elif ext in image_exts:
+                return 'images'
+            else:
+                return 'others'
+        
         zip_filename = f'{task.user_id}_media.zip'
         zip_path = os.path.join(Config.DOWNLOAD_FOLDER, zip_filename)
+        
+        # 获取用户信息用于文件夹名称
+        from database import get_download_by_task_id
+        history = get_download_by_task_id(task.task_id)
+        user_name = history.get('user_name') if history else None
+        # 构建根目录名称：用户名_用户ID
+        folder_name = f'{user_name}_{task.user_id}' if user_name else task.user_id
         
         with zipfile.ZipFile(zip_path, 'w', zipfile.ZIP_DEFLATED) as zipf:
             for root, dirs, files in os.walk(task.download_path):
                 for file in files:
                     file_path = os.path.join(root, file)
-                    arcname = os.path.relpath(file_path, task.download_path)
+                    # 获取分类文件夹
+                    category = get_category(file)
+                    # 构建ZIP内的路径：根目录/分类文件夹/原文件名
+                    arcname = f'{folder_name}/{category}/{file}'
                     zipf.write(file_path, arcname)
         
         task.zip_path = zip_path
