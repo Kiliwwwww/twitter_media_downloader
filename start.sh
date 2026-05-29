@@ -31,7 +31,7 @@ mkdir -p downloads
 
 echo "=========================================="
 echo "启动推特媒体下载器..."
-echo "访问地址: http://localhost:5000"
+echo "访问地址: http://localhost:12345"
 echo "按 Ctrl+C 停止服务器"
 echo "=========================================="
 

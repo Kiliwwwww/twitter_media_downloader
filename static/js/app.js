@@ -13,33 +13,34 @@ const app = createApp({
         const isDownloading = ref(false);
         
         let progressInterval = null;
+        let timeInterval = null;
         let startTime = null;
         
         const statusText = computed(() => {
             switch (status.value) {
-                case 'pending':
-                    return '等待中';
-                case 'downloading':
-                    return '下载中';
-                case 'completed':
-                    return '下载完成';
-                case 'failed':
-                    return '下载失败';
-                default:
-                    return '未知状态';
+                case 'pending': return '等待中';
+                case 'downloading': return '下载中';
+                case 'completed': return '下载完成';
+                case 'failed': return '下载失败';
+                default: return '未知状态';
             }
         });
         
-        const progressBarClass = computed(() => {
+        const statusTagType = computed(() => {
             switch (status.value) {
-                case 'downloading':
-                    return 'bg-primary';
-                case 'completed':
-                    return 'bg-success';
-                case 'failed':
-                    return 'bg-danger';
-                default:
-                    return 'bg-warning';
+                case 'pending': return 'warning';
+                case 'downloading': return '';
+                case 'completed': return 'success';
+                case 'failed': return 'danger';
+                default: return 'info';
+            }
+        });
+        
+        const progressStatus = computed(() => {
+            switch (status.value) {
+                case 'completed': return 'success';
+                case 'failed': return 'exception';
+                default: return '';
             }
         });
         
@@ -62,6 +63,17 @@ const app = createApp({
             }
         };
         
+        const stopTimers = () => {
+            if (progressInterval) {
+                clearInterval(progressInterval);
+                progressInterval = null;
+            }
+            if (timeInterval) {
+                clearInterval(timeInterval);
+                timeInterval = null;
+            }
+        };
+        
         const fetchProgress = async () => {
             if (!taskId.value) return;
             
@@ -78,13 +90,8 @@ const app = createApp({
                     
                     if (data.status === 'completed' || data.status === 'failed') {
                         isDownloading.value = false;
-                        if (progressInterval) {
-                            clearInterval(progressInterval);
-                            progressInterval = null;
-                        }
+                        stopTimers();
                     }
-                } else {
-                    console.error('获取进度失败:', data.error);
                 }
             } catch (error) {
                 console.error('请求失败:', error);
@@ -93,7 +100,7 @@ const app = createApp({
         
         const startDownload = async () => {
             if (!userId.value.trim()) {
-                alert('请输入用户ID');
+                ElementPlus.ElMessage.warning('请输入用户ID');
                 return;
             }
             
@@ -103,6 +110,7 @@ const app = createApp({
             totalFiles.value = 0;
             downloadedFiles.value = 0;
             errorMessage.value = '';
+            elapsedTime.value = '0秒';
             startTime = new Date();
             
             try {
@@ -124,22 +132,28 @@ const app = createApp({
                     
                     // 开始轮询进度
                     progressInterval = setInterval(fetchProgress, 1000);
-                    // 同时更新已用时间
-                    setInterval(updateElapsedTime, 1000);
+                    // 更新已用时间
+                    timeInterval = setInterval(updateElapsedTime, 1000);
+                    
+                    ElementPlus.ElMessage.success('下载任务已创建');
                 } else {
-                    alert(data.error || '下载失败');
+                    ElementPlus.ElMessage.error(data.error || '下载失败');
                     isDownloading.value = false;
                 }
             } catch (error) {
-                alert('请求失败: ' + error.message);
+                ElementPlus.ElMessage.error('请求失败: ' + error.message);
                 isDownloading.value = false;
             }
         };
         
-        onUnmounted(() => {
-            if (progressInterval) {
-                clearInterval(progressInterval);
+        const downloadZip = () => {
+            if (taskId.value) {
+                window.location.href = `/api/download/${taskId.value}`;
             }
+        };
+        
+        onUnmounted(() => {
+            stopTimers();
         });
         
         return {
@@ -153,10 +167,13 @@ const app = createApp({
             errorMessage,
             isDownloading,
             statusText,
-            progressBarClass,
-            startDownload
+            statusTagType,
+            progressStatus,
+            startDownload,
+            downloadZip
         };
     }
 });
 
+app.use(ElementPlus);
 app.mount('#app');

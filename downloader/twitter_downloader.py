@@ -36,7 +36,7 @@ class TwitterDownloader:
         }
         
         # 从cookie中提取csrf token
-        re_token = r'ct0=(.*?);'
+        re_token = r'ct0=([a-f0-9]+)'
         match = re.search(re_token, self.cookie)
         if match:
             self.headers['x-csrf-token'] = match.group(1)
@@ -88,7 +88,22 @@ class TwitterDownloader:
             async with httpx.AsyncClient(proxy=self.proxy) as client:
                 response = await client.get(self.quote_url(url), headers=self.headers, timeout=30.0)
                 self.request_count += 1
+                
+                if response.status_code != 200:
+                    print(f'请求失败，状态码: {response.status_code}')
+                    print(f'响应内容: {response.text[:500]}')
+                    return False
+                
                 raw_data = response.json()
+                
+                # 检查是否有错误
+                if 'errors' in raw_data:
+                    print(f'API返回错误: {raw_data["errors"]}')
+                    return False
+                
+                if 'data' not in raw_data:
+                    print(f'响应中没有data字段，响应内容: {str(raw_data)[:500]}')
+                    return False
                 
                 self.user_info['rest_id'] = raw_data['data']['user']['result']['rest_id']
                 self.user_info['name'] = raw_data['data']['user']['result']['legacy']['name']
@@ -101,6 +116,8 @@ class TwitterDownloader:
                 return True
         except Exception as e:
             print(f'获取用户信息失败: {e}')
+            import traceback
+            traceback.print_exc()
             return False
     
     def get_heighest_video_quality(self, variants) -> str:
