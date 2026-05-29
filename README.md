@@ -6,11 +6,12 @@
 
 - 🎯 输入推特用户ID，一键下载该用户的所有图文视频
 - 📊 实时显示下载进度
-- 📦 下载完成后自动打包为ZIP文件
+- 📦 下载完成后自动打包为ZIP文件（按视频/图片/其他分类）
 - 🔄 支持异步下载，不阻塞界面
 - 🎨 现代化的Element Plus前端界面
 - ⚙️ 配置管理 - 支持代理、Cookie等配置的持久化存储
 - 📜 下载历史 - 查看和管理之前的下载记录
+- 🐳 支持Docker部署
 
 ## 项目结构
 
@@ -26,6 +27,7 @@ twitter_download_server/
 ├── requirements.txt       # 依赖列表
 ├── Dockerfile             # Docker镜像配置
 ├── docker-compose.yml     # Docker Compose配置
+├── .dockerignore          # Docker忽略文件
 ├── README.md              # 项目说明
 ├── start.sh               # Linux/Mac启动脚本
 ├── start.bat              # Windows启动脚本
@@ -42,39 +44,64 @@ twitter_download_server/
         └── app.js
 ```
 
-## 运行项目
+## 部署方式
 
 ### 方式一：直接运行
 
-**安装依赖：**
+**1. 安装依赖：**
 ```bash
 pip install -r requirements.txt
 ```
 
-**Linux/Mac:**
+**2. 启动服务：**
+
+Linux/Mac:
 ```bash
 ./start.sh
 ```
 
-**Windows:**
+Windows:
 ```cmd
 start.bat
 ```
 
-**或直接运行:**
+或直接运行:
 ```bash
 python run.py
 ```
 
-### 方式二：Docker 运行
+**3. 访问服务：**
 
-**使用 Docker Compose（推荐）：**
+打开浏览器访问 http://localhost:12345
+
+---
+
+### 方式二：Docker 部署（推荐）
+
+#### 使用 Docker Compose
+
 ```bash
+# 克隆项目
+git clone https://gitee.com/kili233/twitter_download_server.git
+cd twitter_download_server
+
+# 启动服务
 docker-compose up -d
+
+# 查看日志
+docker-compose logs -f
+
+# 停止服务
+docker-compose down
 ```
 
-**或使用 Docker 命令：**
+#### 使用 Docker 命令
+
 ```bash
+# 克隆项目
+git clone https://gitee.com/kili233/twitter_download_server.git
+cd twitter_download_server
+
 # 构建镜像
 docker build -t twitter-downloader .
 
@@ -84,35 +111,84 @@ docker run -d \
   -v $(pwd)/downloads:/app/downloads \
   -v $(pwd)/data.db:/app/data.db \
   --name twitter-downloader \
+  --restart unless-stopped \
   twitter-downloader
+
+# 查看日志
+docker logs -f twitter-downloader
+
+# 停止容器
+docker stop twitter-downloader
 ```
 
-访问 http://localhost:12345 即可使用。
+#### 数据持久化
+
+Docker部署时，以下数据会持久化到宿主机：
+
+| 宿主机路径 | 容器路径 | 说明 |
+|-----------|---------|------|
+| `./downloads` | `/app/downloads` | 下载的媒体文件 |
+| `./data.db` | `/app/data.db` | 配置和历史记录数据库 |
+
+#### 国内网络优化
+
+Dockerfile 已配置使用阿里云 pip 镜像源，国内网络可直接构建。
+
+如果 Docker 拉取基础镜像慢，可配置 Docker 镜像加速器：
+
+```json
+// /etc/docker/daemon.json
+{
+  "registry-mirrors": [
+    "https://mirror.ccs.tencentyun.com",
+    "https://registry.docker-cn.com"
+  ]
+}
+```
+
+配置后重启 Docker：
+```bash
+sudo systemctl restart docker
+```
+
+---
 
 ## 页面说明
 
-### 首页
+### 首页 (/)
 - 输入推特用户名开始下载
 - 实时显示下载进度
 - 下载完成后可下载ZIP压缩包
 
 ### 配置管理 (/config)
 - 管理代理地址配置
-- 管理推特Cookie配置
+- 管理推特Cookie（auth_token和ct0）
 - 配置自动持久化到SQLite数据库
 
 ### 下载历史 (/history)
 - 查看所有下载记录
 - 显示下载状态、文件数量等信息
+- 失败时可查看详细错误信息
 - 支持重新下载已完成的任务
 - 支持删除历史记录
 
 ## 配置说明
 
-配置存储在SQLite数据库 `data.db` 中，可通过配置管理页面进行修改：
+配置存储在SQLite数据库 `data.db` 中，首次使用需在配置页面填写：
 
-- `proxy`: 代理地址（默认: http://127.0.0.1:7890）
-- `cookie`: 推特Cookie（需要包含auth_token和ct0）
+| 配置项 | 说明 |
+|-------|------|
+| `proxy` | 代理地址，如 `http://127.0.0.1:7890`（可选） |
+| `auth_token` | Twitter Cookie中的auth_token |
+| `ct0` | Twitter Cookie中的ct0 |
+
+### 获取 Cookie
+
+1. 登录 [twitter.com](https://twitter.com)
+2. 打开浏览器开发者工具 (F12)
+3. 切换到 Application/存储 标签
+4. 在 Cookies 中找到 twitter.com
+5. 分别复制 `auth_token` 和 `ct0` 的值
 
 ## 注意事项
 
