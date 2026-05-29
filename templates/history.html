@@ -63,6 +63,15 @@
             justify-content: center;
             margin-top: 20px;
         }
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #909399;
+        }
+        .empty-state .icon {
+            font-size: 48px;
+            margin-bottom: 16px;
+        }
     </style>
 </head>
 <body>
@@ -85,61 +94,70 @@
                     </template>
                     
                     <div class="content-section">
-                        <el-table 
-                            :data="history" 
-                            style="width: 100%"
-                            v-loading="loading"
-                            empty-text="暂无下载记录"
-                        >
-                            <el-table-column prop="user_id" label="用户ID" width="120" />
-                            <el-table-column prop="user_name" label="用户名" width="120">
-                                <template #default="scope">
-                                    {{ scope.row.user_name || '-' }}
-                                </template>
-                            </el-table-column>
-                            <el-table-column prop="status" label="状态" width="100">
-                                <template #default="scope">
-                                    <el-tag :type="getStatusType(scope.row.status)">
-                                        {{ getStatusText(scope.row.status) }}
-                                    </el-tag>
-                                </template>
-                            </el-table-column>
-                            <el-table-column label="文件数" width="100">
-                                <template #default="scope">
-                                    {{ scope.row.downloaded_files }} / {{ scope.row.total_files }}
-                                </template>
-                            </el-table-column>
-                            <el-table-column prop="created_at" label="创建时间" width="160" />
-                            <el-table-column label="操作" width="150">
-                                <template #default="scope">
-                                    <el-button 
-                                        v-if="scope.row.status === 'completed' && scope.row.zip_path"
-                                        type="primary" 
-                                        size="small"
-                                        @click="downloadFile(scope.row.task_id)"
-                                    >
-                                        下载
-                                    </el-button>
-                                    <el-button 
-                                        type="danger" 
-                                        size="small"
-                                        @click="deleteHistory(scope.row.task_id)"
-                                    >
-                                        删除
-                                    </el-button>
-                                </template>
-                            </el-table-column>
-                        </el-table>
-                        
-                        <div class="pagination-section">
-                            <el-pagination
-                                v-model:current-page="currentPage"
-                                :page-size="pageSize"
-                                :total="total"
-                                layout="prev, pager, next, total"
-                                @current-change="fetchHistory"
-                            />
+                        <div v-if="!loading && history.length === 0" class="empty-state">
+                            <div class="icon">📭</div>
+                            <p>暂无下载记录</p>
+                            <el-button type="primary" @click="goHome">去下载</el-button>
                         </div>
+                        
+                        <template v-else>
+                            <el-table 
+                                :data="history" 
+                                style="width: 100%"
+                                v-loading="loading"
+                            >
+                                <el-table-column prop="user_id" label="用户ID" min-width="100" />
+                                <el-table-column prop="user_name" label="用户名" min-width="100">
+                                    <template #default="scope">
+                                        {{ scope.row.user_name || '-' }}
+                                    </template>
+                                </el-table-column>
+                                <el-table-column prop="status" label="状态" width="90">
+                                    <template #default="scope">
+                                        <el-tag :type="getStatusType(scope.row.status)" size="small">
+                                            {{ getStatusText(scope.row.status) }}
+                                        </el-tag>
+                                    </template>
+                                </el-table-column>
+                                <el-table-column label="文件数" width="80">
+                                    <template #default="scope">
+                                        {{ scope.row.downloaded_files || 0 }}/{{ scope.row.total_files || 0 }}
+                                    </template>
+                                </el-table-column>
+                                <el-table-column prop="created_at" label="创建时间" width="150" />
+                                <el-table-column label="操作" width="130" fixed="right">
+                                    <template #default="scope">
+                                        <el-button 
+                                            v-if="scope.row.status === 'completed' && scope.row.zip_path"
+                                            type="primary" 
+                                            size="small"
+                                            link
+                                            @click="downloadFile(scope.row.task_id)"
+                                        >
+                                            下载
+                                        </el-button>
+                                        <el-button 
+                                            type="danger" 
+                                            size="small"
+                                            link
+                                            @click="deleteHistory(scope.row.task_id)"
+                                        >
+                                            删除
+                                        </el-button>
+                                    </template>
+                                </el-table-column>
+                            </el-table>
+                            
+                            <div class="pagination-section" v-if="total > pageSize">
+                                <el-pagination
+                                    v-model:current-page="currentPage"
+                                    :page-size="pageSize"
+                                    :total="total"
+                                    layout="prev, pager, next, total"
+                                    @current-change="fetchHistory"
+                                />
+                            </div>
+                        </template>
                     </div>
                 </el-card>
             </el-col>
@@ -184,11 +202,12 @@
                         const response = await fetch(`/api/history?page=${page}&per_page=${pageSize.value}`);
                         const data = await response.json();
                         
-                        history.value = data.data;
-                        total.value = data.total;
-                        currentPage.value = data.page;
+                        history.value = data.data || [];
+                        total.value = data.total || 0;
+                        currentPage.value = data.page || 1;
                     } catch (error) {
                         ElementPlus.ElMessage.error('获取历史记录失败');
+                        history.value = [];
                     } finally {
                         loading.value = false;
                     }
@@ -223,6 +242,10 @@
                     }
                 };
                 
+                const goHome = () => {
+                    window.location.href = '/';
+                };
+                
                 onMounted(() => {
                     fetchHistory();
                 });
@@ -237,7 +260,8 @@
                     getStatusText,
                     fetchHistory,
                     downloadFile,
-                    deleteHistory
+                    deleteHistory,
+                    goHome
                 };
             }
         });

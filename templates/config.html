@@ -58,6 +58,23 @@
         .nav-links a.active {
             background: rgba(255,255,255,0.3);
         }
+        .config-item {
+            margin-bottom: 24px;
+            padding: 16px;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+        .config-item label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #303133;
+        }
+        .config-item .hint {
+            color: #909399;
+            font-size: 12px;
+            margin-top: 4px;
+        }
     </style>
 </head>
 <body>
@@ -79,46 +96,34 @@
                         </div>
                     </template>
                     
-                    <div class="content-section">
-                        <el-form 
-                            :model="configs" 
-                            label-position="top"
-                            v-loading="loading"
+                    <div class="content-section" v-loading="loading">
+                        <div v-for="(cfg, index) in configList" :key="cfg.key" class="config-item">
+                            <label>{{ cfg.description || cfg.key }}</label>
+                            <textarea
+                                v-if="cfg.key === 'cookie'"
+                                v-model="configList[index].value"
+                                rows="3"
+                                style="width: 100%; padding: 8px; border: 1px solid #dcdfe6; border-radius: 4px;"
+                                placeholder="请输入Cookie"
+                            ></textarea>
+                            <input
+                                v-else
+                                v-model="configList[index].value"
+                                :placeholder="'请输入' + (cfg.description || cfg.key)"
+                                style="width: 100%; padding: 8px; border: 1px solid #dcdfe6; border-radius: 4px; box-sizing: border-box;"
+                            />
+                            <div v-if="cfg.updated_at" class="hint">
+                                最后更新: {{ cfg.updated_at }}
+                            </div>
+                        </div>
+                        
+                        <button 
+                            @click="saveConfigs"
+                            :disabled="saving"
+                            style="width: 100%; padding: 12px; background: #409eff; color: white; border: none; border-radius: 8px; font-size: 16px; cursor: pointer;"
                         >
-                            <el-form-item 
-                                v-for="config in configs" 
-                                :key="config.key"
-                                :label="config.description || config.key"
-                            >
-                                <el-input
-                                    v-if="config.key === 'cookie'"
-                                    v-model="configs[config.key]"
-                                    type="textarea"
-                                    :rows="3"
-                                    placeholder="请输入Cookie"
-                                />
-                                <el-input
-                                    v-else
-                                    v-model="configs[config.key]"
-                                    :placeholder="'请输入' + (config.description || config.key)"
-                                />
-                                <div v-if="config.updated_at" style="color: #909399; font-size: 12px; margin-top: 4px">
-                                    最后更新: {{ config.updated_at }}
-                                </div>
-                            </el-form-item>
-                            
-                            <el-form-item>
-                                <el-button 
-                                    type="primary" 
-                                    style="width: 100%"
-                                    size="large"
-                                    :loading="saving"
-                                    @click="saveConfigs"
-                                >
-                                    保存配置
-                                </el-button>
-                            </el-form-item>
-                        </el-form>
+                            {{ saving ? '保存中...' : '保存配置' }}
+                        </button>
                     </div>
                 </el-card>
             </el-col>
@@ -131,7 +136,7 @@
         
         const app = createApp({
             setup() {
-                const configs = ref({});
+                const configList = ref([]);
                 const loading = ref(false);
                 const saving = ref(false);
                 
@@ -140,14 +145,8 @@
                     try {
                         const response = await fetch('/api/configs');
                         const data = await response.json();
-                        
-                        // 转换为key-value对象
-                        const configObj = {};
-                        data.forEach(item => {
-                            configObj[item.key] = item.value;
-                            configObj[item.key + '_updated'] = item.updated_at;
-                        });
-                        configs.value = configObj;
+                        configList.value = data;
+                        console.log('Configs loaded:', data);
                     } catch (error) {
                         ElementPlus.ElMessage.error('获取配置失败');
                     } finally {
@@ -158,12 +157,9 @@
                 const saveConfigs = async () => {
                     saving.value = true;
                     try {
-                        // 提取key-value数据
                         const data = {};
-                        Object.keys(configs.value).forEach(key => {
-                            if (!key.endsWith('_updated')) {
-                                data[key] = configs.value[key];
-                            }
+                        configList.value.forEach(cfg => {
+                            data[cfg.key] = cfg.value;
                         });
                         
                         const response = await fetch('/api/configs', {
@@ -176,7 +172,7 @@
                         
                         if (response.ok) {
                             ElementPlus.ElMessage.success('配置已保存');
-                            fetchConfigs(); // 刷新数据
+                            fetchConfigs();
                         } else {
                             ElementPlus.ElMessage.error('保存失败');
                         }
@@ -192,7 +188,7 @@
                 });
                 
                 return {
-                    configs,
+                    configList,
                     loading,
                     saving,
                     saveConfigs
