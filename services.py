@@ -25,8 +25,25 @@ class DownloadService:
         database.init_db()
     
     def get_task(self, task_id: str) -> Optional[DownloadTask]:
-        """获取任务"""
-        return self._tasks.get(task_id)
+        """获取任务（优先内存，其次数据库）"""
+        # 先从内存获取
+        task = self._tasks.get(task_id)
+        if task:
+            return task
+        
+        # 内存中没有，从数据库获取
+        history = database.get_download_by_task_id(task_id)
+        if history:
+            task = DownloadTask(task_id, history['user_id'])
+            task.status = history['status']
+            task.total_files = history.get('total_files', 0)
+            task.downloaded_files = history.get('downloaded_files', 0)
+            task.zip_path = history.get('zip_path')
+            task.error_message = history.get('error_message')
+            task.progress = 100 if history['status'] == 'completed' else 0
+            return task
+        
+        return None
     
     def create_task(self, user_id: str) -> DownloadTask:
         """创建下载任务"""
