@@ -1,0 +1,91 @@
+body {
+    background-color: #f8f9fa;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.card {
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    border: none;
+    border-radius: 10px;
+}
+
+.card-header {
+    border-radius: 10px 10px 0 0 !important;
+}
+
+.btn-primary {
+    background-color: #1da1f2;
+    border-color: #1da1f2;
+}
+
+.btn-primary:hover {
+    background-color: #0d8ecf;
+    border-color: #0d8ecf;
+}
+
+.btn-primary:disabled {
+    background-color: #6c757d;
+    border-color: #6c757d;
+}
+
+.progress {
+    height: 25px;
+    border-radius: 12px;
+}
+
+.progress-bar {
+    border-radius: 12px;
+    transition: width 0.3s ease;
+}
+
+.progress-bar.bg-success {
+    background-color: #28a745 !important;
+}
+
+.progress-bar.bg-warning {
+    background-color: #ffc107 !important;
+}
+
+.progress-bar.bg-danger {
+    background-color: #dc3545 !important;
+}
+
+.input-group-text {
+    background-color: #1da1f2;
+    color: white;
+    border-color: #1da1f2;
+}
+
+.form-control:focus {
+    border-color: #1da1f2;
+    box-shadow: 0 0 0 0.2rem rgba(29, 161, 242, 0.25);
+}
+
+.spinner-border-sm {
+    width: 1rem;
+    height: 1rem;
+}
+
+.alert {
+    border-radius: 8px;
+}
+
+.list-group-item {
+    border: none;
+    padding: 0.75rem 0;
+    background-color: transparent;
+}
+
+.list-group-item:not(:last-child) {
+    border-bottom: 1px solid #dee2e6;
+}
+
+@media (max-width: 768px) {
+    .container {
+        padding: 0 15px;
+    }
+    
+    .card {
+        margin-top: 1rem !important;
+    }
+}
