@@ -8,6 +8,7 @@
     <link rel="stylesheet" href="https://unpkg.com/element-plus/dist/index.css">
     <script src="https://unpkg.com/element-plus"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/dark-mode.css') }}">
     <style>
         * {
             margin: 0;
@@ -575,6 +576,11 @@
                     <a href="/" class="active">首页</a>
                     <a href="/config">配置管理</a>
                     <a href="/history">下载历史</a>
+                    <button id="theme-toggle" class="theme-toggle-btn" onclick="themeModule.toggleDarkMode()">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/>
+                        </svg>
+                    </button>
                 </div>
             </div>
         </nav>
@@ -872,5 +878,6 @@
         app.use(ElementPlus);
         app.mount('#app');
     </script>
+    <script src="{{ url_for('static', filename='js/theme.js') }}"></script>
 </body>
 </html>

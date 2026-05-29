@@ -109,6 +109,7 @@ def get_history():
     per_page = request.args.get('per_page', 20, type=int)
     
     offset = (page - 1) * per_page
+
     history = database.get_download_history(limit=per_page, offset=offset)
     total = database.get_download_history_count()
     

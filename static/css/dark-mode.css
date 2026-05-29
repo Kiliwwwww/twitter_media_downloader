@@ -1,0 +1,494 @@
+/* 暗黑模式样式 */
+
+:root {
+    /* 亮色模式变量 */
+    --bg-gradient: linear-gradient(135deg, #E8EDFF 0%, #F0E7FF 50%, #E8EDFF 100%);
+    --bg-circle-1: linear-gradient(135deg, #4A6CF7, #7B61FF);
+    --bg-circle-2: linear-gradient(135deg, #00D4FF, #4A6CF7);
+    --bg-circle-3: #7B61FF;
+    --navbar-bg: rgba(255, 255, 255, 0.85);
+    --navbar-border: rgba(229, 231, 235, 0.5);
+    --card-bg: rgba(255, 255, 255, 0.85);
+    --card-border: rgba(229, 231, 235, 0.5);
+    --card-shadow: 0 4px 6px -1px rgba(74, 108, 247, 0.1), 0 2px 4px -2px rgba(74, 108, 247, 0.1);
+    --input-bg: rgba(255, 255, 255, 0.9);
+    --input-border: #E5E7EB;
+    --item-bg: rgba(249, 250, 251, 0.6);
+    --item-hover-bg: rgba(249, 250, 251, 0.9);
+    --text-primary: #1F2937;
+    --text-secondary: #4B5563;
+    --text-tertiary: #6B7280;
+    --text-placeholder: #9CA3AF;
+    --icon-bg: linear-gradient(135deg, rgba(74, 108, 247, 0.1), rgba(123, 97, 255, 0.1));
+    --icon-bg-hover: linear-gradient(135deg, rgba(74, 108, 247, 0.2), rgba(123, 97, 255, 0.2));
+    --icon-color: #4A6CF7;
+    --progress-bg: #E5E7EB;
+    --progress-item-bg: rgba(249, 250, 251, 0.8);
+    --empty-icon-bg: linear-gradient(135deg, rgba(74, 108, 247, 0.1), rgba(123, 97, 255, 0.1));
+    --tooltip-bg: #1F2937;
+    --tooltip-text: white;
+    --error-bg: #FEF2F2;
+    --error-border: #FECACA;
+    --error-text: #DC2626;
+    --page-btn-bg: rgba(255, 255, 255, 0.9);
+    --page-btn-border: #E5E7EB;
+    --page-btn-text: #4B5563;
+    --tag-pending-bg: #FEF3C7;
+    --tag-pending-text: #D97706;
+    --tag-downloading-bg: #DBEAFE;
+    --tag-downloading-text: #2563EB;
+    --tag-completed-bg: #D1FAE5;
+    --tag-completed-text: #059669;
+    --tag-failed-bg: #FEE2E2;
+    --tag-failed-text: #DC2626;
+    --action-download-bg: rgba(74, 108, 247, 0.1);
+    --action-download-text: #4A6CF7;
+    --action-delete-bg: rgba(239, 68, 68, 0.1);
+    --action-delete-text: #EF4444;
+    --label-icon-color: #4A6CF7;
+}
+
+[data-theme="dark"] {
+    --bg-gradient: linear-gradient(135deg, #0f0f23 0%, #1a1a3e 50%, #0f0f23 100%);
+    --bg-circle-1: linear-gradient(135deg, #3a4cd7, #6b51e0);
+    --bg-circle-2: linear-gradient(135deg, #00b8d4, #3a4cd7);
+    --bg-circle-3: #6b51e0;
+    --navbar-bg: rgba(20, 20, 40, 0.95);
+    --navbar-border: rgba(50, 50, 70, 0.5);
+    --card-bg: rgba(25, 25, 50, 0.9);
+    --card-border: rgba(50, 50, 70, 0.5);
+    --card-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -2px rgba(0, 0, 0, 0.3);
+    --input-bg: rgba(35, 35, 60, 0.9);
+    --input-border: #3a3a5c;
+    --item-bg: rgba(30, 30, 55, 0.6);
+    --item-hover-bg: rgba(35, 35, 60, 0.9);
+    --text-primary: #e5e7eb;
+    --text-secondary: #9ca3af;
+    --text-tertiary: #6b7280;
+    --text-placeholder: #4b5563;
+    --icon-bg: linear-gradient(135deg, rgba(74, 108, 247, 0.2), rgba(123, 97, 255, 0.2));
+    --icon-bg-hover: linear-gradient(135deg, rgba(74, 108, 247, 0.3), rgba(123, 97, 255, 0.3));
+    --icon-color: #7b9aff;
+    --progress-bg: #2a2a4a;
+    --progress-item-bg: rgba(30, 30, 55, 0.8);
+    --empty-icon-bg: linear-gradient(135deg, rgba(74, 108, 247, 0.2), rgba(123, 97, 255, 0.2));
+    --tooltip-bg: #e5e7eb;
+    --tooltip-text: #1f2937;
+    --error-bg: rgba(220, 38, 38, 0.15);
+    --error-border: rgba(220, 38, 38, 0.3);
+    --error-text: #fca5a5;
+    --page-btn-bg: rgba(35, 35, 60, 0.9);
+    --page-btn-border: #3a3a5c;
+    --page-btn-text: #9ca3af;
+    --tag-pending-bg: rgba(217, 119, 6, 0.2);
+    --tag-pending-text: #fcd34d;
+    --tag-downloading-bg: rgba(37, 99, 235, 0.2);
+    --tag-downloading-text: #93c5fd;
+    --tag-completed-bg: rgba(5, 150, 105, 0.2);
+    --tag-completed-text: #6ee7b7;
+    --tag-failed-bg: rgba(220, 38, 38, 0.2);
+    --tag-failed-text: #fca5a5;
+    --action-download-bg: rgba(74, 108, 247, 0.2);
+    --action-download-text: #7b9aff;
+    --action-delete-bg: rgba(220, 38, 38, 0.2);
+    --action-delete-text: #fca5a5;
+    --label-icon-color: #7b9aff;
+}
+
+/* ===== 背景 ===== */
+body {
+    background: var(--bg-gradient) !important;
+    color: var(--text-primary) !important;
+}
+
+.bg-circle-1 {
+    background: var(--bg-circle-1) !important;
+}
+
+.bg-circle-2 {
+    background: var(--bg-circle-2) !important;
+}
+
+.bg-circle-3 {
+    background: var(--bg-circle-3) !important;
+}
+
+/* ===== 导航栏 ===== */
+.navbar {
+    background: var(--navbar-bg) !important;
+    border-bottom-color: var(--navbar-border) !important;
+}
+
+.navbar-brand {
+    color: var(--text-primary) !important;
+}
+
+.navbar-brand svg {
+    stroke: var(--icon-color) !important;
+}
+
+.nav-links a {
+    color: var(--text-secondary) !important;
+}
+
+.nav-links a:hover,
+.nav-links a.active {
+    color: var(--icon-color) !important;
+}
+
+.nav-links a.active::after {
+    background: var(--icon-color) !important;
+}
+
+/* ===== 卡片通用 ===== */
+.page-header,
+.banner-card,
+.input-section,
+.progress-section,
+.guide-section,
+.config-card,
+.history-card {
+    background: var(--card-bg) !important;
+    border-color: var(--card-border) !important;
+    box-shadow: var(--card-shadow) !important;
+}
+
+/* ===== 标题和文字 ===== */
+.page-title,
+.banner-title,
+.guide-title,
+.progress-title {
+    color: var(--text-primary) !important;
+}
+
+.page-subtitle,
+.banner-subtitle {
+    color: var(--text-placeholder) !important;
+}
+
+/* ===== 图标背景 ===== */
+.page-icon,
+.step-icon,
+.history-avatar {
+    background: var(--icon-bg) !important;
+    color: var(--icon-color) !important;
+}
+
+.page-icon svg,
+.step-icon svg {
+    stroke: var(--icon-color) !important;
+}
+
+/* ===== 输入框 ===== */
+.input-label {
+    color: var(--text-secondary) !important;
+}
+
+.input-field,
+.config-input {
+    background: var(--input-bg) !important;
+    border-color: var(--input-border) !important;
+    color: var(--text-primary) !important;
+}
+
+.input-field:focus,
+.config-input:focus {
+    border-color: var(--icon-color) !important;
+    box-shadow: 0 0 0 3px rgba(74, 108, 247, 0.25) !important;
+}
+
+.input-field::placeholder,
+.config-input::placeholder {
+    color: var(--text-placeholder) !important;
+}
+
+.input-icon {
+    color: var(--text-placeholder) !important;
+}
+
+/* ===== 配置项 ===== */
+.config-item {
+    background: var(--item-bg) !important;
+    border-color: var(--card-border) !important;
+}
+
+.config-item:hover {
+    background: var(--item-hover-bg) !important;
+    border-color: var(--icon-color) !important;
+}
+
+.config-item label {
+    color: var(--text-primary) !important;
+}
+
+.config-item label svg {
+    color: var(--label-icon-color) !important;
+}
+
+.config-hint {
+    color: var(--text-placeholder) !important;
+}
+
+.config-hint svg {
+    stroke: var(--text-placeholder) !important;
+}
+
+/* ===== 提示标签 ===== */
+.tip-tag {
+    background: var(--icon-bg) !important;
+    color: var(--icon-color) !important;
+}
+
+.tip-tag svg {
+    stroke: var(--icon-color) !important;
+}
+
+.tip-tag:hover {
+    background: var(--icon-bg-hover) !important;
+}
+
+.tip-content {
+    background: var(--tooltip-bg) !important;
+    border-color: var(--card-border) !important;
+    color: var(--tooltip-text) !important;
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3) !important;
+}
+
+.tip-content-title {
+    color: var(--tooltip-text) !important;
+}
+
+.tip-content-list li {
+    color: var(--tooltip-text) !important;
+    opacity: 0.8;
+}
+
+.tip-content-list li::before {
+    background: var(--tooltip-text) !important;
+}
+
+/* ===== 进度条 ===== */
+.progress-bar-wrapper {
+    background: var(--progress-bg) !important;
+}
+
+.progress-item {
+    background: var(--progress-item-bg) !important;
+}
+
+.progress-item-label {
+    color: var(--text-placeholder) !important;
+}
+
+.progress-item-value {
+    color: var(--text-primary) !important;
+}
+
+.progress-title {
+    color: var(--text-primary) !important;
+}
+
+.progress-title svg {
+    stroke: var(--icon-color) !important;
+}
+
+/* ===== 错误提示 ===== */
+.error-alert {
+    background: var(--error-bg) !important;
+    border-color: var(--error-border) !important;
+    color: var(--error-text) !important;
+}
+
+.error-alert svg {
+    stroke: var(--error-text) !important;
+}
+
+/* ===== 使用说明 ===== */
+.guide-step {
+    background: var(--item-bg) !important;
+}
+
+.guide-step:hover {
+    background: var(--item-hover-bg) !important;
+}
+
+.guide-step:hover .step-icon {
+    background: var(--icon-bg-hover) !important;
+}
+
+.step-content h4 {
+    color: var(--text-primary) !important;
+}
+
+.step-content p {
+    color: var(--text-tertiary) !important;
+}
+
+.guide-title svg {
+    stroke: var(--icon-color) !important;
+}
+
+/* ===== 空状态 ===== */
+.empty-icon {
+    background: var(--empty-icon-bg) !important;
+}
+
+.empty-icon svg {
+    stroke: var(--icon-color) !important;
+}
+
+.empty-title {
+    color: var(--text-primary) !important;
+}
+
+.empty-desc {
+    color: var(--text-placeholder) !important;
+}
+
+/* ===== 历史列表 ===== */
+.history-item {
+    background: var(--item-bg) !important;
+    border-color: var(--card-border) !important;
+}
+
+.history-item:hover {
+    background: var(--item-hover-bg) !important;
+    border-color: var(--icon-color) !important;
+}
+
+.history-user {
+    color: var(--text-primary) !important;
+}
+
+.history-user-id {
+    color: var(--text-tertiary) !important;
+}
+
+.history-meta {
+    color: var(--text-placeholder) !important;
+}
+
+.history-meta svg {
+    stroke: var(--text-placeholder) !important;
+}
+
+/* ===== 状态标签 ===== */
+.status-tag.status-pending {
+    background: var(--tag-pending-bg) !important;
+    color: var(--tag-pending-text) !important;
+}
+
+.status-tag.status-downloading {
+    background: var(--tag-downloading-bg) !important;
+    color: var(--tag-downloading-text) !important;
+}
+
+.status-tag.status-completed {
+    background: var(--tag-completed-bg) !important;
+    color: var(--tag-completed-text) !important;
+}
+
+.status-tag.status-failed {
+    background: var(--tag-failed-bg) !important;
+    color: var(--tag-failed-text) !important;
+    cursor: help;
+}
+
+/* ===== 错误提示框 ===== */
+.error-tooltip {
+    background: var(--tooltip-bg) !important;
+    color: var(--tooltip-text) !important;
+}
+
+.error-tooltip::after {
+    border-top-color: var(--tooltip-bg) !important;
+}
+
+/* ===== 操作按钮 ===== */
+.action-btn.action-download {
+    background: var(--action-download-bg) !important;
+    color: var(--action-download-text) !important;
+}
+
+.action-btn.action-download svg {
+    stroke: var(--action-download-text) !important;
+}
+
+.action-btn.action-delete {
+    background: var(--action-delete-bg) !important;
+    color: var(--action-delete-text) !important;
+}
+
+.action-btn.action-delete svg {
+    stroke: var(--action-delete-text) !important;
+}
+
+/* ===== 分页按钮 ===== */
+.page-btn {
+    background: var(--page-btn-bg) !important;
+    border-color: var(--page-btn-border) !important;
+    color: var(--page-btn-text) !important;
+}
+
+.page-btn:hover:not(:disabled):not(.active) {
+    border-color: var(--icon-color) !important;
+    color: var(--icon-color) !important;
+}
+
+.page-btn.active {
+    background: linear-gradient(135deg, #4A6CF7, #7B61FF) !important;
+    color: white !important;
+    border-color: transparent !important;
+}
+
+/* ===== Banner插图 ===== */
+.banner-illustration svg rect,
+.banner-illustration svg path:not([stroke="#4A6CF7"]),
+.banner-illustration svg circle {
+    stroke: var(--icon-color) !important;
+}
+
+/* ===== 主题切换按钮 ===== */
+.theme-toggle-btn {
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: transparent;
+    border: 1px solid var(--navbar-border);
+    border-radius: 8px;
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.theme-toggle-btn:hover {
+    background: var(--item-bg);
+    color: var(--icon-color);
+    border-color: var(--icon-color);
+}
+
+.theme-toggle-btn svg {
+    stroke: currentColor !important;
+}
+
+/* ===== 暗黑模式下的下载按钮 ===== */
+[data-theme="dark"] .download-btn,
+[data-theme="dark"] .save-btn,
+[data-theme="dark"] .empty-btn,
+[data-theme="dark"] .download-complete-btn {
+    color: white !important;
+}
+
+[data-theme="dark"] .download-btn:disabled,
+[data-theme="dark"] .save-btn:disabled {
+    background: linear-gradient(135deg, #4b5563, #6b7280) !important;
+    color: rgba(255, 255, 255, 0.5) !important;
+}
+
+/* ===== 暗黑模式下的loading spinner ===== */
+[data-theme="dark"] .btn-spinner {
+    border-color: rgba(255, 255, 255, 0.3) !important;
+    border-top-color: white !important;
+}
