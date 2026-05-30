@@ -263,6 +263,45 @@
             pointer-events: none;
         }
         
+        /* 类型选择 */
+        .type-selector {
+            display: flex;
+            gap: 12px;
+            margin-top: 16px;
+        }
+        .type-option {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 12px 16px;
+            background: rgba(255, 255, 255, 0.9);
+            border: 1.5px solid #E5E7EB;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 14px;
+            font-weight: 500;
+            color: #4B5563;
+        }
+        .type-option:hover {
+            border-color: #4A6CF7;
+            color: #4A6CF7;
+        }
+        .type-option.active {
+            background: linear-gradient(135deg, rgba(74, 108, 247, 0.1), rgba(123, 97, 255, 0.1));
+            border-color: #4A6CF7;
+            color: #4A6CF7;
+        }
+        .type-option input[type="checkbox"] {
+            display: none;
+        }
+        .type-option svg {
+            width: 18px;
+            height: 18px;
+        }
+        
         /* 下载按钮 */
         .download-btn {
             height: 48px;
@@ -726,11 +765,46 @@
                                 @keyup.enter="startDownload"
                             >
                         </div>
+                        <div class="type-selector">
+                            <label 
+                                class="type-option" 
+                                :class="{ active: downloadTypes.includes('video') }"
+                            >
+                                <input 
+                                    type="checkbox" 
+                                    v-model="downloadTypes" 
+                                    value="video"
+                                    :disabled="isDownloading"
+                                >
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <polygon points="23 7 16 12 23 17 23 7"/>
+                                    <rect x="1" y="5" width="15" height="14" rx="2" ry="2"/>
+                                </svg>
+                                视频
+                            </label>
+                            <label 
+                                class="type-option" 
+                                :class="{ active: downloadTypes.includes('image') }"
+                            >
+                                <input 
+                                    type="checkbox" 
+                                    v-model="downloadTypes" 
+                                    value="image"
+                                    :disabled="isDownloading"
+                                >
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+                                    <circle cx="8.5" cy="8.5" r="1.5"/>
+                                    <polyline points="21 15 16 10 5 21"/>
+                                </svg>
+                                图片
+                            </label>
+                        </div>
                     </div>
                     <button 
                         class="download-btn"
                         :class="{ loading: isDownloading }"
-                        :disabled="!userId.trim() || isDownloading"
+                        :disabled="!userId.trim() || downloadTypes.length === 0 || isDownloading"
                         @click="startDownload"
                         style="margin-top: 28px;"
                     >
@@ -867,6 +941,7 @@
                 const elapsedTime = ref('0秒');
                 const errorMessage = ref('');
                 const isDownloading = ref(false);
+                const downloadTypes = ref(['video', 'image']);
                 
                 let progressInterval = null;
                 let timeInterval = null;
@@ -921,6 +996,10 @@
                         ElementPlus.ElMessage.warning('请输入用户ID');
                         return;
                     }
+                    if (downloadTypes.value.length === 0) {
+                        ElementPlus.ElMessage.warning('请选择下载类型');
+                        return;
+                    }
                     isDownloading.value = true;
                     status.value = 'pending';
                     progress.value = 0;
@@ -930,11 +1009,22 @@
                     elapsedTime.value = '0秒';
                     startTime = new Date();
                     
+                    // 确定下载类型
+                    let downloadType = 'all';
+                    if (downloadTypes.value.includes('video') && !downloadTypes.value.includes('image')) {
+                        downloadType = 'video';
+                    } else if (!downloadTypes.value.includes('video') && downloadTypes.value.includes('image')) {
+                        downloadType = 'image';
+                    }
+                    
                     try {
                         const response = await fetch('/api/download', {
                             method: 'POST',
                             headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({ user_id: userId.value.trim() })
+                            body: JSON.stringify({ 
+                                user_id: userId.value.trim(),
+                                download_type: downloadType
+                            })
                         });
                         const data = await response.json();
                         if (response.ok) {
@@ -961,7 +1051,7 @@
                 
                 return {
                     userId, taskId, status, progress, totalFiles, downloadedFiles,
-                    elapsedTime, errorMessage, isDownloading, statusText,
+                    elapsedTime, errorMessage, isDownloading, statusText, downloadTypes,
                     startDownload, downloadZip
                 };
             }

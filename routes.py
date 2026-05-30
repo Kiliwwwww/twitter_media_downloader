@@ -32,12 +32,16 @@ def start_download():
     """开始下载"""
     data = request.get_json()
     user_id = data.get('user_id', '').strip()
+    download_type = data.get('download_type', 'all')  # all, video, image
     
     if not user_id:
         return jsonify({'error': '请输入用户ID'}), 400
     
+    if download_type not in ['all', 'video', 'image']:
+        return jsonify({'error': '无效的下载类型'}), 400
+    
     # 创建下载任务
-    task = download_service.create_task(user_id)
+    task = download_service.create_task(user_id, download_type)
     
     return jsonify({
         'task_id': task.task_id,
@@ -70,10 +74,13 @@ def download_file(task_id: str):
     if not task.zip_path or not os.path.exists(task.zip_path):
         return jsonify({'error': '压缩文件不存在'}), 404
     
+    # 从 zip_path 获取文件名
+    download_name = os.path.basename(task.zip_path)
+    
     return send_file(
         task.zip_path,
         as_attachment=True,
-        download_name=f'{task.user_id}_media.zip'
+        download_name=download_name
     )
 
 

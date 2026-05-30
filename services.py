@@ -45,10 +45,10 @@ class DownloadService:
         
         return None
     
-    def create_task(self, user_id: str) -> DownloadTask:
+    def create_task(self, user_id: str, download_type: str = 'all') -> DownloadTask:
         """创建下载任务"""
         task_id = f"{user_id}_{int(time.time())}"
-        task = DownloadTask(task_id, user_id)
+        task = DownloadTask(task_id, user_id, download_type)
         
         with self._lock:
             self._tasks[task_id] = task
@@ -192,17 +192,38 @@ class DownloadService:
         video_exts = {'.mp4', '.mov', '.avi', '.mkv', '.webm', '.gif'}
         image_exts = {'.jpg', '.jpeg', '.png', '.webp', '.bmp'}
         
-        def get_category(filename: str) -> str:
-            """根据文件扩展名返回分类文件夹名"""
+        def get_file_type(filename: str) -> str:
+            """根据文件扩展名返回文件类型"""
             ext = os.path.splitext(filename)[1].lower()
             if ext in video_exts:
-                return 'videos'
+                return 'video'
             elif ext in image_exts:
+                return 'image'
+            else:
+                return 'other'
+        
+        def get_category(filename: str) -> str:
+            """根据文件扩展名返回分类文件夹名"""
+            file_type = get_file_type(filename)
+            if file_type == 'video':
+                return 'videos'
+            elif file_type == 'image':
                 return 'images'
             else:
                 return 'others'
         
-        zip_filename = f'{task.user_id}_media.zip'
+        # 生成时间戳
+        timestamp = time.strftime('%Y%m%d_%H%M%S')
+        
+        # 根据下载类型生成文件名
+        download_type = task.download_type
+        if download_type == 'video':
+            zip_filename = f'{task.user_id}_video_{timestamp}.zip'
+        elif download_type == 'image':
+            zip_filename = f'{task.user_id}_img_{timestamp}.zip'
+        else:  # all
+            zip_filename = f'{task.user_id}_video_img_{timestamp}.zip'
+        
         zip_path = os.path.join(Config.DOWNLOAD_FOLDER, zip_filename)
         
         # 获取用户信息用于文件夹名称
@@ -215,6 +236,14 @@ class DownloadService:
         with zipfile.ZipFile(zip_path, 'w', zipfile.ZIP_DEFLATED) as zipf:
             for root, dirs, files in os.walk(task.download_path):
                 for file in files:
+                    file_type = get_file_type(file)
+                    
+                    # 根据下载类型过滤文件
+                    if download_type == 'video' and file_type != 'video':
+                        continue
+                    if download_type == 'image' and file_type != 'image':
+                        continue
+                    
                     file_path = os.path.join(root, file)
                     # 获取分类文件夹
                     category = get_category(file)

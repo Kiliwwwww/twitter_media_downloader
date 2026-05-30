@@ -3,9 +3,10 @@ import time
 class DownloadTask:
     """下载任务模型"""
     
-    def __init__(self, task_id: str, user_id: str):
+    def __init__(self, task_id: str, user_id: str, download_type: str = 'all'):
         self.task_id = task_id
         self.user_id = user_id
+        self.download_type = download_type  # all, video, image
         self.status = 'pending'  # pending, downloading, completed, failed
         self.progress = 0
         self.total_files = 0
@@ -21,6 +22,7 @@ class DownloadTask:
         return {
             'task_id': self.task_id,
             'user_id': self.user_id,
+            'download_type': self.download_type,
             'status': self.status,
             'progress': self.progress,
             'total_files': self.total_files,
