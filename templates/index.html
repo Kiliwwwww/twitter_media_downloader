@@ -196,93 +196,99 @@
             opacity: 0.8;
         }
         
-        /* 输入区域 */
+        /* ===== 输入区域 ===== */
         .input-section {
             background: rgba(255, 255, 255, 0.85);
             backdrop-filter: blur(20px);
             -webkit-backdrop-filter: blur(20px);
-            border-radius: 16px;
-            border: 1px solid rgba(229, 231, 235, 0.5);
-            box-shadow: 
-                0 4px 6px -1px rgba(74, 108, 247, 0.1),
-                0 2px 4px -2px rgba(74, 108, 247, 0.1),
-                inset 0 1px 0 rgba(255, 255, 255, 0.5);
-            padding: 32px;
+            border-radius: 12px;
+            border: 1px solid #E5E7EB;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            padding: 24px;
             margin-bottom: 24px;
         }
-        .input-wrapper {
-            display: flex;
-            gap: 16px;
-            align-items: flex-start;
-        }
-        .input-field-wrapper {
-            flex: 1;
-        }
+        
+        /* 输入框标签 */
         .input-label {
             font-size: 14px;
             font-weight: 500;
-            color: #4B5563;
+            color: #374151;
             margin-bottom: 8px;
             display: flex;
             align-items: center;
             gap: 6px;
         }
-        .input-field {
-            width: 100%;
-            height: 48px;
-            padding: 0 16px;
-            padding-left: 44px;
-            border: 1.5px solid #E5E7EB;
-            border-radius: 12px;
-            font-size: 15px;
-            font-family: inherit;
-            color: #1F2937;
-            background: rgba(255, 255, 255, 0.9);
-            transition: all 0.3s ease;
-            outline: none;
-        }
-        .input-field:focus {
-            border-color: #4A6CF7;
-            box-shadow: 0 0 0 3px rgba(74, 108, 247, 0.15);
-        }
-        .input-field::placeholder {
-            color: #9CA3AF;
-        }
-        .input-icon-wrapper {
-            position: relative;
+        
+        /* 输入框容器 */
+        .input-field-wrapper {
             flex: 1;
         }
+        
+        /* 输入框图标容器 */
+        .input-icon-wrapper {
+            position: relative;
+            width: 100%;
+        }
+        
+        /* @ 前缀图标 */
         .input-icon {
             position: absolute;
             left: 14px;
             top: 50%;
             transform: translateY(-50%);
             color: #9CA3AF;
-            font-size: 18px;
+            font-size: 16px;
             font-weight: 600;
             pointer-events: none;
+            z-index: 1;
         }
         
-        /* 类型选择 */
+        /* 输入框 */
+        .input-field {
+            width: 100%;
+            height: 48px;
+            padding: 0 16px 0 40px;
+            border: 1.5px solid #E5E7EB;
+            border-radius: 10px;
+            font-size: 15px;
+            font-family: inherit;
+            color: #1F2937;
+            background: white;
+            transition: all 0.2s ease;
+            outline: none;
+        }
+        .input-field:focus {
+            border-color: #4A6CF7;
+            box-shadow: 0 0 0 3px rgba(74, 108, 247, 0.12);
+        }
+        .input-field::placeholder {
+            color: #9CA3AF;
+            font-size: 14px;
+        }
+        
+        /* ===== 类型选择器 ===== */
         .type-selector {
             display: flex;
-            gap: 16px;
-            margin-top: 16px;
-            padding: 16px;
-            background: rgba(249, 250, 251, 0.6);
-            border-radius: 12px;
-            border: 1px solid rgba(229, 231, 235, 0.3);
+            gap: 24px;
+            margin-top: 20px;
+            padding: 16px 20px;
+            background: #F9FAFB;
+            border-radius: 10px;
+            border: 1px solid #E5E7EB;
         }
+        
+        /* 选项 */
         .type-option {
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 12px;
             cursor: pointer;
-            transition: all 0.3s ease;
+            transition: all 0.2s ease;
             font-size: 14px;
             font-weight: 500;
             color: #6B7280;
             user-select: none;
+            padding: 4px 0;
         }
         .type-option:hover {
             color: #4A6CF7;
@@ -290,93 +296,102 @@
         .type-option.active {
             color: #4A6CF7;
         }
+        .type-option input[type="checkbox"] {
+            display: none;
+        }
+        
+        /* 自定义复选框 */
         .custom-checkbox {
-            width: 22px;
-            height: 22px;
+            width: 20px;
+            height: 20px;
             border: 2px solid #D1D5DB;
             border-radius: 6px;
             display: flex;
             align-items: center;
             justify-content: center;
-            transition: all 0.3s ease;
+            transition: all 0.2s ease;
             flex-shrink: 0;
         }
         .type-option:hover .custom-checkbox {
             border-color: #4A6CF7;
         }
         .type-option.active .custom-checkbox {
-            background: linear-gradient(135deg, #4A6CF7 0%, #7B61FF 100%);
+            background: linear-gradient(135deg, #4A6CF7, #7B61FF);
             border-color: transparent;
-            box-shadow: 0 2px 8px rgba(74, 108, 247, 0.3);
         }
         .custom-checkbox svg {
-            width: 14px;
-            height: 14px;
+            width: 12px;
+            height: 12px;
             color: white;
             opacity: 0;
             transform: scale(0.5);
-            transition: all 0.2s ease;
+            transition: all 0.15s ease;
         }
         .type-option.active .custom-checkbox svg {
             opacity: 1;
             transform: scale(1);
         }
-        .type-option input[type="checkbox"] {
-            display: none;
-        }
+        
+        /* 选项图标 */
         .type-icon {
-            width: 32px;
-            height: 32px;
-            background: linear-gradient(135deg, rgba(74, 108, 247, 0.1), rgba(123, 97, 255, 0.1));
+            width: 36px;
+            height: 36px;
+            background: rgba(74, 108, 247, 0.08);
             border-radius: 8px;
             display: flex;
             align-items: center;
             justify-content: center;
-            transition: all 0.3s ease;
+            transition: all 0.2s ease;
         }
+        .type-option:hover .type-icon,
         .type-option.active .type-icon {
-            background: linear-gradient(135deg, rgba(74, 108, 247, 0.2), rgba(123, 97, 255, 0.2));
+            background: rgba(74, 108, 247, 0.15);
         }
         .type-icon svg {
-            width: 16px;
-            height: 16px;
+            width: 18px;
+            height: 18px;
             color: #4A6CF7;
         }
         
-        /* 下载按钮 */
+        /* ===== 下载按钮 ===== */
         .download-btn {
             height: 48px;
             padding: 0 32px;
-            background: linear-gradient(135deg, #4A6CF7 0%, #7B61FF 100%);
+            background: linear-gradient(135deg, #4A6CF7, #7B61FF);
             color: white;
             border: none;
-            border-radius: 12px;
+            border-radius: 10px;
             font-size: 15px;
             font-weight: 600;
             font-family: inherit;
             cursor: pointer;
-            transition: all 0.3s ease;
+            transition: all 0.2s ease;
             display: flex;
             align-items: center;
+            justify-content: center;
             gap: 8px;
             white-space: nowrap;
-            box-shadow: 0 4px 12px rgba(74, 108, 247, 0.3);
+            box-shadow: 0 2px 8px rgba(74, 108, 247, 0.25);
         }
         .download-btn:hover:not(:disabled) {
-            transform: translateY(-2px) scale(1.02);
-            box-shadow: 0 6px 20px rgba(74, 108, 247, 0.4);
+            background: linear-gradient(135deg, #3B5DE7, #6B51E0);
+            box-shadow: 0 4px 12px rgba(74, 108, 247, 0.35);
+            transform: translateY(-1px);
         }
         .download-btn:active:not(:disabled) {
-            transform: translateY(0) scale(0.98);
+            transform: translateY(0);
+            box-shadow: 0 2px 6px rgba(74, 108, 247, 0.25);
         }
         .download-btn:disabled {
-            background: linear-gradient(135deg, #9CA3AF 0%, #B0B8C4 100%);
+            background: #D1D5DB;
             cursor: not-allowed;
             box-shadow: none;
+            color: #9CA3AF;
         }
         .download-btn.loading {
-            background: linear-gradient(135deg, #4A6CF7 0%, #7B61FF 100%);
-            opacity: 0.9;
+            background: linear-gradient(135deg, #4A6CF7, #7B61FF);
+            opacity: 0.85;
+            cursor: wait;
         }
         .btn-spinner {
             width: 18px;
@@ -596,39 +611,53 @@
             line-height: 1.5;
         }
         
-        /* 响应式 */
+        /* ===== 响应式布局 ===== */
+        
+        /* 电脑端 (>=768px) - 输入框和按钮同一行 */
+        .input-wrapper {
+            display: flex;
+            gap: 16px;
+            align-items: flex-start;
+        }
+        
+        /* 手机端 (<768px) */
         @media (max-width: 768px) {
             .main-container {
-                padding-left: 12px !important;
-                padding-right: 12px !important;
+                padding-left: 16px !important;
+                padding-right: 16px !important;
                 padding-top: 76px;
             }
             
+            /* Banner */
             .banner-card {
                 flex-direction: column;
                 padding: 24px 20px;
                 text-align: center;
-                gap: 24px;
+                gap: 20px;
+                border-radius: 12px;
             }
             .banner-illustration {
-                width: 140px;
-                height: 110px;
+                width: 120px;
+                height: 96px;
                 order: -1;
             }
             .banner-title {
-                font-size: 24px;
-                letter-spacing: 1px;
+                font-size: 22px;
+                letter-spacing: 0.5px;
             }
             .banner-subtitle {
                 font-size: 14px;
+                line-height: 1.5;
             }
             
+            /* 输入区域 */
             .input-section {
                 padding: 20px;
+                border-radius: 12px;
             }
             .input-wrapper {
                 flex-direction: column;
-                gap: 12px;
+                gap: 16px;
             }
             .input-field-wrapper {
                 width: 100%;
@@ -638,39 +667,49 @@
             }
             .input-field {
                 width: 100%;
+                height: 44px;
+                font-size: 14px;
             }
+            
+            /* 类型选择器 */
             .type-selector {
                 flex-direction: column;
                 gap: 12px;
-                padding: 14px;
+                padding: 14px 16px;
+                margin-top: 16px;
             }
             .type-option {
                 font-size: 13px;
+                gap: 10px;
             }
             .custom-checkbox {
-                width: 20px;
-                height: 20px;
+                width: 18px;
+                height: 18px;
             }
             .custom-checkbox svg {
-                width: 12px;
-                height: 12px;
+                width: 10px;
+                height: 10px;
             }
             .type-icon {
-                width: 28px;
-                height: 28px;
+                width: 32px;
+                height: 32px;
             }
             .type-icon svg {
-                width: 14px;
-                height: 14px;
-            }
-            .download-btn {
-                width: 100%;
-                justify-content: center;
-                margin-top: 0 !important;
+                width: 16px;
+                height: 16px;
             }
             
+            /* 下载按钮 */
+            .download-btn {
+                width: 100%;
+                height: 44px;
+                font-size: 14px;
+            }
+            
+            /* 进度区域 */
             .progress-section {
                 padding: 20px;
+                border-radius: 12px;
             }
             .progress-header {
                 flex-direction: column;
@@ -688,8 +727,10 @@
                 font-size: 16px;
             }
             
+            /* 使用说明 */
             .guide-section {
                 padding: 20px;
+                border-radius: 12px;
             }
             .guide-title {
                 font-size: 16px;
@@ -702,10 +743,11 @@
             .guide-step {
                 padding: 14px;
                 gap: 12px;
+                border-radius: 10px;
             }
             .step-icon {
-                width: 38px;
-                height: 38px;
+                width: 36px;
+                height: 36px;
             }
             .step-icon svg {
                 width: 18px;
@@ -718,6 +760,7 @@
                 font-size: 12px;
             }
             
+            /* 导航栏 */
             .nav-links {
                 gap: 12px;
             }
@@ -728,10 +771,11 @@
                 display: none;
             }
             .navbar-content {
-                padding: 0 12px;
+                padding: 0 16px;
             }
         }
         
+        /* 小屏幕手机 (<375px) */
         @media (max-width: 375px) {
             .banner-title {
                 font-size: 20px;
@@ -745,6 +789,9 @@
             }
             .progress-item-value {
                 font-size: 14px;
+            }
+            .type-selector {
+                padding: 12px;
             }
         }
     </style>
@@ -825,7 +872,7 @@
                                 type="text" 
                                 class="input-field" 
                                 v-model="userId" 
-                                placeholder="请输入用户名（@后面的字符）"
+                                placeholder="请输入Twitter用户名（无需带@）"
                                 :disabled="isDownloading"
                                 @keyup.enter="startDownload"
                             >
