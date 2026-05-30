@@ -151,7 +151,7 @@ class DownloadService:
             )
     
     def clear_all_cache(self) -> dict:
-        """清理所有缓存文件"""
+        """清理所有缓存文件和下载历史"""
         import shutil
         
         deleted_files = 0
@@ -159,32 +159,33 @@ class DownloadService:
         
         download_folder = Config.DOWNLOAD_FOLDER
         
-        if not os.path.exists(download_folder):
-            return {'deleted_files': 0, 'deleted_dirs': 0}
+        if os.path.exists(download_folder):
+            try:
+                # 遍历下载目录
+                for item in os.listdir(download_folder):
+                    item_path = os.path.join(download_folder, item)
+                    
+                    # 跳过隐藏文件
+                    if item.startswith('.'):
+                        continue
+                    
+                    if os.path.isfile(item_path):
+                        # 删除文件（ZIP文件等）
+                        os.remove(item_path)
+                        deleted_files += 1
+                    elif os.path.isdir(item_path):
+                        # 删除用户下载目录
+                        file_count = sum(len(files) for _, _, files in os.walk(item_path))
+                        shutil.rmtree(item_path)
+                        deleted_dirs += 1
+                        deleted_files += file_count
+            except Exception as e:
+                raise Exception(f'清理缓存失败: {str(e)}')
         
-        try:
-            # 遍历下载目录
-            for item in os.listdir(download_folder):
-                item_path = os.path.join(download_folder, item)
-                
-                # 跳过隐藏文件
-                if item.startswith('.'):
-                    continue
-                
-                if os.path.isfile(item_path):
-                    # 删除文件（ZIP文件等）
-                    os.remove(item_path)
-                    deleted_files += 1
-                elif os.path.isdir(item_path):
-                    # 删除用户下载目录
-                    file_count = sum(len(files) for _, _, files in os.walk(item_path))
-                    shutil.rmtree(item_path)
-                    deleted_dirs += 1
-                    deleted_files += file_count
-            
-            return {'deleted_files': deleted_files, 'deleted_dirs': deleted_dirs}
-        except Exception as e:
-            raise Exception(f'清理缓存失败: {str(e)}')
+        # 清空下载历史
+        database.clear_all_download_history()
+        
+        return {'deleted_files': deleted_files, 'deleted_dirs': deleted_dirs}
     
     def _create_zip(self, task: DownloadTask):
         """创建ZIP压缩文件，按文件类型分类"""

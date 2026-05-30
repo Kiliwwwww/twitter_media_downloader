@@ -161,3 +161,10 @@ def delete_download_history(task_id: str):
     with get_db() as conn:
         cursor = conn.cursor()
         cursor.execute('DELETE FROM download_history WHERE task_id = ?', (task_id,))
+
+
+def clear_all_download_history():
+    """清空所有下载历史"""
+    with get_db() as conn:
+        cursor = conn.cursor()
+        cursor.execute('DELETE FROM download_history')
