@@ -130,3 +130,17 @@ def delete_history(task_id: str):
         return jsonify({'message': '已删除'})
     except Exception as e:
         return jsonify({'error': str(e)}), 500
+
+
+@main_bp.route('/api/cache', methods=['DELETE'])
+def clear_cache():
+    """清理所有缓存文件"""
+    try:
+        result = download_service.clear_all_cache()
+        return jsonify({
+            'message': f'已清理 {result["deleted_files"]} 个文件和 {result["deleted_dirs"]} 个目录',
+            'deleted_files': result['deleted_files'],
+            'deleted_dirs': result['deleted_dirs']
+        })
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
