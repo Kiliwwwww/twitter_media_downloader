@@ -401,15 +401,103 @@
         
         /* 响应式 */
         @media (max-width: 768px) {
+            .main-container {
+                padding-left: 12px !important;
+                padding-right: 12px !important;
+                padding-top: 76px;
+            }
+            
             .page-header {
                 flex-direction: column;
                 text-align: center;
+                padding: 20px;
+                gap: 12px;
             }
+            
+            .page-icon {
+                width: 40px;
+                height: 40px;
+            }
+            
+            .page-icon svg {
+                width: 20px;
+                height: 20px;
+            }
+            
+            .page-title {
+                font-size: 20px;
+            }
+            
+            .page-subtitle {
+                font-size: 13px;
+            }
+            
+            .config-card {
+                padding: 20px;
+            }
+            
+            .config-item {
+                padding: 16px;
+                margin-bottom: 20px;
+            }
+            
+            .label-row {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 8px;
+                margin-bottom: 10px;
+            }
+            
+            .label-row label {
+                font-size: 13px;
+            }
+            
+            .tip-wrapper {
+                margin-left: 0;
+            }
+            
+            .tip-content {
+                width: 240px;
+                left: 0;
+            }
+            
+            .config-input {
+                padding: 10px 14px;
+                font-size: 13px;
+            }
+            
+            .config-hint {
+                font-size: 11px;
+            }
+            
             .nav-links {
-                gap: 16px;
+                gap: 12px;
             }
+            
+            .nav-links a {
+                font-size: 13px;
+            }
+            
             .navbar-brand span {
                 display: none;
+            }
+            
+            .navbar-content {
+                padding: 0 12px;
+            }
+        }
+        
+        @media (max-width: 375px) {
+            .page-title {
+                font-size: 18px;
+            }
+            
+            .config-item {
+                padding: 14px;
+            }
+            
+            .label-row label {
+                font-size: 12px;
             }
         }
     </style>

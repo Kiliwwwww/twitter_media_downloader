@@ -492,24 +492,179 @@
         
         /* 响应式 */
         @media (max-width: 768px) {
+            .main-container {
+                padding-left: 12px;
+                padding-right: 12px;
+                padding-top: 76px;
+            }
+            
             .page-header {
                 flex-direction: column;
                 text-align: center;
+                padding: 20px;
+                gap: 12px;
             }
+            
+            .page-icon {
+                width: 40px;
+                height: 40px;
+            }
+            
+            .page-icon svg {
+                width: 20px;
+                height: 20px;
+            }
+            
+            .page-title {
+                font-size: 20px;
+            }
+            
+            .page-subtitle {
+                font-size: 13px;
+            }
+            
+            .action-clear {
+                width: 100%;
+                justify-content: center;
+                padding: 10px 16px;
+            }
+            
+            .history-card {
+                padding: 16px;
+            }
+            
             .history-item {
                 flex-direction: column;
                 align-items: flex-start;
                 gap: 12px;
+                padding: 14px 16px;
             }
+            
+            .history-info {
+                width: 100%;
+                gap: 12px;
+            }
+            
+            .history-avatar {
+                width: 36px;
+                height: 36px;
+                font-size: 14px;
+            }
+            
+            .history-user {
+                font-size: 14px;
+                flex-wrap: wrap;
+                gap: 6px;
+            }
+            
+            .history-user-id {
+                font-size: 12px;
+            }
+            
+            .history-meta {
+                gap: 12px;
+                flex-wrap: wrap;
+            }
+            
+            .history-meta-item {
+                font-size: 11px;
+            }
+            
+            .history-meta-item svg {
+                width: 12px;
+                height: 12px;
+            }
+            
             .history-actions {
                 width: 100%;
                 justify-content: flex-end;
+                gap: 8px;
             }
+            
+            .action-btn {
+                padding: 8px 14px;
+                font-size: 13px;
+            }
+            
             .nav-links {
-                gap: 16px;
+                gap: 12px;
             }
+            
+            .nav-links a {
+                font-size: 13px;
+            }
+            
             .navbar-brand span {
                 display: none;
+            }
+            
+            .navbar-content {
+                padding: 0 12px;
+            }
+            
+            .pagination {
+                gap: 4px;
+            }
+            
+            .page-btn {
+                width: 32px;
+                height: 32px;
+                font-size: 13px;
+            }
+            
+            .empty-state {
+                padding: 40px 16px;
+            }
+            
+            .empty-icon {
+                width: 64px;
+                height: 64px;
+            }
+            
+            .empty-icon svg {
+                width: 32px;
+                height: 32px;
+            }
+            
+            .empty-title {
+                font-size: 16px;
+            }
+            
+            .empty-desc {
+                font-size: 13px;
+            }
+            
+            .error-tooltip {
+                width: 200px;
+                left: auto;
+                right: -20px;
+                transform: none;
+            }
+            
+            .error-tooltip::after {
+                left: auto;
+                right: 24px;
+                transform: none;
+            }
+        }
+        
+        @media (max-width: 375px) {
+            .history-user {
+                font-size: 13px;
+            }
+            
+            .history-meta {
+                gap: 8px;
+            }
+            
+            .action-btn {
+                padding: 6px 10px;
+                font-size: 12px;
+            }
+            
+            .action-btn svg {
+                width: 12px;
+                height: 12px;
             }
         }
     </style>
