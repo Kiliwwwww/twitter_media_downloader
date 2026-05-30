@@ -251,9 +251,10 @@ body {
 
 /* ===== 下载按钮禁用态 ===== */
 .download-btn:disabled {
-    background: linear-gradient(135deg, #4b5563, #6b7280) !important;
-    color: rgba(255, 255, 255, 0.5) !important;
+    background: #374151 !important;
+    color: #6B7280 !important;
     box-shadow: none !important;
+    opacity: 0.6;
 }
 
 /* ===== 配置项 ===== */
