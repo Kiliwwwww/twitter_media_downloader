@@ -251,8 +251,8 @@ body {
 
 /* ===== 下载按钮禁用态 ===== */
 .download-btn:disabled {
-    background: #374151 !important;
-    color: #6B7280 !important;
+    background: #3B2F6B !important;
+    color: rgba(200, 180, 255, 0.7) !important;
     box-shadow: none !important;
     opacity: 0.6;
 }
@@ -534,8 +534,8 @@ body {
 
 [data-theme="dark"] .download-btn:disabled,
 [data-theme="dark"] .save-btn:disabled {
-    background: linear-gradient(135deg, #4b5563, #6b7280) !important;
-    color: rgba(255, 255, 255, 0.5) !important;
+    background: linear-gradient(135deg, #3B2F6B, #4C3D8F) !important;
+    color: rgba(200, 180, 255, 0.7) !important;
 }
 
 /* ===== 暗黑模式下的loading spinner ===== */
