@@ -206,6 +206,49 @@ body {
     color: var(--text-placeholder) !important;
 }
 
+/* ===== 类型选择器 ===== */
+.type-selector {
+    background: var(--item-bg) !important;
+    border-color: var(--card-border) !important;
+}
+
+.type-option {
+    color: var(--text-secondary) !important;
+}
+
+.type-option:hover {
+    color: var(--icon-color) !important;
+}
+
+.type-option.active {
+    color: var(--icon-color) !important;
+}
+
+.custom-checkbox {
+    border-color: var(--input-border) !important;
+}
+
+.type-option:hover .custom-checkbox {
+    border-color: var(--icon-color) !important;
+}
+
+.type-option.active .custom-checkbox {
+    background: linear-gradient(135deg, #4A6CF7, #7B61FF) !important;
+    border-color: transparent !important;
+}
+
+.type-icon {
+    background: var(--icon-bg) !important;
+}
+
+.type-option.active .type-icon {
+    background: var(--icon-bg-hover) !important;
+}
+
+.type-icon svg {
+    color: var(--icon-color) !important;
+}
+
 /* ===== 配置项 ===== */
 .config-item {
     background: var(--item-bg) !important;
