@@ -207,6 +207,14 @@ body {
 }
 
 /* ===== 筛选区域 ===== */
+.filter-icon {
+    color: var(--text-placeholder) !important;
+}
+
+.filter-item:focus-within .filter-icon {
+    color: var(--icon-color) !important;
+}
+
 .filter-input,
 .filter-select {
     background: var(--input-bg) !important;
@@ -214,14 +222,25 @@ body {
     color: var(--text-primary) !important;
 }
 
+.filter-input:hover,
+.filter-select:hover {
+    border-color: rgba(123, 155, 255, 0.4) !important;
+    background: var(--input-bg) !important;
+}
+
 .filter-input:focus,
 .filter-select:focus {
     border-color: var(--icon-color) !important;
-    box-shadow: 0 0 0 3px rgba(74, 108, 247, 0.25) !important;
+    background: var(--input-bg) !important;
+    box-shadow: 0 0 0 4px rgba(74, 108, 247, 0.15), 0 2px 8px rgba(0, 0, 0, 0.2) !important;
 }
 
 .filter-input::placeholder {
     color: var(--text-placeholder) !important;
+}
+
+.filter-select {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%236b7280' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E") !important;
 }
 
 .filter-reset {
@@ -233,6 +252,7 @@ body {
 .filter-reset:hover {
     border-color: var(--icon-color) !important;
     color: var(--icon-color) !important;
+    background: rgba(74, 108, 247, 0.1) !important;
 }
 
 /* ===== 类型选择器 ===== */
