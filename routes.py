@@ -132,11 +132,24 @@ def get_history():
     """获取下载历史"""
     page = request.args.get('page', 1, type=int)
     per_page = request.args.get('per_page', 20, type=int)
+    keyword = request.args.get('keyword', '').strip()
+    status = request.args.get('status', '').strip()
+    date = request.args.get('date', '').strip()
     
     offset = (page - 1) * per_page
 
-    history = database.get_download_history(limit=per_page, offset=offset)
-    total = database.get_download_history_count()
+    history = database.get_download_history(
+        limit=per_page, 
+        offset=offset,
+        keyword=keyword,
+        status=status,
+        date=date
+    )
+    total = database.get_download_history_count(
+        keyword=keyword,
+        status=status,
+        date=date
+    )
     
     return jsonify({
         'data': history,

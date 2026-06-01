@@ -206,6 +206,35 @@ body {
     color: var(--text-placeholder) !important;
 }
 
+/* ===== 筛选区域 ===== */
+.filter-input,
+.filter-select {
+    background: var(--input-bg) !important;
+    border-color: var(--input-border) !important;
+    color: var(--text-primary) !important;
+}
+
+.filter-input:focus,
+.filter-select:focus {
+    border-color: var(--icon-color) !important;
+    box-shadow: 0 0 0 3px rgba(74, 108, 247, 0.25) !important;
+}
+
+.filter-input::placeholder {
+    color: var(--text-placeholder) !important;
+}
+
+.filter-reset {
+    background: var(--input-bg) !important;
+    border-color: var(--input-border) !important;
+    color: var(--text-secondary) !important;
+}
+
+.filter-reset:hover {
+    border-color: var(--icon-color) !important;
+    color: var(--icon-color) !important;
+}
+
 /* ===== 类型选择器 ===== */
 .type-selector {
     background: var(--item-bg) !important;

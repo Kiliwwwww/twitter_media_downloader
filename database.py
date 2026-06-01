@@ -127,23 +127,66 @@ def update_download_history(task_id: str, **kwargs):
             cursor.execute(sql, values)
 
 
-def get_download_history(limit: int = 50, offset: int = 0) -> List[Dict[str, Any]]:
+def get_download_history(limit: int = 50, offset: int = 0, keyword: str = '', status: str = '', date: str = '') -> List[Dict[str, Any]]:
     """获取下载历史"""
     with get_db() as conn:
         cursor = conn.cursor()
-        cursor.execute('''
+        
+        # 构建查询条件
+        conditions = []
+        params = []
+        
+        if keyword:
+            conditions.append("(user_id LIKE ? OR user_name LIKE ?)")
+            params.extend([f'%{keyword}%', f'%{keyword}%'])
+        
+        if status:
+            conditions.append("status = ?")
+            params.append(status)
+        
+        if date:
+            conditions.append("DATE(created_at) = ?")
+            params.append(date)
+        
+        where_clause = " WHERE " + " AND ".join(conditions) if conditions else ""
+        
+        sql = f'''
             SELECT * FROM download_history 
+            {where_clause}
             ORDER BY created_at DESC 
             LIMIT ? OFFSET ?
-        ''', (limit, offset))
+        '''
+        params.extend([limit, offset])
+        
+        cursor.execute(sql, params)
         return [dict(row) for row in cursor.fetchall()]
 
 
-def get_download_history_count() -> int:
+def get_download_history_count(keyword: str = '', status: str = '', date: str = '') -> int:
     """获取下载历史总数"""
     with get_db() as conn:
         cursor = conn.cursor()
-        cursor.execute('SELECT COUNT(*) as count FROM download_history')
+        
+        # 构建查询条件
+        conditions = []
+        params = []
+        
+        if keyword:
+            conditions.append("(user_id LIKE ? OR user_name LIKE ?)")
+            params.extend([f'%{keyword}%', f'%{keyword}%'])
+        
+        if status:
+            conditions.append("status = ?")
+            params.append(status)
+        
+        if date:
+            conditions.append("DATE(created_at) = ?")
+            params.append(date)
+        
+        where_clause = " WHERE " + " AND ".join(conditions) if conditions else ""
+        
+        sql = f'SELECT COUNT(*) as count FROM download_history {where_clause}'
+        cursor.execute(sql, params)
         return cursor.fetchone()['count']
 
 

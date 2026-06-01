@@ -186,6 +186,58 @@
             margin-top: 4px;
         }
         
+        /* 筛选区域 */
+        .filter-section {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+        .filter-item {
+            flex: 1;
+            min-width: 150px;
+        }
+        .filter-input,
+        .filter-select {
+            width: 100%;
+            height: 40px;
+            padding: 0 12px;
+            border: 1px solid rgba(229, 231, 235, 0.8);
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.85);
+            font-size: 14px;
+            color: #1F2937;
+            outline: none;
+            transition: all 0.2s ease;
+        }
+        .filter-input:focus,
+        .filter-select:focus {
+            border-color: #4A6CF7;
+            box-shadow: 0 0 0 3px rgba(74, 108, 247, 0.1);
+        }
+        .filter-input::placeholder {
+            color: #9CA3AF;
+        }
+        .filter-reset {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            height: 40px;
+            padding: 0 16px;
+            border: 1px solid rgba(229, 231, 235, 0.8);
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.85);
+            color: #6B7280;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .filter-reset:hover {
+            border-color: #4A6CF7;
+            color: #4A6CF7;
+        }
+        
         /* 历史卡片 */
         .history-card {
             background: rgba(255, 255, 255, 0.85);
@@ -723,6 +775,45 @@
                 </button>
             </div>
             
+            <!-- 筛选区域 -->
+            <div class="filter-section">
+                <div class="filter-item">
+                    <input 
+                        type="text" 
+                        class="filter-input" 
+                        v-model="filters.keyword" 
+                        placeholder="搜索用户ID或名称..."
+                        @input="debounceSearch"
+                    >
+                </div>
+                <div class="filter-item">
+                    <select class="filter-select" v-model="filters.status" @change="fetchHistory(1)">
+                        <option value="">全部状态</option>
+                        <option value="downloading">下载中</option>
+                        <option value="completed">已完成</option>
+                        <option value="failed">失败</option>
+                        <option value="pending">等待中</option>
+                    </select>
+                </div>
+                <div class="filter-item">
+                    <input 
+                        type="date" 
+                        class="filter-input" 
+                        v-model="filters.date" 
+                        @change="fetchHistory(1)"
+                    >
+                </div>
+                <button class="filter-reset" @click="resetFilters">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
+                        <path d="M3 12a9 9 0 019-9 9.75 9.75 0 016.74 2.74L21 8"/>
+                        <path d="M21 3v5h-5"/>
+                        <path d="M21 12a9 9 0 01-9 9 9.75 9.75 0 01-6.74-2.74L3 16"/>
+                        <path d="M8 16H3v5"/>
+                    </svg>
+                    重置
+                </button>
+            </div>
+            
             <!-- 历史卡片 -->
             <div class="history-card">
                 <!-- 加载状态 -->
@@ -866,6 +957,35 @@
                 const pageSize = ref(15);
                 const total = ref(0);
                 
+                // 筛选条件
+                const filters = ref({
+                    keyword: '',
+                    status: '',
+                    date: ''
+                });
+                
+                let searchTimeout = null;
+                
+                // 防抖搜索
+                const debounceSearch = () => {
+                    if (searchTimeout) {
+                        clearTimeout(searchTimeout);
+                    }
+                    searchTimeout = setTimeout(() => {
+                        fetchHistory(1);
+                    }, 300);
+                };
+                
+                // 重置筛选
+                const resetFilters = () => {
+                    filters.value = {
+                        keyword: '',
+                        status: '',
+                        date: ''
+                    };
+                    fetchHistory(1);
+                };
+                
                 const totalPages = computed(() => Math.ceil(total.value / pageSize.value));
                 
                 const displayPages = computed(() => {
@@ -909,7 +1029,22 @@
                         loading.value = true;
                     }
                     try {
-                        const response = await fetch(`/api/history?page=${page}&per_page=${pageSize.value}`);
+                        // 构建查询参数
+                        const params = new URLSearchParams({
+                            page: page,
+                            per_page: pageSize.value
+                        });
+                        if (filters.value.keyword) {
+                            params.append('keyword', filters.value.keyword);
+                        }
+                        if (filters.value.status) {
+                            params.append('status', filters.value.status);
+                        }
+                        if (filters.value.date) {
+                            params.append('date', filters.value.date);
+                        }
+                        
+                        const response = await fetch(`/api/history?${params.toString()}`);
                         const data = await response.json();
                         const newData = data.data || [];
                         
@@ -1013,6 +1148,7 @@
                 return {
                     history, loading, currentPage, pageSize, total,
                     totalPages, displayPages, getStatusText, formatFileSize,
+                    filters, debounceSearch, resetFilters,
                     fetchHistory, downloadFile, deleteHistory, clearCache
                 };
             }
