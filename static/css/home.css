@@ -52,7 +52,6 @@
 .input-wrapper {
     display: flex;
     gap: 24px;
-    align-items: flex-end;
 }
 .input-field-wrapper {
     flex: 1;
@@ -71,7 +70,7 @@
 }
 .input-icon-wrapper {
     position: relative;
-    width: 100%;
+    width: 380px;
 }
 .input-icon {
     position: absolute;
