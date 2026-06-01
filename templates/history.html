@@ -7,273 +7,11 @@
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <link rel="stylesheet" href="https://unpkg.com/element-plus/dist/index.css">
     <script src="https://unpkg.com/element-plus"></script>
+    <script src="https://unpkg.com/@element-plus/icons-vue"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/common.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/dark-mode.css') }}">
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        
-        body {
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: linear-gradient(135deg, #E8EDFF 0%, #F0E7FF 50%, #E8EDFF 100%);
-            min-height: 100vh;
-            color: #1F2937;
-            position: relative;
-            overflow-x: hidden;
-        }
-        
-        /* 背景装饰 */
-        .bg-decoration {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            pointer-events: none;
-            z-index: 0;
-        }
-        .bg-circle {
-            position: absolute;
-            border-radius: 50%;
-            opacity: 0.15;
-        }
-        .bg-circle-1 {
-            width: 400px;
-            height: 400px;
-            background: linear-gradient(135deg, #4A6CF7, #7B61FF);
-            top: -100px;
-            right: -100px;
-            animation: float 20s ease-in-out infinite;
-        }
-        .bg-circle-2 {
-            width: 300px;
-            height: 300px;
-            background: linear-gradient(135deg, #00D4FF, #4A6CF7);
-            bottom: -50px;
-            left: -50px;
-            animation: float 25s ease-in-out infinite reverse;
-        }
-        
-        @keyframes float {
-            0%, 100% { transform: translate(0, 0) rotate(0deg); }
-            33% { transform: translate(30px, -30px) rotate(120deg); }
-            66% { transform: translate(-20px, 20px) rotate(240deg); }
-        }
-        
-        /* 导航栏 */
-        .navbar {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 64px;
-            background: rgba(255, 255, 255, 0.85);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            border-bottom: 1px solid rgba(229, 231, 235, 0.5);
-            z-index: 100;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        .navbar-content {
-            width: 100%;
-            max-width: 1200px;
-            padding: 0 24px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-        }
-        .navbar-brand {
-            font-size: 18px;
-            font-weight: 700;
-            color: #1F2937;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            text-decoration: none;
-        }
-        .navbar-brand svg {
-            width: 28px;
-            height: 28px;
-        }
-        .nav-links {
-            display: flex;
-            gap: 32px;
-        }
-        .nav-links a {
-            color: #4B5563;
-            text-decoration: none;
-            font-size: 14px;
-            font-weight: 500;
-            position: relative;
-            transition: all 0.3s ease;
-            padding: 4px 0;
-        }
-        .nav-links a:hover {
-            color: #4A6CF7;
-            transform: translateY(-1px);
-        }
-        .nav-links a.active {
-            color: #4A6CF7;
-        }
-        .nav-links a.active::after {
-            content: '';
-            position: absolute;
-            bottom: -2px;
-            left: 0;
-            right: 0;
-            height: 1.5px;
-            background: #4A6CF7;
-            border-radius: 1px;
-        }
-        
-        /* 主内容区 */
-        .main-container {
-            position: relative;
-            z-index: 1;
-            padding-top: 84px;
-            padding-bottom: 40px;
-            max-width: 1000px;
-            margin: 0 auto;
-            padding-left: 24px;
-            padding-right: 24px;
-        }
-        
-        /* 页面标题 */
-        .page-header {
-            background: rgba(255, 255, 255, 0.85);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            border-radius: 16px;
-            border: 1px solid rgba(229, 231, 235, 0.5);
-            box-shadow: 
-                0 4px 6px -1px rgba(74, 108, 247, 0.1),
-                0 2px 4px -2px rgba(74, 108, 247, 0.1),
-                inset 0 1px 0 rgba(255, 255, 255, 0.5);
-            padding: 32px;
-            margin-bottom: 24px;
-            display: flex;
-            align-items: center;
-            gap: 16px;
-        }
-        .page-icon {
-            width: 48px;
-            height: 48px;
-            background: linear-gradient(135deg, rgba(74, 108, 247, 0.1), rgba(123, 97, 255, 0.1));
-            border-radius: 12px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: #4A6CF7;
-        }
-        .page-icon svg {
-            width: 24px;
-            height: 24px;
-        }
-        .page-title {
-            font-size: 24px;
-            font-weight: 700;
-            color: #1F2937;
-            letter-spacing: 1px;
-        }
-        .page-subtitle {
-            font-size: 14px;
-            color: #9CA3AF;
-            margin-top: 4px;
-        }
-        
-        /* 筛选区域 */
-        .filter-section {
-            display: flex;
-            gap: 12px;
-            margin-bottom: 20px;
-            flex-wrap: wrap;
-            align-items: center;
-        }
-        .filter-item {
-            flex: 1;
-            min-width: 180px;
-            position: relative;
-        }
-        .filter-item .filter-icon {
-            position: absolute;
-            left: 12px;
-            top: 50%;
-            transform: translateY(-50%);
-            width: 16px;
-            height: 16px;
-            color: #9CA3AF;
-            pointer-events: none;
-            transition: color 0.2s ease;
-        }
-        .filter-item:focus-within .filter-icon {
-            color: #4A6CF7;
-        }
-        .filter-input,
-        .filter-select {
-            width: 100%;
-            height: 42px;
-            padding: 0 14px 0 36px;
-            border: 1.5px solid rgba(229, 231, 235, 0.8);
-            border-radius: 10px;
-            background: rgba(255, 255, 255, 0.9);
-            font-size: 14px;
-            color: #1F2937;
-            outline: none;
-            transition: all 0.25s ease;
-            font-family: inherit;
-        }
-        .filter-input:hover,
-        .filter-select:hover {
-            border-color: rgba(74, 108, 247, 0.4);
-            background: rgba(255, 255, 255, 1);
-        }
-        .filter-input:focus,
-        .filter-select:focus {
-            border-color: #4A6CF7;
-            background: rgba(255, 255, 255, 1);
-            box-shadow: 0 0 0 4px rgba(74, 108, 247, 0.08), 0 2px 8px rgba(74, 108, 247, 0.1);
-        }
-        .filter-input::placeholder {
-            color: #9CA3AF;
-            font-weight: 400;
-        }
-        .filter-select {
-            cursor: pointer;
-            padding-right: 30px;
-        }
-        .filter-reset {
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            height: 42px;
-            padding: 0 18px;
-            border: 1.5px solid rgba(229, 231, 235, 0.8);
-            border-radius: 10px;
-            background: rgba(255, 255, 255, 0.9);
-            color: #6B7280;
-            font-size: 14px;
-            font-weight: 500;
-            font-family: inherit;
-            cursor: pointer;
-            transition: all 0.25s ease;
-            white-space: nowrap;
-        }
-        .filter-reset:hover {
-            border-color: #4A6CF7;
-            color: #4A6CF7;
-            background: rgba(74, 108, 247, 0.04);
-            transform: translateY(-1px);
-            box-shadow: 0 2px 8px rgba(74, 108, 247, 0.1);
-        }
-        .filter-reset:active {
-            transform: translateY(0);
-        }
-        
         /* 历史卡片 */
         .history-card {
             background: rgba(255, 255, 255, 0.85);
@@ -288,67 +26,6 @@
             padding: 32px;
             animation: fadeIn 0.3s ease;
         }
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        
-        /* 空状态 */
-        .empty-state {
-            text-align: center;
-            padding: 60px 20px;
-        }
-        .empty-icon {
-            width: 80px;
-            height: 80px;
-            margin: 0 auto 24px;
-            background: linear-gradient(135deg, rgba(74, 108, 247, 0.1), rgba(123, 97, 255, 0.1));
-            border-radius: 20px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        .empty-icon svg {
-            width: 40px;
-            height: 40px;
-            color: #4A6CF7;
-        }
-        .empty-title {
-            font-size: 18px;
-            font-weight: 600;
-            color: #1F2937;
-            margin-bottom: 8px;
-        }
-        .empty-desc {
-            font-size: 14px;
-            color: #9CA3AF;
-            margin-bottom: 24px;
-        }
-        .empty-btn {
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            padding: 10px 24px;
-            background: linear-gradient(135deg, #4A6CF7 0%, #7B61FF 100%);
-            color: white;
-            border: none;
-            border-radius: 10px;
-            font-size: 14px;
-            font-weight: 500;
-            font-family: inherit;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            box-shadow: 0 4px 12px rgba(74, 108, 247, 0.3);
-            text-decoration: none;
-        }
-        .empty-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(74, 108, 247, 0.4);
-        }
-        .empty-btn svg {
-            width: 16px;
-            height: 16px;
-        }
         
         /* 历史列表 */
         .history-list {
@@ -360,99 +37,125 @@
             display: flex;
             align-items: center;
             justify-content: space-between;
+            gap: 16px;
             padding: 16px 20px;
             background: rgba(249, 250, 251, 0.6);
             border-radius: 12px;
             border: 1px solid rgba(229, 231, 235, 0.3);
-            transition: all 0.3s ease;
+            transition: all 0.2s ease;
         }
         .history-item:hover {
             background: rgba(249, 250, 251, 0.9);
             border-color: rgba(74, 108, 247, 0.2);
-            transform: translateX(4px);
         }
-        
         .history-info {
-            flex: 1;
             display: flex;
             align-items: center;
-            gap: 16px;
+            gap: 14px;
+            flex: 1;
         }
         .history-avatar {
-            width: 40px;
-            height: 40px;
+            width: 42px;
+            height: 42px;
             background: linear-gradient(135deg, rgba(74, 108, 247, 0.1), rgba(123, 97, 255, 0.1));
-            border-radius: 10px;
+            border-radius: 12px;
             display: flex;
             align-items: center;
             justify-content: center;
-            color: #4A6CF7;
-            font-weight: 600;
             font-size: 16px;
+            font-weight: 700;
+            color: #4A6CF7;
+            flex-shrink: 0;
         }
         .history-details {
             flex: 1;
+            min-width: 0;
         }
         .history-user {
-            font-size: 15px;
-            font-weight: 600;
-            color: #1F2937;
-            margin-bottom: 4px;
             display: flex;
             align-items: center;
             gap: 8px;
+            flex-wrap: wrap;
+            font-weight: 600;
+            color: #1F2937;
+            font-size: 15px;
         }
         .history-user-id {
-            font-size: 13px;
-            color: #6B7280;
             font-weight: 400;
+            color: #9CA3AF;
+            font-size: 13px;
+        }
+        .status-tag {
+            padding: 3px 10px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 600;
+            position: relative;
+        }
+        .status-pending {
+            background: #FEF3C7;
+            color: #D97706;
+        }
+        .status-downloading {
+            background: #DBEAFE;
+            color: #2563EB;
+        }
+        .status-completed {
+            background: #D1FAE5;
+            color: #059669;
+        }
+        .status-failed {
+            background: #FEE2E2;
+            color: #DC2626;
+            cursor: help;
         }
         .history-meta {
             display: flex;
             align-items: center;
             gap: 16px;
-            font-size: 12px;
-            color: #9CA3AF;
+            margin-top: 6px;
         }
         .history-meta-item {
             display: flex;
             align-items: center;
-            gap: 4px;
+            gap: 5px;
+            font-size: 12px;
+            color: #9CA3AF;
         }
         .history-meta-item svg {
             width: 14px;
             height: 14px;
         }
         
+        /* 操作按钮 */
         .history-actions {
             display: flex;
-            align-items: center;
             gap: 8px;
+            flex-shrink: 0;
         }
         .action-btn {
-            padding: 6px 12px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 16px;
+            border: none;
             border-radius: 8px;
             font-size: 13px;
             font-weight: 500;
             font-family: inherit;
             cursor: pointer;
-            transition: all 0.3s ease;
-            display: flex;
-            align-items: center;
-            gap: 4px;
-            border: none;
+            transition: all 0.2s ease;
         }
         .action-btn svg {
             width: 14px;
             height: 14px;
         }
         .action-download {
-            background: linear-gradient(135deg, rgba(74, 108, 247, 0.1), rgba(123, 97, 255, 0.1));
+            background: rgba(74, 108, 247, 0.1);
             color: #4A6CF7;
         }
         .action-download:hover {
-            background: linear-gradient(135deg, rgba(74, 108, 247, 0.2), rgba(123, 97, 255, 0.2));
-            transform: translateY(-1px);
+            background: rgba(74, 108, 247, 0.2);
         }
         .action-delete {
             background: rgba(239, 68, 68, 0.1);
@@ -460,43 +163,39 @@
         }
         .action-delete:hover {
             background: rgba(239, 68, 68, 0.2);
-            transform: translateY(-1px);
         }
         .action-clear {
-            background: rgba(245, 158, 11, 0.1);
-            color: #F59E0B;
-            padding: 8px 16px;
-            font-size: 14px;
-            border-radius: 10px;
+            background: rgba(107, 114, 128, 0.1);
+            color: #6B7280;
         }
         .action-clear:hover {
-            background: rgba(245, 158, 11, 0.2);
-            transform: translateY(-1px);
+            background: rgba(107, 114, 128, 0.2);
         }
         
-        /* 状态标签 */
-        .status-tag {
+        /* 空状态按钮 */
+        .empty-btn {
             display: inline-flex;
             align-items: center;
-            padding: 3px 10px;
-            border-radius: 6px;
-            font-size: 12px;
-            font-weight: 500;
+            gap: 8px;
+            padding: 12px 24px;
+            background: linear-gradient(135deg, #4A6CF7, #7B61FF);
+            color: white;
+            text-decoration: none;
+            border-radius: 10px;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.2s ease;
         }
-        .status-pending { background: #FEF3C7; color: #D97706; }
-        .status-downloading { background: #DBEAFE; color: #2563EB; }
-        .status-completed { background: #D1FAE5; color: #059669; }
-        .status-failed { 
-            background: #FEE2E2; 
-            color: #DC2626;
-            cursor: help;
-            position: relative;
+        .empty-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(74, 108, 247, 0.35);
         }
-        .error-hint {
-            display: inline-flex;
-            cursor: help;
-            position: relative;
+        .empty-btn svg {
+            width: 18px;
+            height: 18px;
         }
+        
+        /* 错误提示 */
         .error-tooltip {
             position: absolute;
             bottom: calc(100% + 8px);
@@ -527,232 +226,61 @@
             border: 6px solid transparent;
             border-top-color: #1F2937;
         }
-        .error-hint:hover .error-tooltip,
         .status-failed:hover .error-tooltip {
             opacity: 1;
             visibility: visible;
         }
         
-        /* 分页 */
-        .pagination-wrapper {
-            display: flex;
-            justify-content: center;
-            margin-top: 24px;
-        }
-        .pagination {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-        .page-btn {
-            width: 36px;
-            height: 36px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background: rgba(255, 255, 255, 0.9);
-            border: 1px solid #E5E7EB;
-            border-radius: 8px;
-            font-size: 14px;
-            color: #4B5563;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            font-family: inherit;
-        }
-        .page-btn:hover:not(:disabled):not(.active) {
-            border-color: #4A6CF7;
-            color: #4A6CF7;
-        }
-        .page-btn.active {
-            background: linear-gradient(135deg, #4A6CF7, #7B61FF);
-            color: white;
-            border-color: transparent;
-        }
-        .page-btn:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-        }
-        .page-info {
-            font-size: 13px;
-            color: #9CA3AF;
-            margin: 0 8px;
-        }
-        
         /* 响应式 */
         @media (max-width: 768px) {
-            .main-container {
-                padding-left: 12px;
-                padding-right: 12px;
-                padding-top: 76px;
-            }
-            
-            .page-header {
-                flex-direction: column;
-                text-align: center;
-                padding: 20px;
-                gap: 12px;
-            }
-            
-            .page-icon {
-                width: 40px;
-                height: 40px;
-            }
-            
-            .page-icon svg {
-                width: 20px;
-                height: 20px;
-            }
-            
-            .page-title {
-                font-size: 20px;
-            }
-            
-            .page-subtitle {
-                font-size: 13px;
-            }
-            
-            .action-clear {
-                width: 100%;
-                justify-content: center;
-                padding: 10px 16px;
-            }
-            
             .history-card {
                 padding: 16px;
             }
-            
             .history-item {
                 flex-direction: column;
                 align-items: flex-start;
                 gap: 12px;
                 padding: 14px 16px;
             }
-            
             .history-info {
                 width: 100%;
                 gap: 12px;
             }
-            
             .history-avatar {
                 width: 36px;
                 height: 36px;
                 font-size: 14px;
             }
-            
             .history-user {
                 font-size: 14px;
-                flex-wrap: wrap;
-                gap: 6px;
             }
-            
             .history-user-id {
                 font-size: 12px;
             }
-            
             .history-meta {
                 gap: 12px;
-                flex-wrap: wrap;
             }
-            
             .history-meta-item {
                 font-size: 11px;
             }
-            
-            .history-meta-item svg {
-                width: 12px;
-                height: 12px;
-            }
-            
             .history-actions {
                 width: 100%;
                 justify-content: flex-end;
-                gap: 8px;
             }
-            
             .action-btn {
                 padding: 8px 14px;
                 font-size: 13px;
             }
-            
-            .nav-links {
-                gap: 12px;
-            }
-            
-            .nav-links a {
-                font-size: 13px;
-            }
-            
-            .navbar-brand span {
-                display: none;
-            }
-            
-            .navbar-content {
-                padding: 0 12px;
-            }
-            
-            .pagination {
-                gap: 4px;
-            }
-            
-            .page-btn {
-                width: 32px;
-                height: 32px;
-                font-size: 13px;
-            }
-            
-            .empty-state {
-                padding: 40px 16px;
-            }
-            
-            .empty-icon {
-                width: 64px;
-                height: 64px;
-            }
-            
-            .empty-icon svg {
-                width: 32px;
-                height: 32px;
-            }
-            
-            .empty-title {
-                font-size: 16px;
-            }
-            
-            .empty-desc {
-                font-size: 13px;
-            }
-            
             .error-tooltip {
                 width: 200px;
                 left: auto;
                 right: -20px;
                 transform: none;
             }
-            
             .error-tooltip::after {
                 left: auto;
                 right: 24px;
                 transform: none;
-            }
-        }
-        
-        @media (max-width: 375px) {
-            .history-user {
-                font-size: 13px;
-            }
-            
-            .history-meta {
-                gap: 8px;
-            }
-            
-            .action-btn {
-                padding: 6px 10px;
-                font-size: 12px;
-            }
-            
-            .action-btn svg {
-                width: 12px;
-                height: 12px;
             }
         }
     </style>
@@ -760,56 +288,24 @@
 <body>
     {% raw %}
     <div id="app">
-        <!-- 背景装饰 -->
-        <div class="bg-decoration">
-            <div class="bg-circle bg-circle-1"></div>
-            <div class="bg-circle bg-circle-2"></div>
-        </div>
-        
-        <!-- 导航栏 -->
-        <nav class="navbar">
-            <div class="navbar-content">
-                <a href="/" class="navbar-brand">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="#4A6CF7" stroke-width="2">
-                        <path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
-                    </svg>
-                    <span>TW Media Downloader</span>
-                </a>
-                <div class="nav-links">
-                    <a href="/">首页</a>
-                    <a href="/config">配置管理</a>
-                    <a href="/history" class="active">下载历史</a>
-                    <button id="theme-toggle" class="theme-toggle-btn" onclick="themeModule.toggleDarkMode()">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/>
-                        </svg>
-                    </button>
-                </div>
-            </div>
-        </nav>
+        <bg-decoration></bg-decoration>
+        <navbar active-page="history"></navbar>
         
         <!-- 主内容 -->
         <div class="main-container">
-            <!-- 页面标题 -->
-            <div class="page-header">
-                <div class="page-icon">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <circle cx="12" cy="12" r="10"/>
-                        <polyline points="12 6 12 12 16 14"/>
-                    </svg>
-                </div>
-                <div style="flex: 1;">
-                    <h1 class="page-title">下载历史</h1>
-                    <p class="page-subtitle">查看和管理之前的下载记录</p>
-                </div>
-                <button class="action-btn action-clear" @click="clearCache">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <page-header 
+                title="下载历史" 
+                subtitle="查看和管理之前的下载记录"
+                icon="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+            >
+                <button class="btn btn-secondary" @click="clearCache">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
                         <path d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
                         <path d="M9 10h6M9 14h6"/>
                     </svg>
                     清理缓存
                 </button>
-            </div>
+            </page-header>
             
             <!-- 筛选区域 -->
             <div class="filter-section">
@@ -865,32 +361,21 @@
             
             <!-- 历史卡片 -->
             <div class="history-card">
-                <!-- 加载状态 -->
-                <div v-if="loading" style="text-align: center; padding: 40px;">
-                    <div class="btn-spinner" style="margin: 0 auto; width: 32px; height: 32px; border-width: 3px;"></div>
-                    <p style="margin-top: 16px; color: #9CA3AF;">加载中...</p>
-                </div>
+                <loading-state v-if="loading"></loading-state>
                 
-                <!-- 空状态 -->
-                <div v-else-if="history.length === 0" class="empty-state">
-                    <div class="empty-icon">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-                            <path d="M20 12V8H6a2 2 0 01-2-2c0-1.1.9-2 2-2h12v4"/>
-                            <path d="M4 6v12c0 1.1.9 2 2 2h14v-4"/>
-                            <path d="M18 12a2 2 0 000 4h4v-4h-4z"/>
-                        </svg>
-                    </div>
-                    <h3 class="empty-title">暂无下载记录</h3>
-                    <p class="empty-desc">开始下载你的第一个推特媒体吧</p>
+                <empty-state 
+                    v-else-if="history.length === 0" 
+                    title="暂无下载记录" 
+                    description="开始下载你的第一个推特媒体吧"
+                >
                     <a href="/" class="empty-btn">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                             <path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
                         </svg>
                         去下载
                     </a>
-                </div>
+                </empty-state>
                 
-                <!-- 历史列表 -->
                 <div v-else class="history-list">
                     <div v-for="item in history" :key="item.task_id" class="history-item">
                         <div class="history-info">
@@ -962,39 +447,20 @@
                     </div>
                 </div>
                 
-                <!-- 分页 -->
-                <div v-if="total > pageSize" class="pagination-wrapper">
-                    <div class="pagination">
-                        <button 
-                            class="page-btn" 
-                            :disabled="currentPage <= 1"
-                            @click="fetchHistory(currentPage - 1)"
-                        >
-                            ‹
-                        </button>
-                        <button 
-                            v-for="page in displayPages" 
-                            :key="page"
-                            class="page-btn"
-                            :class="{ active: page === currentPage }"
-                            @click="fetchHistory(page)"
-                        >
-                            {{ page }}
-                        </button>
-                        <button 
-                            class="page-btn" 
-                            :disabled="currentPage >= totalPages"
-                            @click="fetchHistory(currentPage + 1)"
-                        >
-                            ›
-                        </button>
-                    </div>
-                </div>
+                <pagination-component 
+                    v-if="total > pageSize"
+                    :current-page="currentPage"
+                    :total-pages="totalPages"
+                    :total="total"
+                    @page-change="fetchHistory"
+                ></pagination-component>
             </div>
         </div>
     </div>
     {% endraw %}
 
+    <script src="{{ url_for('static', filename='js/utils.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/components.js') }}"></script>
     <script>
         const { createApp, ref, computed, onMounted, onUnmounted } = Vue;
         
@@ -1006,26 +472,18 @@
                 const pageSize = ref(15);
                 const total = ref(0);
                 
-                // 筛选条件
                 const filters = ref({
                     keyword: '',
                     status: '',
                     date: ''
                 });
                 
-                let searchTimeout = null;
+                const totalPages = computed(() => Math.ceil(total.value / pageSize.value));
                 
-                // 防抖搜索
-                const debounceSearch = () => {
-                    if (searchTimeout) {
-                        clearTimeout(searchTimeout);
-                    }
-                    searchTimeout = setTimeout(() => {
-                        fetchHistory(1);
-                    }, 300);
-                };
+                const debounceSearch = debounce(() => {
+                    fetchHistory(1);
+                });
                 
-                // 重置筛选
                 const resetFilters = () => {
                     filters.value = {
                         keyword: '',
@@ -1035,50 +493,11 @@
                     fetchHistory(1);
                 };
                 
-                const totalPages = computed(() => Math.ceil(total.value / pageSize.value));
-                
-                const displayPages = computed(() => {
-                    const pages = [];
-                    const maxDisplay = 5;
-                    let start = Math.max(1, currentPage.value - Math.floor(maxDisplay / 2));
-                    let end = Math.min(totalPages.value, start + maxDisplay - 1);
-                    if (end - start + 1 < maxDisplay) {
-                        start = Math.max(1, end - maxDisplay + 1);
-                    }
-                    for (let i = start; i <= end; i++) {
-                        pages.push(i);
-                    }
-                    return pages;
-                });
-                
-                const getStatusText = (status) => {
-                    const map = {
-                        'pending': '等待中',
-                        'downloading': '下载中',
-                        'completed': '已完成',
-                        'failed': '失败'
-                    };
-                    return map[status] || '未知';
-                };
-                
-                const formatFileSize = (bytes) => {
-                    if (!bytes || bytes === 0) return '0 B';
-                    const units = ['B', 'KB', 'MB', 'GB'];
-                    let unitIndex = 0;
-                    let size = bytes;
-                    while (size >= 1024 && unitIndex < units.length - 1) {
-                        size /= 1024;
-                        unitIndex++;
-                    }
-                    return size.toFixed(2) + ' ' + units[unitIndex];
-                };
-                
                 const fetchHistory = async (page = 1, showLoading = true) => {
                     if (showLoading) {
                         loading.value = true;
                     }
                     try {
-                        // 构建查询参数
                         const params = new URLSearchParams({
                             page: page,
                             per_page: pageSize.value
@@ -1097,7 +516,6 @@
                         const data = await response.json();
                         const newData = data.data || [];
                         
-                        // 只在数据变化时更新，避免页面闪烁
                         if (JSON.stringify(newData) !== JSON.stringify(history.value)) {
                             history.value = newData;
                         }
@@ -1180,14 +598,12 @@
                 
                 onMounted(() => {
                     fetchHistory();
-                    // 每5秒静默刷新一次
                     refreshInterval = setInterval(() => {
                         fetchHistory(currentPage.value, false);
                     }, 5000);
                 });
                 
                 onUnmounted(() => {
-                    // 清除定时器
                     if (refreshInterval) {
                         clearInterval(refreshInterval);
                         refreshInterval = null;
@@ -1196,7 +612,7 @@
                 
                 return {
                     history, loading, currentPage, pageSize, total,
-                    totalPages, displayPages, getStatusText, formatFileSize,
+                    totalPages, getStatusText, formatFileSize,
                     filters, debounceSearch, resetFilters,
                     fetchHistory, downloadFile, deleteHistory, clearCache
                 };
@@ -1204,8 +620,12 @@
         });
         
         app.use(ElementPlus);
+        // 注册所有图标
+        for (const [key, component] of Object.entries(ElementPlusIconsVue)) {
+            app.component(key, component);
+        }
+        registerGlobalComponents(app);
         app.mount('#app');
     </script>
-    <script src="{{ url_for('static', filename='js/theme.js') }}"></script>
 </body>
 </html>

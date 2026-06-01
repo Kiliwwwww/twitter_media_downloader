@@ -9,147 +9,46 @@
     <script src="https://unpkg.com/element-plus"></script>
     <script src="https://unpkg.com/@element-plus/icons-vue"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/common.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/dark-mode.css') }}">
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        
-        body {
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: linear-gradient(135deg, #E8EDFF 0%, #F0E7FF 50%, #E8EDFF 100%);
-            min-height: 100vh;
-            color: #1F2937;
-            position: relative;
-            overflow-x: hidden;
-        }
-        
-        /* 背景装饰 */
-        .bg-decoration {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            pointer-events: none;
-            z-index: 0;
-        }
-        .bg-circle {
-            position: absolute;
-            border-radius: 50%;
-            opacity: 0.15;
-        }
-        .bg-circle-1 {
-            width: 400px;
-            height: 400px;
-            background: linear-gradient(135deg, #4A6CF7, #7B61FF);
-            top: -100px;
-            right: -100px;
-            animation: float 20s ease-in-out infinite;
-        }
-        .bg-circle-2 {
-            width: 300px;
-            height: 300px;
-            background: linear-gradient(135deg, #00D4FF, #4A6CF7);
-            bottom: -50px;
-            left: -50px;
-            animation: float 25s ease-in-out infinite reverse;
-        }
-        .bg-circle-3 {
-            width: 200px;
-            height: 200px;
-            background: #7B61FF;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            animation: float 30s ease-in-out infinite;
-        }
-        
-        @keyframes float {
-            0%, 100% { transform: translate(0, 0) rotate(0deg); }
-            33% { transform: translate(30px, -30px) rotate(120deg); }
-            66% { transform: translate(-20px, 20px) rotate(240deg); }
-        }
-        
-        /* 导航栏 */
-        .navbar {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 64px;
-            background: rgba(255, 255, 255, 0.85);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            border-bottom: 1px solid rgba(229, 231, 235, 0.5);
-            z-index: 100;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        .navbar-content {
-            width: 100%;
-            max-width: 1200px;
-            padding: 0 24px;
+        /* Banner */
+        .banner-card {
+            background: linear-gradient(135deg, rgba(74, 108, 247, 0.08), rgba(123, 97, 255, 0.08));
+            border-radius: 16px;
+            padding: 32px;
+            margin-bottom: 24px;
             display: flex;
             align-items: center;
             justify-content: space-between;
+            gap: 24px;
+            border: 1px solid rgba(74, 108, 247, 0.15);
         }
-        .navbar-brand {
-            font-size: 18px;
+        .banner-content {
+            flex: 1;
+        }
+        .banner-title {
+            font-size: 28px;
             font-weight: 700;
             color: #1F2937;
-            display: flex;
-            align-items: center;
-            gap: 8px;
+            margin-bottom: 8px;
         }
-        .navbar-brand svg {
-            width: 28px;
-            height: 28px;
+        .banner-subtitle {
+            font-size: 15px;
+            color: #6B7280;
+            line-height: 1.6;
         }
-        .nav-links {
-            display: flex;
-            gap: 32px;
+        .banner-illustration {
+            width: 200px;
+            flex-shrink: 0;
         }
-        .nav-links a {
-            color: #4B5563;
-            text-decoration: none;
-            font-size: 14px;
-            font-weight: 500;
-            position: relative;
-            transition: all 0.3s ease;
-            padding: 4px 0;
-        }
-        .nav-links a:hover {
-            color: #4A6CF7;
-            transform: translateY(-1px);
-        }
-        .nav-links a.active {
-            color: #4A6CF7;
-        }
-        .nav-links a.active::after {
-            content: '';
-            position: absolute;
-            bottom: -2px;
-            left: 0;
-            right: 0;
-            height: 1.5px;
-            background: #4A6CF7;
-            border-radius: 1px;
+        .banner-illustration svg {
+            width: 100%;
+            height: auto;
         }
         
-        /* 主内容区 */
-        .main-container {
-            position: relative;
-            z-index: 1;
-            padding-top: 84px;
-            padding-bottom: 40px;
-        }
-        
-        /* Banner卡片 */
-        .banner-card {
+        /* 输入区域 */
+        .input-section {
             background: rgba(255, 255, 255, 0.85);
             backdrop-filter: blur(20px);
             -webkit-backdrop-filter: blur(20px);
@@ -159,79 +58,32 @@
                 0 4px 6px -1px rgba(74, 108, 247, 0.1),
                 0 2px 4px -2px rgba(74, 108, 247, 0.1),
                 inset 0 1px 0 rgba(255, 255, 255, 0.5);
-            padding: 48px;
-            margin-bottom: 24px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 40px;
-        }
-        .banner-content {
-            flex: 1;
-        }
-        .banner-title {
-            font-size: 36px;
-            font-weight: 700;
-            color: #1F2937;
-            letter-spacing: 2px;
-            margin-bottom: 12px;
-            line-height: 1.2;
-        }
-        .banner-subtitle {
-            font-size: 16px;
-            color: #9CA3AF;
-            font-weight: 400;
-            line-height: 1.6;
-        }
-        .banner-illustration {
-            flex-shrink: 0;
-            width: 200px;
-            height: 160px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        .banner-illustration svg {
-            width: 100%;
-            height: 100%;
-            opacity: 0.8;
-        }
-        
-        /* ===== 输入区域 ===== */
-        .input-section {
-            background: rgba(255, 255, 255, 0.85);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            border-radius: 12px;
-            border: 1px solid #E5E7EB;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-            padding: 24px;
+            padding: 32px;
             margin-bottom: 24px;
         }
-        
-        /* 输入框标签 */
-        .input-label {
-            font-size: 14px;
-            font-weight: 500;
-            color: #374151;
-            margin-bottom: 8px;
+        .input-wrapper {
             display: flex;
-            align-items: center;
-            gap: 6px;
+            gap: 24px;
         }
-        
-        /* 输入框容器 */
         .input-field-wrapper {
             flex: 1;
         }
-        
-        /* 输入框图标容器 */
+        .input-label {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            color: #4B5563;
+            margin-bottom: 12px;
+        }
+        .input-label svg {
+            color: #4A6CF7;
+        }
         .input-icon-wrapper {
             position: relative;
-            width: 100%;
+            width: 380px;
         }
-        
-        /* @ 前缀图标 */
         .input-icon {
             position: absolute;
             left: 14px;
@@ -240,68 +92,70 @@
             color: #9CA3AF;
             font-size: 16px;
             font-weight: 600;
-            pointer-events: none;
-            z-index: 1;
         }
-        
-        /* 输入框 */
         .input-field {
             width: 100%;
             height: 48px;
-            padding: 0 16px 0 40px;
-            border: 1.5px solid #E5E7EB;
+            padding: 0 16px 0 36px;
+            border: 1.5px solid rgba(229, 231, 235, 0.8);
             border-radius: 10px;
+            background: rgba(255, 255, 255, 0.9);
             font-size: 15px;
-            font-family: inherit;
             color: #1F2937;
-            background: white;
-            transition: all 0.2s ease;
             outline: none;
+            transition: all 0.25s ease;
+            font-family: inherit;
+        }
+        .input-field:hover {
+            border-color: rgba(74, 108, 247, 0.4);
         }
         .input-field:focus {
             border-color: #4A6CF7;
-            box-shadow: 0 0 0 3px rgba(74, 108, 247, 0.12);
+            box-shadow: 0 0 0 4px rgba(74, 108, 247, 0.08), 0 2px 8px rgba(74, 108, 247, 0.1);
         }
         .input-field::placeholder {
             color: #9CA3AF;
-            font-size: 14px;
+        }
+        .input-field:disabled {
+            background: #F3F4F6;
+            cursor: not-allowed;
         }
         
-        /* ===== 类型选择器 ===== */
+        /* 类型选择器 */
         .type-selector {
             display: flex;
-            gap: 24px;
-            margin-top: 20px;
+            gap: 16px;
+            margin-top: 16px;
+            background: rgba(249, 250, 251, 0.6);
             padding: 16px 20px;
-            background: #F9FAFB;
-            border-radius: 10px;
-            border: 1px solid #E5E7EB;
+            border-radius: 12px;
+            border: 1px solid rgba(229, 231, 235, 0.5);
         }
-        
-        /* 选项 */
         .type-option {
             display: flex;
             align-items: center;
             gap: 12px;
             cursor: pointer;
+            padding: 10px 16px;
+            border-radius: 10px;
             transition: all 0.2s ease;
             font-size: 14px;
             font-weight: 500;
             color: #6B7280;
-            user-select: none;
-            padding: 4px 0;
+            border: 1.5px solid transparent;
         }
         .type-option:hover {
+            background: rgba(74, 108, 247, 0.06);
             color: #4A6CF7;
         }
         .type-option.active {
+            background: rgba(74, 108, 247, 0.1);
             color: #4A6CF7;
+            border-color: rgba(74, 108, 247, 0.3);
         }
-        .type-option input[type="checkbox"] {
+        .type-option input {
             display: none;
         }
-        
-        /* 自定义复选框 */
         .custom-checkbox {
             width: 20px;
             height: 20px;
@@ -313,40 +167,28 @@
             transition: all 0.2s ease;
             flex-shrink: 0;
         }
-        .type-option:hover .custom-checkbox {
-            border-color: #4A6CF7;
-        }
-        .type-option.active .custom-checkbox {
-            background: linear-gradient(135deg, #4A6CF7, #7B61FF);
-            border-color: transparent;
-        }
         .custom-checkbox svg {
             width: 12px;
             height: 12px;
-            color: white;
             opacity: 0;
-            transform: scale(0.5);
-            transition: all 0.15s ease;
+            color: white;
+            transition: opacity 0.2s ease;
+        }
+        .type-option.active .custom-checkbox {
+            background: #4A6CF7;
+            border-color: #4A6CF7;
         }
         .type-option.active .custom-checkbox svg {
             opacity: 1;
-            transform: scale(1);
         }
-        
-        /* 选项图标 */
         .type-icon {
             width: 36px;
             height: 36px;
-            background: rgba(74, 108, 247, 0.08);
-            border-radius: 8px;
             display: flex;
             align-items: center;
             justify-content: center;
-            transition: all 0.2s ease;
-        }
-        .type-option:hover .type-icon,
-        .type-option.active .type-icon {
-            background: rgba(74, 108, 247, 0.15);
+            background: rgba(74, 108, 247, 0.1);
+            border-radius: 8px;
         }
         .type-icon svg {
             width: 18px;
@@ -354,8 +196,9 @@
             color: #4A6CF7;
         }
         
-        /* ===== 下载按钮 ===== */
+        /* 下载按钮 */
         .download-btn {
+            width: 180px;
             height: 48px;
             padding: 0 32px;
             background: linear-gradient(135deg, #4A6CF7, #7B61FF);
@@ -373,6 +216,7 @@
             gap: 8px;
             white-space: nowrap;
             box-shadow: 0 2px 8px rgba(74, 108, 247, 0.25);
+            align-self: flex-end;
         }
         .download-btn:hover:not(:disabled) {
             background: linear-gradient(135deg, #3B5DE7, #6B51E0);
@@ -402,9 +246,6 @@
             border-radius: 50%;
             animation: spin 0.8s linear infinite;
         }
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
         
         /* 进度区域 */
         .progress-section {
@@ -421,10 +262,6 @@
             margin-bottom: 24px;
             animation: fadeIn 0.3s ease;
         }
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
         .progress-header {
             display: flex;
             align-items: center;
@@ -432,63 +269,63 @@
             margin-bottom: 20px;
         }
         .progress-title {
-            font-size: 16px;
+            font-size: 18px;
             font-weight: 600;
             color: #1F2937;
-            display: flex;
-            align-items: center;
-            gap: 8px;
         }
         .progress-status {
-            display: inline-flex;
-            align-items: center;
-            padding: 4px 12px;
+            padding: 6px 14px;
             border-radius: 20px;
             font-size: 13px;
-            font-weight: 500;
+            font-weight: 600;
         }
-        .status-pending { background: #FEF3C7; color: #D97706; }
-        .status-downloading { background: #DBEAFE; color: #2563EB; }
-        .status-completed { background: #D1FAE5; color: #059669; }
-        .status-failed { background: #FEE2E2; color: #DC2626; }
-        
+        .status-pending {
+            background: #FEF3C7;
+            color: #D97706;
+        }
+        .status-downloading {
+            background: #DBEAFE;
+            color: #2563EB;
+        }
+        .status-completed {
+            background: #D1FAE5;
+            color: #059669;
+        }
+        .status-failed {
+            background: #FEE2E2;
+            color: #DC2626;
+        }
         .progress-bar-wrapper {
-            background: #E5E7EB;
-            border-radius: 8px;
-            height: 12px;
-            overflow: hidden;
-            margin-bottom: 16px;
+            margin-bottom: 20px;
         }
-        .progress-bar {
+        .progress-bar-bg {
+            height: 12px;
+            background: #E5E7EB;
+            border-radius: 6px;
+            overflow: hidden;
+        }
+        .progress-bar-fill {
             height: 100%;
             background: linear-gradient(90deg, #4A6CF7, #7B61FF);
-            border-radius: 8px;
-            transition: width 0.5s ease;
-            position: relative;
+            border-radius: 6px;
+            transition: width 0.3s ease;
         }
-        .progress-bar::after {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
-            animation: shimmer 2s infinite;
+        .progress-percentage {
+            text-align: center;
+            font-size: 24px;
+            font-weight: 700;
+            color: #4A6CF7;
+            margin-top: 12px;
         }
-        @keyframes shimmer {
-            0% { transform: translateX(-100%); }
-            100% { transform: translateX(100%); }
-        }
-        
         .progress-info {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
-            gap: 16px;
+            gap: 12px;
+            margin-top: 16px;
         }
         .progress-item {
             text-align: center;
-            padding: 12px;
+            padding: 16px;
             background: rgba(249, 250, 251, 0.8);
             border-radius: 10px;
         }
@@ -498,46 +335,46 @@
             margin-bottom: 4px;
         }
         .progress-item-value {
-            font-size: 18px;
-            font-weight: 600;
+            font-size: 20px;
+            font-weight: 700;
             color: #1F2937;
         }
-        
         .download-complete-btn {
             width: 100%;
             height: 48px;
             margin-top: 20px;
-            background: linear-gradient(135deg, #059669 0%, #10B981 100%);
+            background: linear-gradient(135deg, #10B981, #059669);
             color: white;
             border: none;
-            border-radius: 12px;
+            border-radius: 10px;
             font-size: 15px;
             font-weight: 600;
-            font-family: inherit;
             cursor: pointer;
-            transition: all 0.3s ease;
             display: flex;
             align-items: center;
             justify-content: center;
             gap: 8px;
-            box-shadow: 0 4px 12px rgba(5, 150, 105, 0.3);
+            transition: all 0.2s ease;
         }
         .download-complete-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(5, 150, 105, 0.4);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.35);
         }
-        
-        .error-alert {
+        .error-message {
+            margin-top: 16px;
+            padding: 16px;
             background: #FEF2F2;
             border: 1px solid #FECACA;
             border-radius: 10px;
-            padding: 12px 16px;
-            margin-top: 16px;
             color: #DC2626;
             font-size: 14px;
             display: flex;
-            align-items: center;
-            gap: 8px;
+            align-items: flex-start;
+            gap: 10px;
+        }
+        .error-message svg {
+            flex-shrink: 0;
+            margin-top: 2px;
         }
         
         /* 使用说明 */
@@ -554,28 +391,28 @@
             padding: 32px;
         }
         .guide-title {
+            display: flex;
+            align-items: center;
+            gap: 10px;
             font-size: 18px;
             font-weight: 600;
             color: #1F2937;
             margin-bottom: 24px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
         }
         .guide-steps {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            grid-template-columns: repeat(2, 1fr);
             gap: 16px;
         }
         .guide-step {
             display: flex;
             align-items: flex-start;
             gap: 16px;
-            padding: 16px;
+            padding: 20px;
             background: rgba(249, 250, 251, 0.6);
             border-radius: 12px;
-            transition: all 0.3s ease;
-            cursor: default;
+            border: 1px solid rgba(229, 231, 235, 0.5);
+            transition: all 0.2s ease;
         }
         .guide-step:hover {
             background: rgba(249, 250, 251, 0.9);
@@ -585,26 +422,22 @@
             width: 44px;
             height: 44px;
             background: linear-gradient(135deg, rgba(74, 108, 247, 0.1), rgba(123, 97, 255, 0.1));
-            border-radius: 10px;
+            border-radius: 12px;
             display: flex;
             align-items: center;
             justify-content: center;
             flex-shrink: 0;
-            color: #4A6CF7;
-            transition: all 0.3s ease;
-        }
-        .guide-step:hover .step-icon {
-            background: linear-gradient(135deg, rgba(74, 108, 247, 0.2), rgba(123, 97, 255, 0.2));
         }
         .step-icon svg {
-            width: 22px;
-            height: 22px;
+            width: 20px;
+            height: 20px;
+            color: #4A6CF7;
         }
         .step-content h4 {
-            font-size: 14px;
+            font-size: 15px;
             font-weight: 600;
             color: #1F2937;
-            margin-bottom: 4px;
+            margin-bottom: 6px;
         }
         .step-content p {
             font-size: 13px;
@@ -612,187 +445,38 @@
             line-height: 1.5;
         }
         
-        /* ===== 响应式布局 ===== */
-        
-        /* 电脑端 (>=768px) - 输入框和按钮同一行 */
-        .input-wrapper {
-            display: flex;
-            gap: 16px;
-            align-items: flex-start;
-        }
-        
-        /* 手机端 (<768px) */
+        /* 响应式 */
         @media (max-width: 768px) {
-            .main-container {
-                padding-left: 16px !important;
-                padding-right: 16px !important;
-                padding-top: 76px;
-            }
-            
-            /* Banner */
             .banner-card {
                 flex-direction: column;
-                padding: 24px 20px;
                 text-align: center;
-                gap: 20px;
-                border-radius: 12px;
-            }
-            .banner-illustration {
-                width: 120px;
-                height: 96px;
-                order: -1;
+                padding: 24px;
             }
             .banner-title {
                 font-size: 22px;
-                letter-spacing: 0.5px;
             }
-            .banner-subtitle {
-                font-size: 14px;
-                line-height: 1.5;
+            .banner-illustration {
+                width: 150px;
             }
-            
-            /* 输入区域 */
             .input-section {
                 padding: 20px;
-                border-radius: 12px;
             }
             .input-wrapper {
                 flex-direction: column;
                 gap: 16px;
             }
-            .input-field-wrapper {
-                width: 100%;
-            }
             .input-icon-wrapper {
                 width: 100%;
             }
-            .input-field {
-                width: 100%;
-                height: 44px;
-                font-size: 14px;
-            }
-            
-            /* 类型选择器 */
-            .type-selector {
-                flex-direction: column;
-                gap: 12px;
-                padding: 14px 16px;
-                margin-top: 16px;
-            }
-            .type-option {
-                font-size: 13px;
-                gap: 10px;
-            }
-            .custom-checkbox {
-                width: 18px;
-                height: 18px;
-            }
-            .custom-checkbox svg {
-                width: 10px;
-                height: 10px;
-            }
-            .type-icon {
-                width: 32px;
-                height: 32px;
-            }
-            .type-icon svg {
-                width: 16px;
-                height: 16px;
-            }
-            
-            /* 下载按钮 */
             .download-btn {
                 width: 100%;
-                height: 44px;
-                font-size: 14px;
             }
-            
-            /* 进度区域 */
-            .progress-section {
-                padding: 20px;
-                border-radius: 12px;
-            }
-            .progress-header {
-                flex-direction: column;
-                gap: 12px;
-                align-items: flex-start;
-            }
-            .progress-info {
-                grid-template-columns: repeat(3, 1fr);
-                gap: 8px;
-            }
-            .progress-item {
-                padding: 10px 8px;
-            }
-            .progress-item-value {
-                font-size: 16px;
-            }
-            
-            /* 使用说明 */
+            .progress-section,
             .guide-section {
                 padding: 20px;
-                border-radius: 12px;
-            }
-            .guide-title {
-                font-size: 16px;
-                margin-bottom: 16px;
             }
             .guide-steps {
                 grid-template-columns: 1fr;
-                gap: 12px;
-            }
-            .guide-step {
-                padding: 14px;
-                gap: 12px;
-                border-radius: 10px;
-            }
-            .step-icon {
-                width: 36px;
-                height: 36px;
-            }
-            .step-icon svg {
-                width: 18px;
-                height: 18px;
-            }
-            .step-content h4 {
-                font-size: 13px;
-            }
-            .step-content p {
-                font-size: 12px;
-            }
-            
-            /* 导航栏 */
-            .nav-links {
-                gap: 12px;
-            }
-            .nav-links a {
-                font-size: 13px;
-            }
-            .navbar-brand span {
-                display: none;
-            }
-            .navbar-content {
-                padding: 0 16px;
-            }
-        }
-        
-        /* 小屏幕手机 (<375px) */
-        @media (max-width: 375px) {
-            .banner-title {
-                font-size: 20px;
-            }
-            .banner-subtitle {
-                font-size: 13px;
-            }
-            .progress-info {
-                grid-template-columns: 1fr 1fr 1fr;
-                gap: 6px;
-            }
-            .progress-item-value {
-                font-size: 14px;
-            }
-            .type-selector {
-                padding: 12px;
             }
         }
     </style>
@@ -800,37 +484,11 @@
 <body>
     {% raw %}
     <div id="app">
-        <!-- 背景装饰 -->
-        <div class="bg-decoration">
-            <div class="bg-circle bg-circle-1"></div>
-            <div class="bg-circle bg-circle-2"></div>
-            <div class="bg-circle bg-circle-3"></div>
-        </div>
-        
-        <!-- 导航栏 -->
-        <nav class="navbar">
-            <div class="navbar-content">
-                <div class="navbar-brand">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="#4A6CF7" stroke-width="2">
-                        <path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
-                    </svg>
-                    <span>TW Media Downloader</span>
-                </div>
-                <div class="nav-links">
-                    <a href="/" class="active">首页</a>
-                    <a href="/config">配置管理</a>
-                    <a href="/history">下载历史</a>
-                    <button id="theme-toggle" class="theme-toggle-btn" onclick="themeModule.toggleDarkMode()">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/>
-                        </svg>
-                    </button>
-                </div>
-            </div>
-        </nav>
+        <bg-decoration></bg-decoration>
+        <navbar active-page="home"></navbar>
         
         <!-- 主内容 -->
-        <div class="main-container" style="max-width: 800px; margin: 0 auto; padding-left: 24px; padding-right: 24px;">
+        <div class="main-container" style="max-width: 800px;">
             <!-- Banner -->
             <div class="banner-card">
                 <div class="banner-content">
@@ -839,18 +497,15 @@
                 </div>
                 <div class="banner-illustration">
                     <svg viewBox="0 0 200 160" fill="none">
-                        <!-- 下载图标 -->
                         <rect x="60" y="20" width="80" height="90" rx="8" stroke="#4A6CF7" stroke-width="2" fill="rgba(74,108,247,0.05)"/>
                         <path d="M100 45v35m0 0l-12-12m12 12l12-12" stroke="#4A6CF7" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
                         <path d="M75 95h50" stroke="#4A6CF7" stroke-width="2" stroke-linecap="round"/>
-                        <!-- 媒体文件图标 -->
                         <rect x="30" y="60" width="25" height="20" rx="3" stroke="#7B61FF" stroke-width="1.5" fill="rgba(123,97,255,0.05)"/>
                         <circle cx="38" cy="68" r="3" stroke="#7B61FF" stroke-width="1.5"/>
                         <path d="M32 76l6-4 4 3 6-5 5 4" stroke="#7B61FF" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
                         <rect x="145" y="55" width="25" height="25" rx="3" stroke="#00D4FF" stroke-width="1.5" fill="rgba(0,212,255,0.05)"/>
                         <path d="M152 62l5 5m0-5l-5 5" stroke="#00D4FF" stroke-width="1.5" stroke-linecap="round"/>
                         <path d="M150 74l3-2 2 1.5 3-2.5 3 2" stroke="#00D4FF" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-                        <!-- 装饰线条 -->
                         <path d="M20 130c30-10 60 5 90-5s60 10 70 0" stroke="#4A6CF7" stroke-width="1" opacity="0.2"/>
                     </svg>
                 </div>
@@ -933,7 +588,6 @@
                         :class="{ loading: isDownloading }"
                         :disabled="!userId.trim() || downloadTypes.length === 0 || isDownloading"
                         @click="startDownload"
-                        style="margin-top: 28px;"
                     >
                         <span v-if="isDownloading" class="btn-spinner"></span>
                         <svg v-else width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
@@ -947,50 +601,45 @@
             <!-- 下载进度 -->
             <div v-if="taskId" class="progress-section">
                 <div class="progress-header">
-                    <div class="progress-title">
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#4A6CF7" stroke-width="2">
-                            <path d="M12 2v4m0 12v4M4.93 4.93l2.83 2.83m8.48 8.48l2.83 2.83M2 12h4m12 0h4M4.93 19.07l2.83-2.83m8.48-8.48l2.83-2.83"/>
-                        </svg>
-                        下载进度
-                    </div>
-                    <span class="progress-status" :class="'status-' + status">
-                        {{ statusText }}
-                    </span>
+                    <h3 class="progress-title">下载进度</h3>
+                    <span class="progress-status" :class="'status-' + status">{{ statusText }}</span>
                 </div>
-                
                 <div class="progress-bar-wrapper">
-                    <div class="progress-bar" :style="{ width: progress + '%' }"></div>
+                    <div class="progress-bar-bg">
+                        <div class="progress-bar-fill" :style="{ width: progress + '%' }"></div>
+                    </div>
+                    <div class="progress-percentage">{{ progress }}%</div>
                 </div>
-                
                 <div class="progress-info">
                     <div class="progress-item">
-                        <div class="progress-item-label">进度</div>
-                        <div class="progress-item-value">{{ progress }}%</div>
-                    </div>
-                    <div class="progress-item">
                         <div class="progress-item-label">已下载</div>
-                        <div class="progress-item-value">{{ downloadedFiles }}/{{ totalFiles }}</div>
+                        <div class="progress-item-value">{{ downloadedFiles }}</div>
                     </div>
                     <div class="progress-item">
-                        <div class="progress-item-label">已用时间</div>
+                        <div class="progress-item-label">总文件数</div>
+                        <div class="progress-item-value">{{ totalFiles }}</div>
+                    </div>
+                    <div class="progress-item">
+                        <div class="progress-item-label">耗时</div>
                         <div class="progress-item-value">{{ elapsedTime }}</div>
                     </div>
                 </div>
-                
-                <div v-if="errorMessage" class="error-alert">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <button v-if="status === 'completed'" class="download-complete-btn" @click="downloadZip">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/>
+                        <polyline points="7 10 12 15 17 10"/>
+                        <line x1="12" y1="15" x2="12" y2="3"/>
+                    </svg>
+                    下载ZIP压缩包
+                </button>
+                <div v-if="status === 'failed' && errorMessage" class="error-message">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <circle cx="12" cy="12" r="10"/>
-                        <path d="M12 8v4m0 4h.01"/>
+                        <line x1="12" y1="8" x2="12" y2="12"/>
+                        <line x1="12" y1="16" x2="12.01" y2="16"/>
                     </svg>
                     {{ errorMessage }}
                 </div>
-                
-                <button v-if="status === 'completed'" class="download-complete-btn" @click="downloadZip">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-                        <path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
-                    </svg>
-                    下载压缩包
-                </button>
             </div>
             
             <!-- 使用说明 -->
@@ -1008,7 +657,20 @@
                         </div>
                         <div class="step-content">
                             <h4>输入用户ID</h4>
-                            <p>输入推特用户名（@后面的字符）</p>
+                            <p>输入推特用户名，多个用户用逗号分隔</p>
+                        </div>
+                    </div>
+                    <div class="guide-step">
+                        <div class="step-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M12 2L2 7l10 5 10-5-10-5z"/>
+                                <path d="M2 17l10 5 10-5"/>
+                                <path d="M2 12l10 5 10-5"/>
+                            </svg>
+                        </div>
+                        <div class="step-content">
+                            <h4>选择类型</h4>
+                            <p>选择下载视频、图片或全部</p>
                         </div>
                     </div>
                     <div class="guide-step">
@@ -1018,31 +680,21 @@
                             </svg>
                         </div>
                         <div class="step-content">
-                            <h4>点击下载</h4>
-                            <p>点击按钮开始下载任务</p>
+                            <h4>开始下载</h4>
+                            <p>点击按钮开始下载，支持批量下载</p>
                         </div>
                     </div>
                     <div class="guide-step">
                         <div class="step-icon">
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <circle cx="12" cy="12" r="10"/>
-                                <path d="M12 6v6l4 2"/>
+                                <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/>
+                                <polyline points="7 10 12 15 17 10"/>
+                                <line x1="12" y1="15" x2="12" y2="3"/>
                             </svg>
                         </div>
                         <div class="step-content">
-                            <h4>等待进度</h4>
-                            <p>实时查看下载进度</p>
-                        </div>
-                    </div>
-                    <div class="guide-step">
-                        <div class="step-icon">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <path d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"/>
-                            </svg>
-                        </div>
-                        <div class="step-content">
-                            <h4>保存文件</h4>
-                            <p>下载完成后保存压缩包</p>
+                            <h4>获取文件</h4>
+                            <p>下载完成后获取ZIP压缩包</p>
                         </div>
                     </div>
                 </div>
@@ -1051,8 +703,10 @@
     </div>
     {% endraw %}
 
+    <script src="{{ url_for('static', filename='js/utils.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/components.js') }}"></script>
     <script>
-        const { createApp, ref, computed, onUnmounted } = Vue;
+        const { createApp, ref, computed, onMounted, onUnmounted } = Vue;
         
         const app = createApp({
             setup() {
@@ -1071,22 +725,12 @@
                 let timeInterval = null;
                 let startTime = null;
                 
-                const statusText = computed(() => {
-                    switch (status.value) {
-                        case 'pending': return '等待中';
-                        case 'downloading': return '下载中';
-                        case 'completed': return '已完成';
-                        case 'failed': return '失败';
-                        default: return '未知';
-                    }
-                });
+                const statusText = computed(() => getStatusText(status.value));
                 
                 const updateElapsedTime = () => {
                     if (!startTime) return;
                     const diff = Math.floor((new Date() - startTime) / 1000);
-                    if (diff < 60) elapsedTime.value = `${diff}秒`;
-                    else if (diff < 3600) elapsedTime.value = `${Math.floor(diff/60)}分${diff%60}秒`;
-                    else elapsedTime.value = `${Math.floor(diff/3600)}小时${Math.floor((diff%3600)/60)}分`;
+                    elapsedTime.value = formatElapsedTime(diff);
                 };
                 
                 const stopTimers = () => {
@@ -1133,7 +777,6 @@
                     elapsedTime.value = '0秒';
                     startTime = new Date();
                     
-                    // 确定下载类型
                     let downloadType = 'all';
                     if (downloadTypes.value.includes('video') && !downloadTypes.value.includes('image')) {
                         downloadType = 'video';
@@ -1153,16 +796,13 @@
                         const data = await response.json();
                         if (response.ok) {
                             if (data.task_id) {
-                                // 单个任务
                                 taskId.value = data.task_id;
                                 status.value = 'downloading';
                                 progressInterval = setInterval(fetchProgress, 1000);
                                 timeInterval = setInterval(updateElapsedTime, 1000);
                             } else if (data.tasks && data.tasks.length > 0) {
-                                // 多个任务，跳转到历史页面查看
                                 ElementPlus.ElMessage.success(data.message);
                                 isDownloading.value = false;
-                                // 延迟跳转到历史页面
                                 setTimeout(() => {
                                     window.location.href = '/history';
                                 }, 1500);
@@ -1198,8 +838,8 @@
         for (const [key, component] of Object.entries(ElementPlusIconsVue)) {
             app.component(key, component);
         }
+        registerGlobalComponents(app);
         app.mount('#app');
     </script>
-    <script src="{{ url_for('static', filename='js/theme.js') }}"></script>
 </body>
 </html>

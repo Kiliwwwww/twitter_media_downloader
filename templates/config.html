@@ -9,184 +9,9 @@
     <script src="https://unpkg.com/element-plus"></script>
     <script src="https://unpkg.com/@element-plus/icons-vue"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/common.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/dark-mode.css') }}">
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        
-        body {
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: linear-gradient(135deg, #E8EDFF 0%, #F0E7FF 50%, #E8EDFF 100%);
-            min-height: 100vh;
-            color: #1F2937;
-            position: relative;
-            overflow-x: hidden;
-        }
-        
-        /* 背景装饰 */
-        .bg-decoration {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            pointer-events: none;
-            z-index: 0;
-        }
-        .bg-circle {
-            position: absolute;
-            border-radius: 50%;
-            opacity: 0.15;
-        }
-        .bg-circle-1 {
-            width: 400px;
-            height: 400px;
-            background: linear-gradient(135deg, #4A6CF7, #7B61FF);
-            top: -100px;
-            right: -100px;
-            animation: float 20s ease-in-out infinite;
-        }
-        .bg-circle-2 {
-            width: 300px;
-            height: 300px;
-            background: linear-gradient(135deg, #00D4FF, #4A6CF7);
-            bottom: -50px;
-            left: -50px;
-            animation: float 25s ease-in-out infinite reverse;
-        }
-        
-        @keyframes float {
-            0%, 100% { transform: translate(0, 0) rotate(0deg); }
-            33% { transform: translate(30px, -30px) rotate(120deg); }
-            66% { transform: translate(-20px, 20px) rotate(240deg); }
-        }
-        
-        /* 导航栏 */
-        .navbar {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 64px;
-            background: rgba(255, 255, 255, 0.85);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            border-bottom: 1px solid rgba(229, 231, 235, 0.5);
-            z-index: 100;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        .navbar-content {
-            width: 100%;
-            max-width: 1200px;
-            padding: 0 24px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-        }
-        .navbar-brand {
-            font-size: 18px;
-            font-weight: 700;
-            color: #1F2937;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            text-decoration: none;
-        }
-        .navbar-brand svg {
-            width: 28px;
-            height: 28px;
-        }
-        .nav-links {
-            display: flex;
-            gap: 32px;
-        }
-        .nav-links a {
-            color: #4B5563;
-            text-decoration: none;
-            font-size: 14px;
-            font-weight: 500;
-            position: relative;
-            transition: all 0.3s ease;
-            padding: 4px 0;
-        }
-        .nav-links a:hover {
-            color: #4A6CF7;
-            transform: translateY(-1px);
-        }
-        .nav-links a.active {
-            color: #4A6CF7;
-        }
-        .nav-links a.active::after {
-            content: '';
-            position: absolute;
-            bottom: -2px;
-            left: 0;
-            right: 0;
-            height: 1.5px;
-            background: #4A6CF7;
-            border-radius: 1px;
-        }
-        
-        /* 主内容区 */
-        .main-container {
-            position: relative;
-            z-index: 1;
-            padding-top: 84px;
-            padding-bottom: 40px;
-            max-width: 700px;
-            margin: 0 auto;
-            padding-left: 24px;
-            padding-right: 24px;
-        }
-        
-        /* 页面标题 */
-        .page-header {
-            background: rgba(255, 255, 255, 0.85);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            border-radius: 16px;
-            border: 1px solid rgba(229, 231, 235, 0.5);
-            box-shadow: 
-                0 4px 6px -1px rgba(74, 108, 247, 0.1),
-                0 2px 4px -2px rgba(74, 108, 247, 0.1),
-                inset 0 1px 0 rgba(255, 255, 255, 0.5);
-            padding: 32px;
-            margin-bottom: 24px;
-            display: flex;
-            align-items: center;
-            gap: 16px;
-        }
-        .page-icon {
-            width: 48px;
-            height: 48px;
-            background: linear-gradient(135deg, rgba(74, 108, 247, 0.1), rgba(123, 97, 255, 0.1));
-            border-radius: 12px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: #4A6CF7;
-        }
-        .page-icon svg {
-            width: 24px;
-            height: 24px;
-        }
-        .page-title {
-            font-size: 24px;
-            font-weight: 700;
-            color: #1F2937;
-            letter-spacing: 1px;
-        }
-        .page-subtitle {
-            font-size: 14px;
-            color: #9CA3AF;
-            margin-top: 4px;
-        }
-        
         /* 配置卡片 */
         .config-card {
             background: rgba(255, 255, 255, 0.85);
@@ -200,10 +25,6 @@
                 inset 0 1px 0 rgba(255, 255, 255, 0.5);
             padding: 32px;
             animation: fadeIn 0.3s ease;
-        }
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
         }
         
         .config-item {
@@ -396,109 +217,38 @@
             border-radius: 50%;
             animation: spin 0.8s linear infinite;
         }
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
         
         /* 响应式 */
         @media (max-width: 768px) {
-            .main-container {
-                padding-left: 12px !important;
-                padding-right: 12px !important;
-                padding-top: 76px;
-            }
-            
-            .page-header {
-                flex-direction: column;
-                text-align: center;
-                padding: 20px;
-                gap: 12px;
-            }
-            
-            .page-icon {
-                width: 40px;
-                height: 40px;
-            }
-            
-            .page-icon svg {
-                width: 20px;
-                height: 20px;
-            }
-            
-            .page-title {
-                font-size: 20px;
-            }
-            
-            .page-subtitle {
-                font-size: 13px;
-            }
-            
             .config-card {
                 padding: 20px;
             }
-            
             .config-item {
                 padding: 16px;
                 margin-bottom: 20px;
             }
-            
             .label-row {
                 flex-direction: column;
                 align-items: flex-start;
                 gap: 8px;
                 margin-bottom: 10px;
             }
-            
             .label-row label {
                 font-size: 13px;
             }
-            
             .tip-wrapper {
                 margin-left: 0;
             }
-            
             .tip-content {
                 width: 240px;
                 left: 0;
             }
-            
             .config-input {
                 padding: 10px 14px;
                 font-size: 13px;
             }
-            
             .config-hint {
                 font-size: 11px;
-            }
-            
-            .nav-links {
-                gap: 12px;
-            }
-            
-            .nav-links a {
-                font-size: 13px;
-            }
-            
-            .navbar-brand span {
-                display: none;
-            }
-            
-            .navbar-content {
-                padding: 0 12px;
-            }
-        }
-        
-        @media (max-width: 375px) {
-            .page-title {
-                font-size: 18px;
-            }
-            
-            .config-item {
-                padding: 14px;
-            }
-            
-            .label-row label {
-                font-size: 12px;
             }
         }
     </style>
@@ -506,49 +256,16 @@
 <body>
     {% raw %}
     <div id="app">
-        <!-- 背景装饰 -->
-        <div class="bg-decoration">
-            <div class="bg-circle bg-circle-1"></div>
-            <div class="bg-circle bg-circle-2"></div>
-        </div>
-        
-        <!-- 导航栏 -->
-        <nav class="navbar">
-            <div class="navbar-content">
-                <a href="/" class="navbar-brand">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="#4A6CF7" stroke-width="2">
-                        <path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
-                    </svg>
-                    <span>TW Media Downloader</span>
-                </a>
-                <div class="nav-links">
-                    <a href="/">首页</a>
-                    <a href="/config" class="active">配置管理</a>
-                    <a href="/history">下载历史</a>
-                    <button id="theme-toggle" class="theme-toggle-btn" onclick="themeModule.toggleDarkMode()">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/>
-                        </svg>
-                    </button>
-                </div>
-            </div>
-        </nav>
+        <bg-decoration></bg-decoration>
+        <navbar active-page="config"></navbar>
         
         <!-- 主内容 -->
         <div class="main-container">
-            <!-- 页面标题 -->
-            <div class="page-header">
-                <div class="page-icon">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M12 15a3 3 0 100-6 3 3 0 000 6z"/>
-                        <path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-2 2 2 2 0 01-2-2v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83 0 2 2 0 010-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 01-2-2 2 2 0 012-2h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 010-2.83 2 2 0 012.83 0l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 012-2 2 2 0 012 2v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 0 2 2 0 010 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 012 2 2 2 0 01-2 2h-.09a1.65 1.65 0 00-1.51 1z"/>
-                    </svg>
-                </div>
-                <div>
-                    <h1 class="page-title">配置管理</h1>
-                    <p class="page-subtitle">管理代理、Cookie等配置信息</p>
-                </div>
-            </div>
+            <page-header 
+                title="配置管理" 
+                subtitle="管理代理、Cookie等配置信息"
+                icon="M12 15a3 3 0 100-6 3 3 0 000 6z M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-2 2 2 2 0 01-2-2v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83 0 2 2 0 010-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 01-2-2 2 2 0 012-2h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 010-2.83 2 2 0 012.83 0l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 012-2 2 2 0 012 2v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 0 2 2 0 010 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 012 2 2 2 0 01-2 2h-.09a1.65 1.65 0 00-1.51 1z"
+            ></page-header>
             
             <!-- 配置卡片 -->
             <div class="config-card" v-loading="loading">
@@ -611,6 +328,8 @@
     </div>
     {% endraw %}
 
+    <script src="{{ url_for('static', filename='js/utils.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/components.js') }}"></script>
     <script>
         const { createApp, ref, onMounted } = Vue;
         
@@ -671,8 +390,8 @@
         for (const [key, component] of Object.entries(ElementPlusIconsVue)) {
             app.component(key, component);
         }
+        registerGlobalComponents(app);
         app.mount('#app');
     </script>
-    <script src="{{ url_for('static', filename='js/theme.js') }}"></script>
 </body>
 </html>
