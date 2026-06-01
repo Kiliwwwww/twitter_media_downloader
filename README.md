@@ -52,10 +52,17 @@ twitter_download_server/
 │   ├── config.html        # 配置管理页
 │   └── history.html       # 下载历史页
 └── static/                # 静态文件
+    ├── favicon.svg        # 网站标签页图标
     ├── css/
+    │   ├── common.css     # 公共基础样式
+    │   ├── home.css       # 首页样式
+    │   ├── config.css     # 配置页样式
+    │   ├── history.css    # 历史页样式
     │   └── dark-mode.css  # 暗黑模式样式
     └── js/
         ├── app.js         # 主应用脚本
+        ├── components.js  # 全局组件
+        ├── utils.js       # 工具函数
         └── theme.js       # 主题切换脚本
 ```
 
