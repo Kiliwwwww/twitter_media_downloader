@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>登录 - 推特媒体下载器</title>
+    <link rel="icon" type="image/svg+xml" href="{{ url_for('static', filename='favicon.svg') }}">
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <link rel="stylesheet" href="https://unpkg.com/element-plus/dist/index.css">
+    <script src="https://unpkg.com/element-plus"></script>
+    <script src="https://unpkg.com/@element-plus/icons-vue"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/common.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/login.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/dark-mode.css') }}">
+</head>
+<body>
+    {% raw %}
+    <div id="app">
+        <bg-decoration></bg-decoration>
+        
+        <div class="login-container">
+            <div class="login-card">
+                <div class="login-header">
+                    <div class="login-logo">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+                        </svg>
+                    </div>
+                    <h1 class="login-title">推特媒体下载器</h1>
+                    <p class="login-subtitle">{{ activeTab === 'login' ? '欢迎回来，请登录您的账号' : '使用邀请码注册新账号' }}</p>
+                </div>
+                
+                <!-- 标签切换 -->
+                <div class="login-tabs">
+                    <button 
+                        class="login-tab" 
+                        :class="{ active: activeTab === 'login' }"
+                        @click="switchTab('login')"
+                    >
+                        登录
+                    </button>
+                    <button 
+                        class="login-tab" 
+                        :class="{ active: activeTab === 'register' }"
+                        @click="switchTab('register')"
+                    >
+                        注册
+                    </button>
+                </div>
+                
+                <!-- 错误提示 -->
+                <div v-if="errorMessage" class="error-message">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="10"/>
+                        <line x1="12" y1="8" x2="12" y2="12"/>
+                        <line x1="12" y1="16" x2="12.01" y2="16"/>
+                    </svg>
+                    {{ errorMessage }}
+                </div>
+                
+                <!-- 登录表单 -->
+                <div class="login-form-wrapper">
+                    <form v-if="activeTab === 'login'" class="login-form active" @submit.prevent="handleLogin">
+                        <div class="form-group">
+                            <label class="form-label">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/>
+                                    <circle cx="12" cy="7" r="4"/>
+                                </svg>
+                                用户名
+                            </label>
+                            <input 
+                                type="text" 
+                                class="form-input" 
+                                v-model="loginForm.username"
+                                placeholder="请输入用户名"
+                                autocomplete="username"
+                            >
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+                                    <path d="M7 11V7a5 5 0 0110 0v4"/>
+                                </svg>
+                                密码
+                            </label>
+                            <div class="form-input-wrapper">
+                                <input 
+                                    :type="showPassword ? 'text' : 'password'" 
+                                    class="form-input password-input" 
+                                    v-model="loginForm.password"
+                                    placeholder="请输入密码"
+                                    autocomplete="current-password"
+                                >
+                                <button type="button" class="password-toggle" @click="showPassword = !showPassword">
+                                    <svg v-if="showPassword" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                                        <circle cx="12" cy="12" r="3"/>
+                                    </svg>
+                                    <svg v-else viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19m-6.72-1.07a3 3 0 11-4.24-4.24"/>
+                                        <line x1="1" y1="1" x2="23" y2="23"/>
+                                    </svg>
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div class="remember-row">
+                            <label class="remember-checkbox">
+                                <input type="checkbox" v-model="loginForm.remember">
+                                <span>记住我</span>
+                            </label>
+                        </div>
+                        
+                        <button 
+                            type="submit" 
+                            class="login-btn"
+                            :disabled="loading"
+                        >
+                            <span v-if="loading" class="spinner"></span>
+                            {{ loading ? '登录中...' : '登录' }}
+                        </button>
+                    </form>
+                    
+                    <!-- 注册表单 -->
+                    <form v-else class="register-form active" @submit.prevent="handleRegister">
+                        <div class="form-group">
+                            <label class="form-label">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/>
+                                    <circle cx="12" cy="7" r="4"/>
+                                </svg>
+                                用户名
+                            </label>
+                            <input 
+                                type="text" 
+                                class="form-input" 
+                                v-model="registerForm.username"
+                                placeholder="3-20个字符"
+                                autocomplete="username"
+                            >
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/>
+                                    <circle cx="12" cy="7" r="4"/>
+                                </svg>
+                                昵称
+                            </label>
+                            <input 
+                                type="text" 
+                                class="form-input" 
+                                v-model="registerForm.nickname"
+                                placeholder="可选，默认为用户名"
+                            >
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+                                    <path d="M7 11V7a5 5 0 0110 0v4"/>
+                                </svg>
+                                密码
+                            </label>
+                            <div class="form-input-wrapper">
+                                <input 
+                                    :type="showPassword ? 'text' : 'password'" 
+                                    class="form-input password-input" 
+                                    v-model="registerForm.password"
+                                    placeholder="至少6个字符"
+                                    autocomplete="new-password"
+                                >
+                                <button type="button" class="password-toggle" @click="showPassword = !showPassword">
+                                    <svg v-if="showPassword" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                                        <circle cx="12" cy="12" r="3"/>
+                                    </svg>
+                                    <svg v-else viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19m-6.72-1.07a3 3 0 11-4.24-4.24"/>
+                                        <line x1="1" y1="1" x2="23" y2="23"/>
+                                    </svg>
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <rect x="2" y="4" width="20" height="16" rx="2"/>
+                                    <path d="M22 7l-8.97 5.7a1.94 1.94 0 01-2.06 0L2 7"/>
+                                </svg>
+                                邀请码
+                            </label>
+                            <input 
+                                type="text" 
+                                class="form-input" 
+                                v-model="registerForm.inviteCode"
+                                placeholder="请输入邀请码"
+                            >
+                        </div>
+                        
+                        <button 
+                            type="submit" 
+                            class="login-btn"
+                            :disabled="loading"
+                        >
+                            <span v-if="loading" class="spinner"></span>
+                            {{ loading ? '注册中...' : '注册' }}
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endraw %}
+
+    <script src="{{ url_for('static', filename='js/utils.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/components.js') }}"></script>
+    <script>
+        const { createApp, ref, reactive } = Vue;
+        
+        const app = createApp({
+            setup() {
+                const activeTab = ref('login');
+                const loading = ref(false);
+                const errorMessage = ref('');
+                const showPassword = ref(false);
+                
+                const loginForm = reactive({
+                    username: '',
+                    password: '',
+                    remember: false
+                });
+                
+                const registerForm = reactive({
+                    username: '',
+                    nickname: '',
+                    password: '',
+                    inviteCode: ''
+                });
+                
+                const switchTab = (tab) => {
+                    activeTab.value = tab;
+                    errorMessage.value = '';
+                };
+                
+                const handleLogin = async () => {
+                    if (!loginForm.username || !loginForm.password) {
+                        errorMessage.value = '请输入用户名和密码';
+                        return;
+                    }
+                    
+                    loading.value = true;
+                    errorMessage.value = '';
+                    
+                    try {
+                        const response = await fetch('/api/auth/login', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                username: loginForm.username,
+                                password: loginForm.password,
+                                remember: loginForm.remember
+                            })
+                        });
+                        
+                        const data = await response.json();
+                        
+                        if (response.ok) {
+                            ElementPlus.ElMessage.success('登录成功');
+                            setTimeout(() => {
+                                window.location.href = '/';
+                            }, 500);
+                        } else {
+                            errorMessage.value = data.error || '登录失败';
+                        }
+                    } catch (error) {
+                        errorMessage.value = '网络错误，请稍后重试';
+                    } finally {
+                        loading.value = false;
+                    }
+                };
+                
+                const handleRegister = async () => {
+                    if (!registerForm.username || !registerForm.password || !registerForm.inviteCode) {
+                        errorMessage.value = '请填写所有必填字段';
+                        return;
+                    }
+                    
+                    if (registerForm.username.length < 3 || registerForm.username.length > 20) {
+                        errorMessage.value = '用户名长度应为3-20个字符';
+                        return;
+                    }
+                    
+                    if (registerForm.password.length < 6) {
+                        errorMessage.value = '密码长度不能少于6个字符';
+                        return;
+                    }
+                    
+                    loading.value = true;
+                    errorMessage.value = '';
+                    
+                    try {
+                        const response = await fetch('/api/auth/register', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                username: registerForm.username,
+                                nickname: registerForm.nickname,
+                                password: registerForm.password,
+                                invite_code: registerForm.inviteCode
+                            })
+                        });
+                        
+                        const data = await response.json();
+                        
+                        if (response.ok) {
+                            ElementPlus.ElMessage.success('注册成功，请登录');
+                            activeTab.value = 'login';
+                            loginForm.username = registerForm.username;
+                            loginForm.password = '';
+                            // 清空注册表单
+                            registerForm.username = '';
+                            registerForm.nickname = '';
+                            registerForm.password = '';
+                            registerForm.inviteCode = '';
+                        } else {
+                            errorMessage.value = data.error || '注册失败';
+                        }
+                    } catch (error) {
+                        errorMessage.value = '网络错误，请稍后重试';
+                    } finally {
+                        loading.value = false;
+                    }
+                };
+                
+                return {
+                    activeTab,
+                    loading,
+                    errorMessage,
+                    showPassword,
+                    loginForm,
+                    registerForm,
+                    switchTab,
+                    handleLogin,
+                    handleRegister
+                };
+            }
+        });
+        
+        app.use(ElementPlus);
+        for (const [key, component] of Object.entries(ElementPlusIconsVue)) {
+            app.component(key, component);
+        }
+        registerGlobalComponents(app);
+        app.mount('#app');
+    </script>
+</body>
+</html>

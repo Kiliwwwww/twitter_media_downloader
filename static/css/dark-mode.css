@@ -147,7 +147,9 @@ body {
 .progress-section,
 .guide-section,
 .config-card,
-.history-card {
+.history-card,
+.profile-card,
+.table-card {
     background: var(--card-bg) !important;
     border-color: var(--card-border) !important;
     box-shadow: var(--card-shadow) !important;
@@ -587,4 +589,318 @@ body {
 [data-theme="dark"] .btn-spinner {
     border-color: rgba(255, 255, 255, 0.3) !important;
     border-top-color: white !important;
+}
+
+/* ===== Profile页面样式 ===== */
+.profile-card-title {
+    color: var(--text-primary) !important;
+}
+
+.profile-card-title svg {
+    stroke: var(--icon-color) !important;
+}
+
+.avatar-info h3 {
+    color: var(--text-primary) !important;
+}
+
+.avatar-info p {
+    color: var(--text-tertiary) !important;
+}
+
+.role-tag.admin {
+    background: rgba(74, 108, 247, 0.2) !important;
+    color: #7b9aff !important;
+}
+
+.role-tag.user {
+    background: rgba(107, 114, 128, 0.2) !important;
+    color: #9ca3af !important;
+}
+
+.form-label {
+    color: var(--text-secondary) !important;
+}
+
+.form-label svg {
+    stroke: var(--text-placeholder) !important;
+}
+
+.form-input {
+    background: var(--input-bg) !important;
+    border-color: var(--input-border) !important;
+    color: var(--text-primary) !important;
+}
+
+.form-input:hover {
+    border-color: rgba(123, 155, 255, 0.4) !important;
+    background: var(--input-bg) !important;
+}
+
+.form-input:focus {
+    border-color: var(--icon-color) !important;
+    background: var(--input-bg) !important;
+    box-shadow: 0 0 0 4px rgba(74, 108, 247, 0.15), 0 2px 8px rgba(0, 0, 0, 0.2) !important;
+}
+
+.form-input::placeholder {
+    color: var(--text-placeholder) !important;
+}
+
+.form-hint {
+    color: var(--text-placeholder) !important;
+}
+
+.form-hint svg {
+    stroke: var(--text-placeholder) !important;
+}
+
+/* ===== Admin页面样式 ===== */
+.admin-tabs {
+    background: var(--card-bg) !important;
+    border-color: var(--card-border) !important;
+}
+
+.admin-tab {
+    color: var(--text-tertiary) !important;
+}
+
+.admin-tab:hover {
+    color: var(--icon-color) !important;
+    background: var(--item-bg) !important;
+}
+
+.admin-tab.active {
+    background: var(--input-bg) !important;
+    color: var(--icon-color) !important;
+}
+
+.search-input {
+    background: var(--input-bg) !important;
+    border-color: var(--input-border) !important;
+    color: var(--text-primary) !important;
+}
+
+.search-input:focus {
+    border-color: var(--icon-color) !important;
+}
+
+.search-input::placeholder {
+    color: var(--text-placeholder) !important;
+}
+
+.search-icon {
+    stroke: var(--text-placeholder) !important;
+}
+
+.data-table th {
+    background: var(--item-bg) !important;
+    color: var(--text-placeholder) !important;
+    border-bottom-color: var(--card-border) !important;
+}
+
+.data-table td {
+    color: var(--text-secondary) !important;
+    border-bottom-color: var(--card-border) !important;
+}
+
+.data-table tr:hover td {
+    background: var(--item-hover-bg) !important;
+}
+
+.user-name {
+    color: var(--text-primary) !important;
+}
+
+.user-username {
+    color: var(--text-placeholder) !important;
+}
+
+.role-badge.admin {
+    background: rgba(74, 108, 247, 0.2) !important;
+    color: #7b9aff !important;
+}
+
+.role-badge.user {
+    background: rgba(107, 114, 128, 0.2) !important;
+    color: #9ca3af !important;
+}
+
+.status-badge.active {
+    background: rgba(16, 185, 129, 0.2) !important;
+    color: #6ee7b7 !important;
+}
+
+.status-badge.inactive {
+    background: rgba(239, 68, 68, 0.2) !important;
+    color: #fca5a5 !important;
+}
+
+.action-btn {
+    background: var(--input-bg) !important;
+    border-color: var(--input-border) !important;
+    color: var(--text-tertiary) !important;
+}
+
+.action-btn:hover {
+    border-color: var(--icon-color) !important;
+    color: var(--icon-color) !important;
+    background: var(--item-bg) !important;
+}
+
+.action-btn.danger:hover {
+    border-color: #EF4444 !important;
+    color: #fca5a5 !important;
+}
+
+/* ===== Modal弹窗样式 ===== */
+.modal-overlay {
+    background: rgba(0, 0, 0, 0.6) !important;
+}
+
+.modal-content {
+    background: var(--card-bg) !important;
+    border-color: var(--card-border) !important;
+}
+
+.modal-title {
+    color: var(--text-primary) !important;
+}
+
+.modal-close {
+    color: var(--text-placeholder) !important;
+}
+
+.modal-close:hover {
+    background: var(--item-bg) !important;
+    color: var(--text-primary) !important;
+}
+
+.modal-form .form-label {
+    color: var(--text-secondary) !important;
+}
+
+.modal-form .form-input,
+.modal-form .form-select {
+    background: var(--input-bg) !important;
+    border-color: var(--input-border) !important;
+    color: var(--text-primary) !important;
+}
+
+.modal-form .form-input:focus,
+.modal-form .form-select:focus {
+    border-color: var(--icon-color) !important;
+}
+
+.modal-btn.cancel {
+    background: var(--input-bg) !important;
+    border-color: var(--input-border) !important;
+    color: var(--text-secondary) !important;
+}
+
+.modal-btn.cancel:hover {
+    border-color: var(--icon-color) !important;
+    color: var(--icon-color) !important;
+}
+
+.modal-footer {
+    border-top-color: var(--card-border) !important;
+}
+
+/* ===== 邀请码样式 ===== */
+.invite-code-item {
+    background: var(--item-bg) !important;
+}
+
+.invite-code {
+    color: var(--text-primary) !important;
+}
+
+.invite-code-meta {
+    color: var(--text-placeholder) !important;
+}
+
+.copy-btn {
+    background: rgba(74, 108, 247, 0.2) !important;
+    color: #7b9aff !important;
+}
+
+.copy-btn:hover {
+    background: rgba(74, 108, 247, 0.3) !important;
+}
+
+/* ===== 登录页样式 ===== */
+.login-card {
+    background: var(--card-bg) !important;
+    border-color: var(--card-border) !important;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3) !important;
+}
+
+.login-title {
+    color: var(--text-primary) !important;
+}
+
+.login-subtitle {
+    color: var(--text-placeholder) !important;
+}
+
+.login-tabs {
+    background: var(--item-bg) !important;
+}
+
+.login-tab {
+    color: var(--text-tertiary) !important;
+}
+
+.login-tab.active {
+    background: var(--input-bg) !important;
+    color: var(--icon-color) !important;
+}
+
+.error-message {
+    background: rgba(220, 38, 38, 0.15) !important;
+    border-color: rgba(220, 38, 38, 0.3) !important;
+    color: #fca5a5 !important;
+}
+
+.remember-checkbox span {
+    color: var(--text-secondary) !important;
+}
+
+.login-footer p {
+    color: var(--text-placeholder) !important;
+}
+
+.login-footer a {
+    color: #7b9aff !important;
+}
+
+/* ===== Navbar用户头像 ===== */
+.nav-avatar {
+    background: var(--icon-bg) !important;
+    border-color: rgba(74, 108, 247, 0.3) !important;
+}
+
+.nav-avatar-fallback {
+    color: var(--icon-color) !important;
+    background: var(--icon-bg) !important;
+}
+
+.logout-btn {
+    background: transparent !important;
+    border-color: var(--navbar-border) !important;
+    color: var(--text-tertiary) !important;
+}
+
+.logout-btn:hover {
+    background: rgba(239, 68, 68, 0.1) !important;
+    border-color: rgba(239, 68, 68, 0.3) !important;
+    color: #fca5a5 !important;
+}
+
+/* ===== Twitter输入行 ===== */
+.twitter-input-row .form-input {
+    background: var(--input-bg) !important;
+    border-color: var(--input-border) !important;
+    color: var(--text-primary) !important;
 }

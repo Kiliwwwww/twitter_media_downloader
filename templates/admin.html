@@ -1,0 +1,730 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>用户管理 - 推特媒体下载器</title>
+    <link rel="icon" type="image/svg+xml" href="{{ url_for('static', filename='favicon.svg') }}">
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <link rel="stylesheet" href="https://unpkg.com/element-plus/dist/index.css">
+    <script src="https://unpkg.com/element-plus"></script>
+    <script src="https://unpkg.com/@element-plus/icons-vue"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/common.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/admin.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/dark-mode.css') }}">
+</head>
+<body>
+    {% raw %}
+    <div id="app">
+        <bg-decoration></bg-decoration>
+        <navbar active-page="admin"></navbar>
+        
+        <!-- 主内容 -->
+        <div class="main-container" style="max-width: 1000px;">
+            <page-header 
+                title="用户管理" 
+                subtitle="管理平台用户和邀请码"
+                icon="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"
+            ></page-header>
+            
+            <!-- 标签切换 -->
+            <div class="admin-tabs">
+                <button 
+                    class="admin-tab" 
+                    :class="{ active: activeTab === 'users' }"
+                    @click="activeTab = 'users'"
+                >
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/>
+                        <circle cx="9" cy="7" r="4"/>
+                        <path d="M23 21v-2a4 4 0 00-3-3.87"/>
+                        <path d="M16 3.13a4 4 0 010 7.75"/>
+                    </svg>
+                    用户管理
+                </button>
+                <button 
+                    class="admin-tab" 
+                    :class="{ active: activeTab === 'invite' }"
+                    @click="activeTab = 'invite'; fetchInviteCodes()"
+                >
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="2" y="4" width="20" height="16" rx="2"/>
+                        <path d="M2 8h20"/>
+                        <path d="M6 12h4"/>
+                        <path d="M14 12h4"/>
+                    </svg>
+                    邀请码管理
+                </button>
+            </div>
+            
+            <!-- 用户管理 -->
+            <div v-if="activeTab === 'users'" class="table-card">
+                <div class="toolbar">
+                    <div class="toolbar-left">
+                        <div class="search-input-wrapper">
+                            <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <circle cx="11" cy="11" r="8"/>
+                                <path d="M21 21l-4.35-4.35"/>
+                            </svg>
+                            <input 
+                                type="text" 
+                                class="search-input" 
+                                v-model="userSearch" 
+                                placeholder="搜索用户名、昵称或邮箱..."
+                                @input="debounceUserSearch"
+                            >
+                        </div>
+                    </div>
+                    <div class="toolbar-right">
+                        <button class="add-btn" @click="openAddUserModal">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <line x1="12" y1="5" x2="12" y2="19"/>
+                                <line x1="5" y1="12" x2="19" y2="12"/>
+                            </svg>
+                            添加用户
+                        </button>
+                    </div>
+                </div>
+                
+                <loading-state v-if="loadingUsers"></loading-state>
+                
+                <empty-state 
+                    v-else-if="users.length === 0" 
+                    title="暂无用户数据"
+                    description="点击上方按钮添加第一个用户"
+                ></empty-state>
+                
+                <table v-else class="data-table">
+                    <thead>
+                        <tr>
+                            <th>用户</th>
+                            <th>角色</th>
+                            <th>状态</th>
+                            <th>推特ID</th>
+                            <th>创建时间</th>
+                            <th>操作</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr v-for="user in users" :key="user.id">
+                            <td>
+                                <div class="user-cell">
+                                    <div class="user-avatar">
+                                        <img v-if="user.avatar_url" :src="user.avatar_url" :alt="user.nickname"
+                                             @error="$event.target.style.display='none'; $event.target.nextElementSibling.style.display='flex'" />
+                                        <span v-else class="avatar-fallback">{{ (user.nickname || user.username || '?').charAt(0).toUpperCase() }}</span>
+                                    </div>
+                                    <div class="user-info">
+                                        <div class="user-name">{{ user.nickname || user.username }}</div>
+                                        <div class="user-username">@{{ user.username }}</div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>
+                                <span class="role-badge" :class="user.role">{{ user.role === 'admin' ? '管理员' : '普通用户' }}</span>
+                            </td>
+                            <td>
+                                <span class="status-badge" :class="user.is_active ? 'active' : 'inactive'">
+                                    <span class="status-dot"></span>
+                                    {{ user.is_active ? '已启用' : '已禁用' }}
+                                </span>
+                            </td>
+                            <td>{{ user.twitter_id || '-' }}</td>
+                            <td>{{ formatTime(user.created_at) }}</td>
+                            <td>
+                                <div class="action-buttons">
+                                    <button class="action-btn" title="编辑" @click="openEditUserModal(user)">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                            <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/>
+                                            <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                                        </svg>
+                                    </button>
+                                    <button class="action-btn" title="重置密码" @click="openResetPasswordModal(user)">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+                                            <path d="M7 11V7a5 5 0 0110 0v4"/>
+                                        </svg>
+                                    </button>
+                                    <button class="action-btn" :title="user.is_active ? '禁用' : '启用'" @click="toggleUser(user)">
+                                        <svg v-if="user.is_active" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                            <circle cx="12" cy="12" r="10"/>
+                                            <line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/>
+                                        </svg>
+                                        <svg v-else viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                            <path d="M22 11.08V12a10 10 0 11-5.93-9.14"/>
+                                            <polyline points="22 4 12 14.01 9 11.01"/>
+                                        </svg>
+                                    </button>
+                                    <button class="action-btn danger" title="删除" @click="deleteUser(user)">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                            <polyline points="3 6 5 6 21 6"/>
+                                            <path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/>
+                                        </svg>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+                
+                <pagination-component 
+                    v-if="userTotal > userPageSize"
+                    :current-page="userPage"
+                    :total-pages="userTotalPages"
+                    :total="userTotal"
+                    @page-change="fetchUsers"
+                ></pagination-component>
+            </div>
+            
+            <!-- 邀请码管理 -->
+            <div v-if="activeTab === 'invite'" class="table-card">
+                <div class="toolbar">
+                    <div class="toolbar-left">
+                        <h3 style="font-size: 16px; font-weight: 600; color: #1F2937;">邀请码列表</h3>
+                    </div>
+                    <div class="toolbar-right">
+                        <button class="add-btn" @click="generateInviteCodes(1)">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <line x1="12" y1="5" x2="12" y2="19"/>
+                                <line x1="5" y1="12" x2="19" y2="12"/>
+                            </svg>
+                            生成邀请码
+                        </button>
+                        <button class="add-btn" style="background: linear-gradient(135deg, #10B981, #059669);" @click="generateInviteCodes(5)">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <line x1="12" y1="5" x2="12" y2="19"/>
+                                <line x1="5" y1="12" x2="19" y2="12"/>
+                            </svg>
+                            批量生成(5个)
+                        </button>
+                    </div>
+                </div>
+                
+                <loading-state v-if="loadingCodes"></loading-state>
+                
+                <empty-state 
+                    v-else-if="inviteCodes.length === 0" 
+                    title="暂无邀请码"
+                    description="点击上方按钮生成邀请码"
+                ></empty-state>
+                
+                <div v-else>
+                    <div v-for="code in inviteCodes" :key="code.id" class="invite-code-item">
+                        <div class="invite-code-info">
+                            <div class="invite-code">{{ code.code }}</div>
+                            <div class="invite-code-meta">
+                                <span>创建者: {{ code.creator_name }}</span>
+                                <span>{{ code.is_used ? '已使用' : '未使用' }}</span>
+                                <span v-if="code.used_by_name">使用者: {{ code.used_by_name }}</span>
+                                <span>{{ formatTime(code.created_at) }}</span>
+                            </div>
+                        </div>
+                        <div class="invite-code-actions">
+                            <button class="copy-btn" @click="copyCode(code.code)" title="复制">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
+                                    <path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/>
+                                </svg>
+                                复制
+                            </button>
+                            <button class="action-btn danger" title="删除" @click="deleteInviteCode(code.id)">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <polyline points="3 6 5 6 21 6"/>
+                                    <path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <pagination-component 
+                        v-if="codeTotal > codePageSize"
+                        :current-page="codePage"
+                        :total-pages="codeTotalPages"
+                        :total="codeTotal"
+                        @page-change="fetchInviteCodes"
+                    ></pagination-component>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 添加/编辑用户弹窗 -->
+        <div v-if="showUserModal" class="modal-overlay" @click.self="showUserModal = false">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3 class="modal-title">{{ editingUser ? '编辑用户' : '添加用户' }}</h3>
+                    <button class="modal-close" @click="showUserModal = false">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <line x1="18" y1="6" x2="6" y2="18"/>
+                            <line x1="6" y1="6" x2="18" y2="18"/>
+                        </svg>
+                    </button>
+                </div>
+                
+                <div class="modal-body">
+                    <div class="modal-form">
+                        <div class="form-group">
+                            <label class="form-label">用户名 *</label>
+                            <input 
+                                type="text" 
+                                class="form-input" 
+                                v-model="userForm.username"
+                                placeholder="3-20个字符"
+                                :disabled="editingUser"
+                            >
+                        </div>
+                        
+                        <div v-if="!editingUser" class="form-group">
+                            <label class="form-label">密码 *</label>
+                            <input 
+                                type="password" 
+                                class="form-input" 
+                                v-model="userForm.password"
+                                placeholder="至少6个字符"
+                            >
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label">昵称</label>
+                            <input 
+                                type="text" 
+                                class="form-input" 
+                                v-model="userForm.nickname"
+                                placeholder="可选"
+                            >
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label">邮箱</label>
+                            <input 
+                                type="email" 
+                                class="form-input" 
+                                v-model="userForm.email"
+                                placeholder="可选"
+                            >
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label">角色</label>
+                            <select class="form-select" v-model="userForm.role">
+                                <option value="user">普通用户</option>
+                                <option value="admin">管理员</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="modal-footer">
+                    <button class="modal-btn cancel" @click="showUserModal = false">取消</button>
+                    <button class="modal-btn primary" @click="saveUser" :disabled="savingUser">
+                        {{ savingUser ? '保存中...' : '保存' }}
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 重置密码弹窗 -->
+        <div v-if="showPasswordModal" class="modal-overlay" @click.self="showPasswordModal = false">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3 class="modal-title">重置密码</h3>
+                    <button class="modal-close" @click="showPasswordModal = false">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <line x1="18" y1="6" x2="6" y2="18"/>
+                            <line x1="6" y1="6" x2="18" y2="18"/>
+                        </svg>
+                    </button>
+                </div>
+                
+                <div class="modal-body">
+                    <p style="color: #6B7280; margin-bottom: 16px;">
+                        为用户 <strong>{{ resetPasswordUser?.nickname || resetPasswordUser?.username }}</strong> 设置新密码
+                    </p>
+                    <div class="modal-form">
+                        <div class="form-group">
+                            <label class="form-label">新密码 *</label>
+                            <input 
+                                type="password" 
+                                class="form-input" 
+                                v-model="newPassword"
+                                placeholder="至少6个字符"
+                            >
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="modal-footer">
+                    <button class="modal-btn cancel" @click="showPasswordModal = false">取消</button>
+                    <button class="modal-btn primary" @click="resetPassword" :disabled="resettingPassword">
+                        {{ resettingPassword ? '重置中...' : '重置密码' }}
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endraw %}
+
+    <script src="{{ url_for('static', filename='js/utils.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/components.js') }}"></script>
+    <script>
+        const { createApp, ref, reactive, computed, onMounted } = Vue;
+        
+        const app = createApp({
+            setup() {
+                const activeTab = ref('users');
+                
+                // 用户管理
+                const users = ref([]);
+                const loadingUsers = ref(false);
+                const userPage = ref(1);
+                const userPageSize = ref(20);
+                const userTotal = ref(0);
+                const userSearch = ref('');
+                const showUserModal = ref(false);
+                const editingUser = ref(null);
+                const savingUser = ref(false);
+                
+                const userForm = reactive({
+                    username: '',
+                    password: '',
+                    nickname: '',
+                    email: '',
+                    role: 'user'
+                });
+                
+                // 重置密码
+                const showPasswordModal = ref(false);
+                const resetPasswordUser = ref(null);
+                const newPassword = ref('');
+                const resettingPassword = ref(false);
+                
+                // 邀请码管理
+                const inviteCodes = ref([]);
+                const loadingCodes = ref(false);
+                const codePage = ref(1);
+                const codePageSize = ref(20);
+                const codeTotal = ref(0);
+                
+                const userTotalPages = computed(() => Math.ceil(userTotal.value / userPageSize.value));
+                const codeTotalPages = computed(() => Math.ceil(codeTotal.value / codePageSize.value));
+                
+                // 用户搜索防抖
+                let searchTimeout = null;
+                const debounceUserSearch = () => {
+                    clearTimeout(searchTimeout);
+                    searchTimeout = setTimeout(() => {
+                        fetchUsers(1);
+                    }, 300);
+                };
+                
+                // 获取用户列表
+                const fetchUsers = async (page = 1) => {
+                    loadingUsers.value = true;
+                    try {
+                        const params = new URLSearchParams({
+                            page: page,
+                            per_page: userPageSize.value
+                        });
+                        if (userSearch.value) {
+                            params.append('keyword', userSearch.value);
+                        }
+                        
+                        const response = await fetch(`/api/admin/users?${params.toString()}`);
+                        if (response.ok) {
+                            const data = await response.json();
+                            users.value = data.data || [];
+                            userTotal.value = data.total || 0;
+                            userPage.value = data.page || 1;
+                        } else if (response.status === 403) {
+                            ElementPlus.ElMessage.error('权限不足');
+                            window.location.href = '/';
+                        }
+                    } catch (error) {
+                        ElementPlus.ElMessage.error('获取用户列表失败');
+                    } finally {
+                        loadingUsers.value = false;
+                    }
+                };
+                
+                // 打开添加用户弹窗
+                const openAddUserModal = () => {
+                    editingUser.value = null;
+                    userForm.username = '';
+                    userForm.password = '';
+                    userForm.nickname = '';
+                    userForm.email = '';
+                    userForm.role = 'user';
+                    showUserModal.value = true;
+                };
+                
+                // 打开编辑用户弹窗
+                const openEditUserModal = (user) => {
+                    editingUser.value = user;
+                    userForm.username = user.username;
+                    userForm.password = '';
+                    userForm.nickname = user.nickname || '';
+                    userForm.email = user.email || '';
+                    userForm.role = user.role;
+                    showUserModal.value = true;
+                };
+                
+                // 保存用户
+                const saveUser = async () => {
+                    if (!editingUser.value && (!userForm.username || !userForm.password)) {
+                        ElementPlus.ElMessage.warning('请填写用户名和密码');
+                        return;
+                    }
+                    
+                    savingUser.value = true;
+                    try {
+                        let response;
+                        if (editingUser.value) {
+                            // 编辑用户
+                            response = await fetch(`/api/admin/users/${editingUser.value.id}`, {
+                                method: 'PUT',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({
+                                    nickname: userForm.nickname,
+                                    email: userForm.email,
+                                    role: userForm.role
+                                })
+                            });
+                        } else {
+                            // 创建用户
+                            response = await fetch('/api/admin/users', {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({
+                                    username: userForm.username,
+                                    password: userForm.password,
+                                    nickname: userForm.nickname,
+                                    email: userForm.email,
+                                    role: userForm.role
+                                })
+                            });
+                        }
+                        
+                        if (response.ok) {
+                            ElementPlus.ElMessage.success(editingUser.value ? '用户已更新' : '用户已创建');
+                            showUserModal.value = false;
+                            fetchUsers(userPage.value);
+                        } else {
+                            const data = await response.json();
+                            ElementPlus.ElMessage.error(data.error || '操作失败');
+                        }
+                    } catch (error) {
+                        ElementPlus.ElMessage.error('操作失败');
+                    } finally {
+                        savingUser.value = false;
+                    }
+                };
+                
+                // 切换用户状态
+                const toggleUser = async (user) => {
+                    try {
+                        const response = await fetch(`/api/admin/users/${user.id}/toggle`, { method: 'POST' });
+                        if (response.ok) {
+                            const data = await response.json();
+                            ElementPlus.ElMessage.success(data.message);
+                            fetchUsers(userPage.value);
+                        } else {
+                            const data = await response.json();
+                            ElementPlus.ElMessage.error(data.error || '操作失败');
+                        }
+                    } catch (error) {
+                        ElementPlus.ElMessage.error('操作失败');
+                    }
+                };
+                
+                // 删除用户
+                const deleteUser = async (user) => {
+                    try {
+                        await ElementPlus.ElMessageBox.confirm(
+                            `确定要删除用户 "${user.nickname || user.username}" 吗？此操作不可恢复。`,
+                            '确认删除',
+                            {
+                                confirmButtonText: '确定删除',
+                                cancelButtonText: '取消',
+                                type: 'warning'
+                            }
+                        );
+                        
+                        const response = await fetch(`/api/admin/users/${user.id}`, { method: 'DELETE' });
+                        if (response.ok) {
+                            ElementPlus.ElMessage.success('用户已删除');
+                            fetchUsers(userPage.value);
+                        } else {
+                            const data = await response.json();
+                            ElementPlus.ElMessage.error(data.error || '删除失败');
+                        }
+                    } catch (error) {
+                        if (error !== 'cancel') {
+                            ElementPlus.ElMessage.error('删除失败');
+                        }
+                    }
+                };
+                
+                // 打开重置密码弹窗
+                const openResetPasswordModal = (user) => {
+                    resetPasswordUser.value = user;
+                    newPassword.value = '';
+                    showPasswordModal.value = true;
+                };
+                
+                // 重置密码
+                const resetPassword = async () => {
+                    if (!newPassword.value || newPassword.value.length < 6) {
+                        ElementPlus.ElMessage.warning('密码长度不能少于6个字符');
+                        return;
+                    }
+                    
+                    resettingPassword.value = true;
+                    try {
+                        const response = await fetch(`/api/admin/users/${resetPasswordUser.value.id}/reset-password`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ new_password: newPassword.value })
+                        });
+                        
+                        if (response.ok) {
+                            ElementPlus.ElMessage.success('密码已重置');
+                            showPasswordModal.value = false;
+                        } else {
+                            const data = await response.json();
+                            ElementPlus.ElMessage.error(data.error || '重置失败');
+                        }
+                    } catch (error) {
+                        ElementPlus.ElMessage.error('重置失败');
+                    } finally {
+                        resettingPassword.value = false;
+                    }
+                };
+                
+                // 获取邀请码列表
+                const fetchInviteCodes = async (page = 1) => {
+                    loadingCodes.value = true;
+                    try {
+                        const response = await fetch(`/api/admin/invite-codes?page=${page}&per_page=${codePageSize.value}`);
+                        if (response.ok) {
+                            const data = await response.json();
+                            inviteCodes.value = data.data || [];
+                            codeTotal.value = data.total || 0;
+                            codePage.value = data.page || 1;
+                        }
+                    } catch (error) {
+                        ElementPlus.ElMessage.error('获取邀请码列表失败');
+                    } finally {
+                        loadingCodes.value = false;
+                    }
+                };
+                
+                // 生成邀请码
+                const generateInviteCodes = async (count) => {
+                    try {
+                        const response = await fetch(`/api/admin/invite-codes?count=${count}`, { method: 'POST' });
+                        if (response.ok) {
+                            const data = await response.json();
+                            ElementPlus.ElMessage.success(data.message);
+                            fetchInviteCodes(codePage.value);
+                        }
+                    } catch (error) {
+                        ElementPlus.ElMessage.error('生成邀请码失败');
+                    }
+                };
+                
+                // 复制邀请码
+                const copyCode = async (code) => {
+                    try {
+                        await navigator.clipboard.writeText(code);
+                        ElementPlus.ElMessage.success('已复制到剪贴板');
+                    } catch (error) {
+                        // 降级方案
+                        const textarea = document.createElement('textarea');
+                        textarea.value = code;
+                        document.body.appendChild(textarea);
+                        textarea.select();
+                        document.execCommand('copy');
+                        document.body.removeChild(textarea);
+                        ElementPlus.ElMessage.success('已复制到剪贴板');
+                    }
+                };
+                
+                // 删除邀请码
+                const deleteInviteCode = async (codeId) => {
+                    try {
+                        await ElementPlus.ElMessageBox.confirm(
+                            '确定要删除这个邀请码吗？',
+                            '确认删除',
+                            {
+                                confirmButtonText: '确定',
+                                cancelButtonText: '取消',
+                                type: 'warning'
+                            }
+                        );
+                        
+                        const response = await fetch(`/api/admin/invite-codes/${codeId}`, { method: 'DELETE' });
+                        if (response.ok) {
+                            ElementPlus.ElMessage.success('邀请码已删除');
+                            fetchInviteCodes(codePage.value);
+                        }
+                    } catch (error) {
+                        if (error !== 'cancel') {
+                            ElementPlus.ElMessage.error('删除失败');
+                        }
+                    }
+                };
+                
+                onMounted(() => {
+                    fetchUsers();
+                });
+                
+                return {
+                    activeTab,
+                    users,
+                    loadingUsers,
+                    userPage,
+                    userPageSize,
+                    userTotal,
+                    userTotalPages,
+                    userSearch,
+                    debounceUserSearch,
+                    showUserModal,
+                    editingUser,
+                    userForm,
+                    savingUser,
+                    showPasswordModal,
+                    resetPasswordUser,
+                    newPassword,
+                    resettingPassword,
+                    inviteCodes,
+                    loadingCodes,
+                    codePage,
+                    codePageSize,
+                    codeTotal,
+                    codeTotalPages,
+                    fetchUsers,
+                    openAddUserModal,
+                    openEditUserModal,
+                    saveUser,
+                    toggleUser,
+                    deleteUser,
+                    openResetPasswordModal,
+                    resetPassword,
+                    fetchInviteCodes,
+                    generateInviteCodes,
+                    copyCode,
+                    deleteInviteCode,
+                    formatTime
+                };
+            }
+        });
+        
+        app.use(ElementPlus);
+        for (const [key, component] of Object.entries(ElementPlusIconsVue)) {
+            app.component(key, component);
+        }
+        registerGlobalComponents(app);
+        app.mount('#app');
+    </script>
+</body>
+</html>

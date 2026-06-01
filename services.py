@@ -45,7 +45,7 @@ class DownloadService:
         
         return None
     
-    def create_task(self, user_id: str, download_type: str = 'all') -> DownloadTask:
+    def create_task(self, user_id: str, download_type: str = 'all', account_user_id: int = None) -> DownloadTask:
         """创建下载任务"""
         task_id = f"{user_id}_{int(time.time())}"
         task = DownloadTask(task_id, user_id, download_type)
@@ -54,7 +54,7 @@ class DownloadService:
             self._tasks[task_id] = task
         
         # 添加到数据库
-        database.add_download_history(task_id, user_id)
+        database.add_download_history(task_id, user_id, account_user_id=account_user_id)
         
         # 在后台线程中启动下载
         thread = threading.Thread(target=self._run_download, args=(task_id,))

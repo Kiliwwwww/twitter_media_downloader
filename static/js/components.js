@@ -37,6 +37,23 @@ const Navbar = {
                         <a href="/" :class="{ active: activePage === 'home' }">首页</a>
                         <a href="/config" :class="{ active: activePage === 'config' }">配置</a>
                         <a href="/history" :class="{ active: activePage === 'history' }">历史</a>
+                        <a v-if="user && user.role === 'admin'" href="/admin" :class="{ active: activePage === 'admin' }">管理</a>
+                    </div>
+                    <div class="nav-user" v-if="user">
+                        <a href="/profile" class="user-avatar-btn" :title="user.nickname || user.username">
+                            <div class="nav-avatar">
+                                <img v-if="user.avatar_url" :src="user.avatar_url" :alt="user.nickname"
+                                     @error="$event.target.style.display='none'; $event.target.nextElementSibling.style.display='flex'" />
+                                <span v-else class="nav-avatar-fallback">{{ (user.nickname || user.username || '?').charAt(0).toUpperCase() }}</span>
+                            </div>
+                        </a>
+                        <button class="logout-btn" @click="logout" title="退出登录">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/>
+                                <polyline points="16 17 21 12 16 7"/>
+                                <line x1="21" y1="12" x2="9" y2="12"/>
+                            </svg>
+                        </button>
                     </div>
                     <button class="theme-toggle" @click="toggleTheme" title="切换主题">
                         <svg v-if="isDark" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -60,6 +77,7 @@ const Navbar = {
     `,
     setup() {
         const isDark = ref(localStorage.getItem('theme') === 'dark');
+        const user = ref(null);
         
         const toggleTheme = () => {
             isDark.value = !isDark.value;
@@ -67,12 +85,35 @@ const Navbar = {
             localStorage.setItem('theme', isDark.value ? 'dark' : 'light');
         };
         
-        // 初始化主题
+        const fetchUser = async () => {
+            try {
+                const response = await fetch('/api/auth/me');
+                if (response.ok) {
+                    user.value = await response.json();
+                }
+            } catch (error) {
+                // 静默失败
+            }
+        };
+        
+        const logout = async () => {
+            try {
+                const response = await fetch('/api/auth/logout', { method: 'POST' });
+                if (response.ok) {
+                    window.location.href = '/login';
+                }
+            } catch (error) {
+                console.error('退出失败:', error);
+            }
+        };
+        
+        // 初始化
         onMounted(() => {
             document.documentElement.setAttribute('data-theme', isDark.value ? 'dark' : 'light');
+            fetchUser();
         });
         
-        return { isDark, toggleTheme };
+        return { isDark, user, toggleTheme, logout };
     }
 };
 

@@ -2,35 +2,40 @@ import os
 import asyncio
 import re
 import httpx
-from flask import Blueprint, render_template, request, jsonify, send_file
+from flask import Blueprint, render_template, request, jsonify, send_file, g
 
 from config import Config
 from services import download_service
 import database
+from auth import login_required, get_current_user
 
 # 创建蓝图
 main_bp = Blueprint('main', __name__)
 
 
 @main_bp.route('/')
+@login_required
 def index():
     """首页"""
     return render_template('index.html')
 
 
 @main_bp.route('/config')
+@login_required
 def config_page():
     """配置管理页面"""
     return render_template('config.html')
 
 
 @main_bp.route('/history')
+@login_required
 def history_page():
     """下载历史页面"""
     return render_template('history.html')
 
 
 @main_bp.route('/api/download', methods=['POST'])
+@login_required
 def start_download():
     """开始下载"""
     data = request.get_json()
@@ -49,10 +54,14 @@ def start_download():
     if not user_id_list:
         return jsonify({'error': '请输入有效的用户ID'}), 400
     
+    # 获取当前登录用户ID
+    current_user = get_current_user()
+    account_user_id = current_user['id'] if current_user else None
+    
     # 创建下载任务
     tasks = []
     for user_id in user_id_list:
-        task = download_service.create_task(user_id, download_type)
+        task = download_service.create_task(user_id, download_type, account_user_id)
         tasks.append({
             'task_id': task.task_id,
             'user_id': user_id
@@ -131,6 +140,7 @@ def update_configs():
 
 # 下载历史API
 @main_bp.route('/api/history')
+@login_required
 def get_history():
     """获取下载历史"""
     page = request.args.get('page', 1, type=int)
@@ -140,18 +150,27 @@ def get_history():
     date = request.args.get('date', '').strip()
     
     offset = (page - 1) * per_page
-
+    
+    # 获取当前用户信息，用于数据隔离
+    current_user = get_current_user()
+    account_user_id = None
+    if current_user and current_user['role'] != 'admin':
+        # 普通用户只能看到自己的记录
+        account_user_id = current_user['id']
+    
     history = database.get_download_history(
         limit=per_page, 
         offset=offset,
         keyword=keyword,
         status=status,
-        date=date
+        date=date,
+        account_user_id=account_user_id
     )
     total = database.get_download_history_count(
         keyword=keyword,
         status=status,
-        date=date
+        date=date,
+        account_user_id=account_user_id
     )
     
     return jsonify({

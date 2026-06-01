@@ -1,8 +1,10 @@
 import sqlite3
 import os
+import secrets
 from datetime import datetime
 from typing import Optional, List, Dict, Any
 from contextlib import contextmanager
+from werkzeug.security import generate_password_hash, check_password_hash
 
 from config import Config
 
@@ -40,6 +42,38 @@ def init_db():
             )
         ''')
         
+        # 创建用户表
+        cursor.execute('''
+            CREATE TABLE IF NOT EXISTS users (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                username TEXT UNIQUE NOT NULL,
+                password_hash TEXT NOT NULL,
+                nickname TEXT,
+                email TEXT,
+                twitter_id TEXT,
+                avatar_url TEXT,
+                role TEXT DEFAULT 'user',
+                is_active INTEGER DEFAULT 1,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+        ''')
+        
+        # 创建邀请码表
+        cursor.execute('''
+            CREATE TABLE IF NOT EXISTS invite_codes (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                code TEXT UNIQUE NOT NULL,
+                created_by INTEGER NOT NULL,
+                used_by INTEGER,
+                is_used INTEGER DEFAULT 0,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                used_at TIMESTAMP,
+                FOREIGN KEY (created_by) REFERENCES users(id),
+                FOREIGN KEY (used_by) REFERENCES users(id)
+            )
+        ''')
+        
         # 创建下载历史表
         cursor.execute('''
             CREATE TABLE IF NOT EXISTS download_history (
@@ -54,8 +88,10 @@ def init_db():
                 file_size INTEGER DEFAULT 0,
                 zip_path TEXT,
                 error_message TEXT,
+                account_user_id INTEGER,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                completed_at TIMESTAMP
+                completed_at TIMESTAMP,
+                FOREIGN KEY (account_user_id) REFERENCES users(id)
             )
         ''')
         
@@ -64,6 +100,10 @@ def init_db():
         columns = [col['name'] for col in cursor.fetchall()]
         if 'avatar_url' not in columns:
             cursor.execute('ALTER TABLE download_history ADD COLUMN avatar_url TEXT')
+        
+        # 迁移：为现有表添加 account_user_id 字段
+        if 'account_user_id' not in columns:
+            cursor.execute('ALTER TABLE download_history ADD COLUMN account_user_id INTEGER')
         
         # 插入默认配置
         default_configs = [
@@ -77,6 +117,15 @@ def init_db():
                 INSERT OR IGNORE INTO config (key, value, description)
                 VALUES (?, ?, ?)
             ''', (key, value, description))
+        
+        # 创建默认超管账号 admin/123456
+        cursor.execute('SELECT id FROM users WHERE username = ?', ('admin',))
+        if not cursor.fetchone():
+            password_hash = generate_password_hash('123456')
+            cursor.execute('''
+                INSERT INTO users (username, password_hash, nickname, role, is_active)
+                VALUES (?, ?, ?, ?, ?)
+            ''', ('admin', password_hash, '管理员', 'admin', 1))
 
 
 def get_config(key: str) -> Optional[str]:
@@ -106,14 +155,14 @@ def update_config(key: str, value: str):
         ''', (value, key))
 
 
-def add_download_history(task_id: str, user_id: str, user_name: str = None):
+def add_download_history(task_id: str, user_id: str, user_name: str = None, account_user_id: int = None):
     """添加下载历史"""
     with get_db() as conn:
         cursor = conn.cursor()
         cursor.execute('''
-            INSERT INTO download_history (task_id, user_id, user_name, status)
-            VALUES (?, ?, ?, 'downloading')
-        ''', (task_id, user_id, user_name))
+            INSERT INTO download_history (task_id, user_id, user_name, status, account_user_id)
+            VALUES (?, ?, ?, 'downloading', ?)
+        ''', (task_id, user_id, user_name, account_user_id))
 
 
 def update_download_history(task_id: str, **kwargs):
@@ -134,7 +183,7 @@ def update_download_history(task_id: str, **kwargs):
             cursor.execute(sql, values)
 
 
-def get_download_history(limit: int = 50, offset: int = 0, keyword: str = '', status: str = '', date: str = '') -> List[Dict[str, Any]]:
+def get_download_history(limit: int = 50, offset: int = 0, keyword: str = '', status: str = '', date: str = '', account_user_id: int = None) -> List[Dict[str, Any]]:
     """获取下载历史"""
     with get_db() as conn:
         cursor = conn.cursor()
@@ -155,6 +204,11 @@ def get_download_history(limit: int = 50, offset: int = 0, keyword: str = '', st
             conditions.append("DATE(created_at) = ?")
             params.append(date)
         
+        # 数据隔离：普通用户只能看到自己的记录
+        if account_user_id:
+            conditions.append("account_user_id = ?")
+            params.append(account_user_id)
+        
         where_clause = " WHERE " + " AND ".join(conditions) if conditions else ""
         
         sql = f'''
@@ -169,7 +223,7 @@ def get_download_history(limit: int = 50, offset: int = 0, keyword: str = '', st
         return [dict(row) for row in cursor.fetchall()]
 
 
-def get_download_history_count(keyword: str = '', status: str = '', date: str = '') -> int:
+def get_download_history_count(keyword: str = '', status: str = '', date: str = '', account_user_id: int = None) -> int:
     """获取下载历史总数"""
     with get_db() as conn:
         cursor = conn.cursor()
@@ -189,6 +243,11 @@ def get_download_history_count(keyword: str = '', status: str = '', date: str = 
         if date:
             conditions.append("DATE(created_at) = ?")
             params.append(date)
+        
+        # 数据隔离：普通用户只能看到自己的记录
+        if account_user_id:
+            conditions.append("account_user_id = ?")
+            params.append(account_user_id)
         
         where_clause = " WHERE " + " AND ".join(conditions) if conditions else ""
         
@@ -227,3 +286,191 @@ def update_avatar_by_user_id(user_id: str, avatar_url: str):
         cursor.execute('''
             UPDATE download_history SET avatar_url = ? WHERE user_id = ? AND (avatar_url IS NULL OR avatar_url = '')
         ''', (avatar_url, user_id))
+
+
+# ==================== 用户相关函数 ====================
+
+def get_user_by_username(username: str) -> Optional[Dict[str, Any]]:
+    """根据用户名获取用户"""
+    with get_db() as conn:
+        cursor = conn.cursor()
+        cursor.execute('SELECT * FROM users WHERE username = ?', (username,))
+        row = cursor.fetchone()
+        return dict(row) if row else None
+
+
+def get_user_by_id(user_id: int) -> Optional[Dict[str, Any]]:
+    """根据ID获取用户"""
+    with get_db() as conn:
+        cursor = conn.cursor()
+        cursor.execute('SELECT * FROM users WHERE id = ?', (user_id,))
+        row = cursor.fetchone()
+        return dict(row) if row else None
+
+
+def create_user(username: str, password: str, nickname: str = None, 
+                email: str = None, role: str = 'user') -> int:
+    """创建用户"""
+    with get_db() as conn:
+        cursor = conn.cursor()
+        password_hash = generate_password_hash(password)
+        cursor.execute('''
+            INSERT INTO users (username, password_hash, nickname, email, role, is_active)
+            VALUES (?, ?, ?, ?, ?, 1)
+        ''', (username, password_hash, nickname or username, email, role))
+        return cursor.lastrowid
+
+
+def update_user(user_id: int, **kwargs):
+    """更新用户信息"""
+    with get_db() as conn:
+        cursor = conn.cursor()
+        
+        # 处理密码字段
+        if 'password' in kwargs:
+            kwargs['password_hash'] = generate_password_hash(kwargs.pop('password'))
+        
+        updates = []
+        values = []
+        for key, value in kwargs.items():
+            updates.append(f'{key} = ?')
+            values.append(value)
+        
+        if updates:
+            updates.append('updated_at = CURRENT_TIMESTAMP')
+            values.append(user_id)
+            sql = f'UPDATE users SET {", ".join(updates)} WHERE id = ?'
+            cursor.execute(sql, values)
+
+
+def delete_user(user_id: int):
+    """删除用户"""
+    with get_db() as conn:
+        cursor = conn.cursor()
+        cursor.execute('DELETE FROM users WHERE id = ?', (user_id,))
+
+
+def get_users_list(page: int = 1, per_page: int = 20, keyword: str = '') -> Dict[str, Any]:
+    """获取用户列表"""
+    with get_db() as conn:
+        cursor = conn.cursor()
+        
+        conditions = []
+        params = []
+        
+        if keyword:
+            conditions.append("(username LIKE ? OR nickname LIKE ? OR email LIKE ?)")
+            params.extend([f'%{keyword}%', f'%{keyword}%', f'%{keyword}%'])
+        
+        where_clause = " WHERE " + " AND ".join(conditions) if conditions else ""
+        
+        # 获取总数
+        count_sql = f'SELECT COUNT(*) as count FROM users {where_clause}'
+        cursor.execute(count_sql, params)
+        total = cursor.fetchone()['count']
+        
+        # 获取分页数据
+        offset = (page - 1) * per_page
+        data_sql = f'''
+            SELECT id, username, nickname, email, twitter_id, avatar_url, role, is_active, created_at, updated_at
+            FROM users {where_clause}
+            ORDER BY created_at DESC
+            LIMIT ? OFFSET ?
+        '''
+        params.extend([per_page, offset])
+        cursor.execute(data_sql, params)
+        users = [dict(row) for row in cursor.fetchall()]
+        
+        return {
+            'data': users,
+            'total': total,
+            'page': page,
+            'per_page': per_page,
+            'total_pages': (total + per_page - 1) // per_page
+        }
+
+
+def toggle_user_active(user_id: int):
+    """切换用户启用/禁用状态"""
+    with get_db() as conn:
+        cursor = conn.cursor()
+        cursor.execute('UPDATE users SET is_active = CASE WHEN is_active = 1 THEN 0 ELSE 1 END, updated_at = CURRENT_TIMESTAMP WHERE id = ?', (user_id,))
+
+
+def verify_password(user_id: int, password: str) -> bool:
+    """验证用户密码"""
+    user = get_user_by_id(user_id)
+    if not user:
+        return False
+    return check_password_hash(user['password_hash'], password)
+
+
+# ==================== 邀请码相关函数 ====================
+
+def create_invite_code(created_by: int) -> str:
+    """创建邀请码"""
+    code = secrets.token_urlsafe(16)
+    with get_db() as conn:
+        cursor = conn.cursor()
+        cursor.execute('''
+            INSERT INTO invite_codes (code, created_by)
+            VALUES (?, ?)
+        ''', (code, created_by))
+    return code
+
+
+def get_invite_code(code: str) -> Optional[Dict[str, Any]]:
+    """获取邀请码信息"""
+    with get_db() as conn:
+        cursor = conn.cursor()
+        cursor.execute('SELECT * FROM invite_codes WHERE code = ?', (code,))
+        row = cursor.fetchone()
+        return dict(row) if row else None
+
+
+def use_invite_code(code: str, user_id: int) -> bool:
+    """使用邀请码"""
+    with get_db() as conn:
+        cursor = conn.cursor()
+        cursor.execute('''
+            UPDATE invite_codes SET is_used = 1, used_by = ?, used_at = CURRENT_TIMESTAMP
+            WHERE code = ? AND is_used = 0
+        ''', (user_id, code))
+        return cursor.rowcount > 0
+
+
+def get_invite_codes_list(page: int = 1, per_page: int = 20) -> Dict[str, Any]:
+    """获取邀请码列表"""
+    with get_db() as conn:
+        cursor = conn.cursor()
+        
+        # 获取总数
+        cursor.execute('SELECT COUNT(*) as count FROM invite_codes')
+        total = cursor.fetchone()['count']
+        
+        # 获取分页数据
+        offset = (page - 1) * per_page
+        cursor.execute('''
+            SELECT ic.*, u1.username as creator_name, u2.username as used_by_name
+            FROM invite_codes ic
+            LEFT JOIN users u1 ON ic.created_by = u1.id
+            LEFT JOIN users u2 ON ic.used_by = u2.id
+            ORDER BY ic.created_at DESC
+            LIMIT ? OFFSET ?
+        ''', (per_page, offset))
+        codes = [dict(row) for row in cursor.fetchall()]
+        
+        return {
+            'data': codes,
+            'total': total,
+            'page': page,
+            'per_page': per_page,
+            'total_pages': (total + per_page - 1) // per_page
+        }
+
+
+def delete_invite_code(code_id: int):
+    """删除邀请码"""
+    with get_db() as conn:
+        cursor = conn.cursor()
+        cursor.execute('DELETE FROM invite_codes WHERE id = ?', (code_id,))
