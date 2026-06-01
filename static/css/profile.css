@@ -257,6 +257,11 @@
     margin-top: 12px;
 }
 
+.save-btn svg {
+    width: 18px;
+    height: 18px;
+}
+
 .save-btn:hover:not(:disabled) {
     background: linear-gradient(135deg, #3B5DE7, #6B51E0);
     box-shadow: 0 6px 20px rgba(74, 108, 247, 0.4);
