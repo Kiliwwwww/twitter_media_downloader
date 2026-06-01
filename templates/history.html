@@ -779,6 +779,14 @@
                                         </svg>
                                         {{ item.downloaded_files || 0 }}/{{ item.total_files || 0 }} 个文件
                                     </span>
+                                    <span v-if="item.file_size" class="history-meta-item">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                            <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/>
+                                            <polyline points="7 10 12 15 17 10"/>
+                                            <line x1="12" y1="15" x2="12" y2="3"/>
+                                        </svg>
+                                        {{ formatFileSize(item.file_size) }}
+                                    </span>
                                     <span class="history-meta-item">
                                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                             <circle cx="12" cy="12" r="10"/>
@@ -884,6 +892,18 @@
                     return map[status] || '未知';
                 };
                 
+                const formatFileSize = (bytes) => {
+                    if (!bytes || bytes === 0) return '0 B';
+                    const units = ['B', 'KB', 'MB', 'GB'];
+                    let unitIndex = 0;
+                    let size = bytes;
+                    while (size >= 1024 && unitIndex < units.length - 1) {
+                        size /= 1024;
+                        unitIndex++;
+                    }
+                    return size.toFixed(2) + ' ' + units[unitIndex];
+                };
+                
                 const fetchHistory = async (page = 1) => {
                     loading.value = true;
                     try {
@@ -965,7 +985,7 @@
                 
                 return {
                     history, loading, currentPage, pageSize, total,
-                    totalPages, displayPages, getStatusText,
+                    totalPages, displayPages, getStatusText, formatFileSize,
                     fetchHistory, downloadFile, deleteHistory, clearCache
                 };
             }

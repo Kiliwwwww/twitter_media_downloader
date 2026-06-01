@@ -129,11 +129,17 @@ class DownloadService:
             task.status = 'completed'
             task.end_time = time.time()
             
+            # 计算ZIP文件大小
+            file_size = 0
+            if task.zip_path and os.path.exists(task.zip_path):
+                file_size = os.path.getsize(task.zip_path)
+            
             # 更新数据库
             database.update_download_history(
                 task_id,
                 status='completed',
                 zip_path=task.zip_path,
+                file_size=file_size,
                 completed_at=time.strftime('%Y-%m-%d %H:%M:%S')
             )
             

@@ -7,6 +7,7 @@
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <link rel="stylesheet" href="https://unpkg.com/element-plus/dist/index.css">
     <script src="https://unpkg.com/element-plus"></script>
+    <script src="https://unpkg.com/@element-plus/icons-vue"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/dark-mode.css') }}">
     <style>
@@ -562,10 +563,7 @@
                         </label>
                         <div v-if="cfg.key === 'auth_token' || cfg.key === 'ct0'" class="tip-wrapper">
                             <span class="tip-tag">
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                    <circle cx="12" cy="12" r="10"/>
-                                    <path d="M12 16v-4m0-4h.01"/>
-                                </svg>
+                                <el-icon><Warning /></el-icon>
                                 如何获取？
                             </span>
                             <div class="tip-content">
@@ -669,6 +667,10 @@
         });
         
         app.use(ElementPlus);
+        // 注册所有图标
+        for (const [key, component] of Object.entries(ElementPlusIconsVue)) {
+            app.component(key, component);
+        }
         app.mount('#app');
     </script>
     <script src="{{ url_for('static', filename='js/theme.js') }}"></script>
