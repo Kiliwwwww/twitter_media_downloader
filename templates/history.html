@@ -109,7 +109,8 @@
                     <div v-for="item in history" :key="item.task_id" class="history-item">
                         <div class="history-info">
                             <div class="history-avatar">
-                                {{ (item.user_name || item.user_id || '?').charAt(0).toUpperCase() }}
+                                <img v-if="item.avatar_url" :src="item.avatar_url" :alt="item.user_name" @error="$event.target.style.display='none'; $event.target.nextElementSibling.style.display='flex'" />
+                                <span v-else class="avatar-fallback">{{ (item.user_name || item.user_id || '?').charAt(0).toUpperCase() }}</span>
                             </div>
                             <div class="history-details">
                                 <div class="history-user">
@@ -250,6 +251,9 @@
                         }
                         total.value = data.total || 0;
                         currentPage.value = data.page || 1;
+                        
+                        // 自动补充缺失的头像
+                        fetchMissingAvatars(newData);
                     } catch (error) {
                         if (showLoading) {
                             ElementPlus.ElMessage.error('获取历史记录失败');
@@ -258,6 +262,31 @@
                     } finally {
                         if (showLoading) {
                             loading.value = false;
+                        }
+                    }
+                };
+                
+                const fetchMissingAvatars = async (items) => {
+                    const missingUsers = new Set();
+                    for (const item of items) {
+                        if (!item.avatar_url && item.user_id) {
+                            missingUsers.add(item.user_id);
+                        }
+                    }
+                    
+                    for (const userId of missingUsers) {
+                        try {
+                            const resp = await fetch(`/api/avatar/${encodeURIComponent(userId)}`);
+                            const data = await resp.json();
+                            if (data.avatar_url) {
+                                for (const item of history.value) {
+                                    if (item.user_id === userId) {
+                                        item.avatar_url = data.avatar_url;
+                                    }
+                                }
+                            }
+                        } catch (e) {
+                            // 静默失败
                         }
                     }
                 };

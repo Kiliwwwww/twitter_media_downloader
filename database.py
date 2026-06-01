@@ -47,6 +47,7 @@ def init_db():
                 task_id TEXT UNIQUE NOT NULL,
                 user_id TEXT NOT NULL,
                 user_name TEXT,
+                avatar_url TEXT,
                 status TEXT NOT NULL,
                 total_files INTEGER DEFAULT 0,
                 downloaded_files INTEGER DEFAULT 0,
@@ -57,6 +58,12 @@ def init_db():
                 completed_at TIMESTAMP
             )
         ''')
+        
+        # 迁移：为现有表添加 avatar_url 字段
+        cursor.execute("PRAGMA table_info(download_history)")
+        columns = [col['name'] for col in cursor.fetchall()]
+        if 'avatar_url' not in columns:
+            cursor.execute('ALTER TABLE download_history ADD COLUMN avatar_url TEXT')
         
         # 插入默认配置
         default_configs = [
@@ -211,3 +218,12 @@ def clear_all_download_history():
     with get_db() as conn:
         cursor = conn.cursor()
         cursor.execute('DELETE FROM download_history')
+
+
+def update_avatar_by_user_id(user_id: str, avatar_url: str):
+    """根据用户ID更新头像"""
+    with get_db() as conn:
+        cursor = conn.cursor()
+        cursor.execute('''
+            UPDATE download_history SET avatar_url = ? WHERE user_id = ? AND (avatar_url IS NULL OR avatar_url = '')
+        ''', (avatar_url, user_id))

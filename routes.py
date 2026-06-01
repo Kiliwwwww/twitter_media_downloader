@@ -1,4 +1,7 @@
 import os
+import asyncio
+import re
+import httpx
 from flask import Blueprint, render_template, request, jsonify, send_file
 
 from config import Config
@@ -180,5 +183,55 @@ def clear_cache():
             'deleted_files': result['deleted_files'],
             'deleted_dirs': result['deleted_dirs']
         })
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+async def _fetch_user_avatar(user_id: str) -> str:
+    """异步获取用户头像URL"""
+    proxy = Config.get_proxy()
+    cookie = Config.get_cookie()
+    
+    headers = {
+        'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36',
+        'authorization': 'Bearer AAAAAAAAAAAAAAAAAAAAANRILgAAAAAAnNwIzUejRCOuH5E6I8xnZz4puTs%3D1Zv7ttfk8LF81IUq16cHjhLTvJu4FA33AGWWjCpTnA',
+        'cookie': cookie
+    }
+    
+    re_token = r'ct0=([a-f0-9]+)'
+    match = re.search(re_token, cookie)
+    if match:
+        headers['x-csrf-token'] = match.group(1)
+    
+    headers['referer'] = f'https://twitter.com/{user_id}'
+    
+    url = f'https://twitter.com/i/api/graphql/xc8f1g7BYqr6VTzTbvNlGw/UserByScreenName?variables={{"screen_name":"{user_id}","withSafetyModeUserFields":false}}&features={{"hidden_profile_likes_enabled":false,"hidden_profile_subscriptions_enabled":false,"responsive_web_graphql_exclude_directive_enabled":true,"verified_phone_label_enabled":false,"subscriptions_verification_info_verified_since_enabled":true,"highlights_tweets_tab_ui_enabled":true,"creator_subscriptions_tweet_preview_api_enabled":true,"responsive_web_graphql_skip_user_profile_image_extensions_enabled":false,"responsive_web_graphql_timeline_navigation_enabled":true}}&fieldToggles={{"withAuxiliaryUserLabels":false}}'
+    
+    _proxy = proxy if proxy and proxy.strip() else None
+    
+    async with httpx.AsyncClient(proxy=_proxy) as client:
+        response = await client.get(url.replace('{', '%7B').replace('}', '%7D'), headers=headers, timeout=10.0)
+        if response.status_code == 200:
+            data = response.json()
+            if 'data' in data:
+                user_result = data['data']['user']['result']
+                return user_result.get('legacy', {}).get('profile_image_url_https')
+    return None
+
+
+@main_bp.route('/api/avatar/<user_id>')
+def get_user_avatar(user_id: str):
+    """获取用户头像"""
+    try:
+        loop = asyncio.new_event_loop()
+        avatar_url = loop.run_until_complete(_fetch_user_avatar(user_id))
+        loop.close()
+        
+        if avatar_url:
+            # 更新所有该用户的历史记录
+            database.update_avatar_by_user_id(user_id, avatar_url)
+            return jsonify({'avatar_url': avatar_url})
+        
+        return jsonify({'avatar_url': None})
     except Exception as e:
         return jsonify({'error': str(e)}), 500

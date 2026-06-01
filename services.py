@@ -117,6 +117,7 @@ class DownloadService:
                 database.update_download_history(
                     task_id,
                     user_name=result.get('user_name'),
+                    avatar_url=result.get('avatar_url'),
                     total_files=task.total_files,
                     downloaded_files=task.downloaded_files
                 )
