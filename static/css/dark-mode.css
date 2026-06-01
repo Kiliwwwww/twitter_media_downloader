@@ -596,8 +596,10 @@ body {
     color: var(--text-primary) !important;
 }
 
-.profile-card-title svg {
+.profile-card-title svg,
+.profile-card-title .el-icon {
     stroke: var(--icon-color) !important;
+    color: var(--icon-color) !important;
 }
 
 .avatar-info h3 {
