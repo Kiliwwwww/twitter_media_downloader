@@ -104,6 +104,11 @@ body {
     display: flex;
     gap: 8px;
 }
+.nav-right {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
 .nav-links a {
     padding: 8px 16px;
     color: #6B7280;
