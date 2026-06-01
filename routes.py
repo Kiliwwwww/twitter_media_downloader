@@ -31,22 +31,40 @@ def history_page():
 def start_download():
     """开始下载"""
     data = request.get_json()
-    user_id = data.get('user_id', '').strip()
+    user_ids = data.get('user_id', '').strip()
     download_type = data.get('download_type', 'all')  # all, video, image
     
-    if not user_id:
+    if not user_ids:
         return jsonify({'error': '请输入用户ID'}), 400
     
     if download_type not in ['all', 'video', 'image']:
         return jsonify({'error': '无效的下载类型'}), 400
     
-    # 创建下载任务
-    task = download_service.create_task(user_id, download_type)
+    # 支持多个用户ID，用逗号分隔
+    user_id_list = [uid.strip() for uid in user_ids.split(',') if uid.strip()]
     
-    return jsonify({
-        'task_id': task.task_id,
-        'message': f'开始下载用户 {user_id} 的媒体文件'
-    })
+    if not user_id_list:
+        return jsonify({'error': '请输入有效的用户ID'}), 400
+    
+    # 创建下载任务
+    tasks = []
+    for user_id in user_id_list:
+        task = download_service.create_task(user_id, download_type)
+        tasks.append({
+            'task_id': task.task_id,
+            'user_id': user_id
+        })
+    
+    if len(tasks) == 1:
+        return jsonify({
+            'task_id': tasks[0]['task_id'],
+            'message': f'开始下载用户 {tasks[0]["user_id"]} 的媒体文件'
+        })
+    else:
+        return jsonify({
+            'tasks': tasks,
+            'message': f'已创建 {len(tasks)} 个下载任务'
+        })
 
 
 @main_bp.route('/api/progress/<task_id>')

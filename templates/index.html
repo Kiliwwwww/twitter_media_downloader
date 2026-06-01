@@ -873,7 +873,7 @@
                                 type="text" 
                                 class="input-field" 
                                 v-model="userId" 
-                                placeholder="请输入Twitter用户名（无需带@）"
+                                placeholder="多个用户用逗号分隔，如：user1,user2,user3"
                                 :disabled="isDownloading"
                                 @keyup.enter="startDownload"
                             >
@@ -1152,11 +1152,23 @@
                         });
                         const data = await response.json();
                         if (response.ok) {
-                            taskId.value = data.task_id;
-                            status.value = 'downloading';
-                            progressInterval = setInterval(fetchProgress, 1000);
-                            timeInterval = setInterval(updateElapsedTime, 1000);
-                            ElementPlus.ElMessage.success('下载任务已创建');
+                            if (data.task_id) {
+                                // 单个任务
+                                taskId.value = data.task_id;
+                                status.value = 'downloading';
+                                progressInterval = setInterval(fetchProgress, 1000);
+                                timeInterval = setInterval(updateElapsedTime, 1000);
+                            } else if (data.tasks && data.tasks.length > 0) {
+                                // 多个任务，跳转到历史页面查看
+                                ElementPlus.ElMessage.success(data.message);
+                                isDownloading.value = false;
+                                // 延迟跳转到历史页面
+                                setTimeout(() => {
+                                    window.location.href = '/history';
+                                }, 1500);
+                                return;
+                            }
+                            ElementPlus.ElMessage.success(data.message);
                         } else {
                             ElementPlus.ElMessage.error(data.error || '下载失败');
                             isDownloading.value = false;
