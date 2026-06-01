@@ -904,19 +904,30 @@
                     return size.toFixed(2) + ' ' + units[unitIndex];
                 };
                 
-                const fetchHistory = async (page = 1) => {
-                    loading.value = true;
+                const fetchHistory = async (page = 1, showLoading = true) => {
+                    if (showLoading) {
+                        loading.value = true;
+                    }
                     try {
                         const response = await fetch(`/api/history?page=${page}&per_page=${pageSize.value}`);
                         const data = await response.json();
-                        history.value = data.data || [];
+                        const newData = data.data || [];
+                        
+                        // 只在数据变化时更新，避免页面闪烁
+                        if (JSON.stringify(newData) !== JSON.stringify(history.value)) {
+                            history.value = newData;
+                        }
                         total.value = data.total || 0;
                         currentPage.value = data.page || 1;
                     } catch (error) {
-                        ElementPlus.ElMessage.error('获取历史记录失败');
+                        if (showLoading) {
+                            ElementPlus.ElMessage.error('获取历史记录失败');
+                        }
                         history.value = [];
                     } finally {
-                        loading.value = false;
+                        if (showLoading) {
+                            loading.value = false;
+                        }
                     }
                 };
                 
@@ -985,9 +996,9 @@
                 
                 onMounted(() => {
                     fetchHistory();
-                    // 每5秒刷新一次
+                    // 每5秒静默刷新一次
                     refreshInterval = setInterval(() => {
-                        fetchHistory(currentPage.value);
+                        fetchHistory(currentPage.value, false);
                     }, 5000);
                 });
                 
