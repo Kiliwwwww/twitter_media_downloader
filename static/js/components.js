@@ -129,9 +129,7 @@ const PageHeader = {
     template: `
         <div class="page-header">
             <div class="page-icon" v-if="icon">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path :d="icon"/>
-                </svg>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" v-html="icon"></svg>
             </div>
             <div style="flex: 1;">
                 <h1 class="page-title">{{ title }}</h1>
