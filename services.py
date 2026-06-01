@@ -216,23 +216,27 @@ class DownloadService:
         # 生成时间戳
         timestamp = time.strftime('%Y%m%d_%H%M%S')
         
-        # 根据下载类型生成文件名
-        download_type = task.download_type
-        if download_type == 'video':
-            zip_filename = f'{task.user_id}_video_{timestamp}.zip'
-        elif download_type == 'image':
-            zip_filename = f'{task.user_id}_img_{timestamp}.zip'
-        else:  # all
-            zip_filename = f'{task.user_id}_video_img_{timestamp}.zip'
-        
-        zip_path = os.path.join(Config.DOWNLOAD_FOLDER, zip_filename)
-        
-        # 获取用户信息用于文件夹名称
+        # 获取用户信息
         from database import get_download_by_task_id
         history = get_download_by_task_id(task.task_id)
         user_name = history.get('user_name') if history else None
-        # 构建根目录名称：用户名_用户ID
-        folder_name = f'{user_name}_{task.user_id}' if user_name else task.user_id
+        
+        # 构建名称：用户名_用户ID（如果有用户名）
+        name_prefix = f'{user_name}_{task.user_id}' if user_name else task.user_id
+        
+        # 根据下载类型生成文件名
+        download_type = task.download_type
+        if download_type == 'video':
+            zip_filename = f'{name_prefix}_video_{timestamp}.zip'
+        elif download_type == 'image':
+            zip_filename = f'{name_prefix}_img_{timestamp}.zip'
+        else:  # all
+            zip_filename = f'{name_prefix}_video_img_{timestamp}.zip'
+        
+        zip_path = os.path.join(Config.DOWNLOAD_FOLDER, zip_filename)
+        
+        # 构建根目录名称
+        folder_name = name_prefix
         
         with zipfile.ZipFile(zip_path, 'w', zipfile.ZIP_DEFLATED) as zipf:
             for root, dirs, files in os.walk(task.download_path):
