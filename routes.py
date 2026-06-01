@@ -234,7 +234,11 @@ async def _fetch_user_avatar(user_id: str) -> str:
             data = response.json()
             if 'data' in data:
                 user_result = data['data']['user']['result']
-                return user_result.get('legacy', {}).get('profile_image_url_https')
+                avatar_url = user_result.get('legacy', {}).get('profile_image_url_https')
+                # 将头像URL替换为高清版本 _400x400
+                if avatar_url:
+                    avatar_url = avatar_url.replace('_normal', '_400x400')
+                return avatar_url
     return None
 
 

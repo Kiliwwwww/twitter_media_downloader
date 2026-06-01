@@ -124,7 +124,11 @@ class TwitterDownloader:
                 
                 self.user_info['rest_id'] = user_result.get('rest_id') or user_result.get('id')
                 self.user_info['name'] = user_result.get('legacy', {}).get('name')
-                self.user_info['avatar_url'] = user_result.get('legacy', {}).get('profile_image_url_https')
+                # 将头像URL替换为高清版本 _400x400
+                avatar_url = user_result.get('legacy', {}).get('profile_image_url_https')
+                if avatar_url:
+                    avatar_url = avatar_url.replace('_normal', '_400x400')
+                self.user_info['avatar_url'] = avatar_url
                 self.user_info['statuses_count'] = user_result.get('legacy', {}).get('statuses_count')
                 self.user_info['media_count'] = user_result.get('legacy', {}).get('media_count')
                 
