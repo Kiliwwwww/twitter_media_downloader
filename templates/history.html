@@ -856,7 +856,7 @@
     {% endraw %}
 
     <script>
-        const { createApp, ref, computed, onMounted } = Vue;
+        const { createApp, ref, computed, onMounted, onUnmounted } = Vue;
         
         const app = createApp({
             setup() {
@@ -981,7 +981,23 @@
                     }
                 };
                 
-                onMounted(() => fetchHistory());
+                let refreshInterval = null;
+                
+                onMounted(() => {
+                    fetchHistory();
+                    // 每5秒刷新一次
+                    refreshInterval = setInterval(() => {
+                        fetchHistory(currentPage.value);
+                    }, 5000);
+                });
+                
+                onUnmounted(() => {
+                    // 清除定时器
+                    if (refreshInterval) {
+                        clearInterval(refreshInterval);
+                        refreshInterval = null;
+                    }
+                });
                 
                 return {
                     history, loading, currentPage, pageSize, total,
