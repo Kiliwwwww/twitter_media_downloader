@@ -1,6 +1,6 @@
 # 推特媒体下载器
 
-基于 [twitter_download](https://github.com/caolvchong-top/twitter_download) 项目实现的Web版本，使用Flask + Vue3 + Element Plus 构建。
+基于 [twitter_download](https://github.com/caolvchong-top/twitter_download) 项目实现的Web版本，使用 Flask + Vue3 + Element Plus 构建。
 
 ## 功能特性
 
@@ -8,10 +8,22 @@
 - 📊 实时显示下载进度
 - 📦 下载完成后自动打包为ZIP文件（按视频/图片/其他分类）
 - 🔄 支持异步下载，不阻塞界面
-- 🎨 现代化的Element Plus前端界面
+- 🎨 现代化的 Element Plus 前端界面
+- 🌙 支持暗黑模式，保护眼睛
 - ⚙️ 配置管理 - 支持代理、Cookie等配置的持久化存储
 - 📜 下载历史 - 查看和管理之前的下载记录
-- 🐳 支持Docker部署
+- 🧹 缓存清理 - 一键清理缓存文件和下载历史
+- 🐳 支持 Docker 部署
+
+## 技术栈
+
+| 类别 | 技术 |
+|------|------|
+| 后端 | Python 3.12 + Flask |
+| 前端 | Vue3 + Element Plus |
+| 数据库 | SQLite |
+| HTTP客户端 | httpx |
+| 容器化 | Docker + Docker Compose |
 
 ## 项目结构
 
@@ -40,8 +52,11 @@ twitter_download_server/
 │   ├── config.html        # 配置管理页
 │   └── history.html       # 下载历史页
 └── static/                # 静态文件
+    ├── css/
+    │   └── dark-mode.css  # 暗黑模式样式
     └── js/
-        └── app.js
+        ├── app.js         # 主应用脚本
+        └── theme.js       # 主题切换脚本
 ```
 
 ## 部署方式
@@ -82,8 +97,8 @@ python run.py
 
 ```bash
 # 克隆项目
-git clone https://gitee.com/kili233/twitter_download_server.git
-cd twitter_download_server
+git clone https://github.com/Kiliwwwww/twitter_media_downloader.git
+cd twitter_media_downloader
 
 # 启动服务
 docker-compose up -d
@@ -99,8 +114,8 @@ docker-compose down
 
 ```bash
 # 克隆项目
-git clone https://gitee.com/kili233/twitter_download_server.git
-cd twitter_download_server
+git clone https://github.com/Kiliwwwww/twitter_media_downloader.git
+cd twitter_media_downloader
 
 # 构建镜像
 docker build -t twitter-downloader .
@@ -171,6 +186,7 @@ sudo systemctl restart docker
 - 失败时可查看详细错误信息
 - 支持重新下载已完成的任务
 - 支持删除历史记录
+- 支持清理缓存（同时清空下载历史）
 
 ## 配置说明
 
@@ -190,6 +206,30 @@ sudo systemctl restart docker
 4. 在 Cookies 中找到 twitter.com
 5. 分别复制 `auth_token` 和 `ct0` 的值
 
+## 常见问题
+
+### Q: 下载失败怎么办？
+A: 请检查以下几点：
+1. Cookie 是否有效且未过期
+2. 代理设置是否正确
+3. 网络连接是否正常
+4. 目标用户是否为公开账号
+
+### Q: 如何更新到最新版本？
+A: 
+```bash
+git pull origin main
+# 如果使用 Docker
+docker-compose down
+docker-compose up -d --build
+```
+
+### Q: 下载的文件保存在哪里？
+A: 默认保存在项目目录下的 `downloads` 文件夹中，按用户名分目录存放。
+
+### Q: 支持下载哪些类型的媒体？
+A: 支持下载推特上的图片（jpg、png、webp）和视频（mp4、mov）。
+
 ## 注意事项
 
 1. 需要有效的推特Cookie才能下载
@@ -197,6 +237,15 @@ sudo systemctl restart docker
 3. 大量下载可能会触发推特API限制
 4. 请遵守推特的使用条款和相关法律法规
 
-## 原项目参考
+## 贡献
+
+欢迎提交 Issue 和 Pull Request！
+
+## 许可证
 
 本项目基于 [twitter_download](https://github.com/caolvchong-top/twitter_download) 项目实现，感谢原作者的贡献。
+
+## 镜像仓库
+
+- GitHub: https://github.com/Kiliwwwww/twitter_media_downloader
+- Gitee: https://gitee.com/kili233/twitter_download_server
