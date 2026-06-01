@@ -68,9 +68,14 @@
 .input-label svg {
     color: #4A6CF7;
 }
+.input-row {
+    display: flex;
+    gap: 16px;
+    align-items: center;
+}
 .input-icon-wrapper {
     position: relative;
-    width: 380px;
+    flex: 1;
 }
 .input-icon {
     position: absolute;
@@ -204,7 +209,7 @@
     gap: 8px;
     white-space: nowrap;
     box-shadow: 0 2px 8px rgba(74, 108, 247, 0.25);
-    align-self: flex-end;
+    flex-shrink: 0;
 }
 .download-btn:hover:not(:disabled) {
     background: linear-gradient(135deg, #3B5DE7, #6B51E0);
@@ -449,9 +454,12 @@
     .input-section {
         padding: 20px;
     }
-    .input-wrapper {
+    .input-row {
         flex-direction: column;
-        gap: 16px;
+        gap: 12px;
+    }
+    .type-selector {
+        flex-direction: column;
     }
     .input-icon-wrapper {
         width: 100%;

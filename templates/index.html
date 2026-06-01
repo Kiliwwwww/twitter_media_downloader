@@ -54,16 +54,30 @@
                             </svg>
                             推特用户ID
                         </div>
-                        <div class="input-icon-wrapper">
-                            <span class="input-icon">@</span>
-                            <input 
-                                type="text" 
-                                class="input-field" 
-                                v-model="userId" 
-                                placeholder="多个用户用逗号分隔，如：user1,user2,user3"
-                                :disabled="isDownloading"
-                                @keyup.enter="startDownload"
+                        <div class="input-row">
+                            <div class="input-icon-wrapper">
+                                <span class="input-icon">@</span>
+                                <input 
+                                    type="text" 
+                                    class="input-field" 
+                                    v-model="userId" 
+                                    placeholder="多个用户用逗号分隔，如：user1,user2,user3"
+                                    :disabled="isDownloading"
+                                    @keyup.enter="startDownload"
+                                >
+                            </div>
+                            <button 
+                                class="download-btn"
+                                :class="{ loading: isDownloading }"
+                                :disabled="!userId.trim() || downloadTypes.length === 0 || isDownloading"
+                                @click="startDownload"
                             >
+                                <span v-if="isDownloading" class="btn-spinner"></span>
+                                <svg v-else width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                                    <path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+                                </svg>
+                                {{ isDownloading ? '正在下载...' : '开始下载' }}
+                            </button>
                         </div>
                         <div class="type-selector">
                             <label 
@@ -115,18 +129,6 @@
                             </label>
                         </div>
                     </div>
-                    <button 
-                        class="download-btn"
-                        :class="{ loading: isDownloading }"
-                        :disabled="!userId.trim() || downloadTypes.length === 0 || isDownloading"
-                        @click="startDownload"
-                    >
-                        <span v-if="isDownloading" class="btn-spinner"></span>
-                        <svg v-else width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-                            <path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
-                        </svg>
-                        {{ isDownloading ? '正在下载...' : '开始下载' }}
-                    </button>
                 </div>
             </div>
             
