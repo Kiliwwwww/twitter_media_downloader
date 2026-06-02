@@ -11,6 +11,8 @@ class DownloadTask:
         self.progress = 0
         self.total_files = 0
         self.downloaded_files = 0
+        self.skipped_files = 0
+        self.failed_files = 0
         self.start_time = time.time()
         self.end_time = None
         self.error_message = None
@@ -27,6 +29,8 @@ class DownloadTask:
             'progress': self.progress,
             'total_files': self.total_files,
             'downloaded_files': self.downloaded_files,
+            'skipped_files': self.skipped_files,
+            'failed_files': self.failed_files,
             'elapsed_time': time.time() - self.start_time,
             'error_message': self.error_message
         }

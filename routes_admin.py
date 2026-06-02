@@ -2,6 +2,7 @@ from flask import Blueprint, render_template, request, jsonify
 
 import database
 from auth import admin_required, get_current_user
+from logger import DownloadLogger
 
 # 创建管理后台蓝图
 admin_bp = Blueprint('admin', __name__)
@@ -12,6 +13,13 @@ admin_bp = Blueprint('admin', __name__)
 def admin_page():
     """管理后台页面"""
     return render_template('admin.html')
+
+
+@admin_bp.route('/logs')
+@admin_required
+def logs_page():
+    """下载日志页面"""
+    return render_template('logs.html')
 
 
 # ==================== 用户管理API ====================
@@ -213,3 +221,41 @@ def delete_invite_code(code_id: int):
     """删除邀请码"""
     database.delete_invite_code(code_id)
     return jsonify({'message': '邀请码已删除'})
+
+
+# ==================== 下载日志API ====================
+
+@admin_bp.route('/api/admin/logs')
+@admin_required
+def get_logs():
+    """获取所有下载日志列表"""
+    logs = DownloadLogger.get_all_logs()
+    return jsonify({'data': logs})
+
+
+@admin_bp.route('/api/admin/logs/<task_id>')
+@admin_required
+def get_log_content(task_id: str):
+    """获取指定任务的日志内容"""
+    content = DownloadLogger.get_log_content(task_id)
+    if content is None:
+        return jsonify({'error': '日志不存在'}), 404
+    return jsonify({'task_id': task_id, 'content': content})
+
+
+@admin_bp.route('/api/admin/logs/<task_id>', methods=['DELETE'])
+@admin_required
+def delete_log(task_id: str):
+    """删除指定任务的日志"""
+    success = DownloadLogger.delete_log(task_id)
+    if success:
+        return jsonify({'message': '日志已删除'})
+    return jsonify({'error': '日志不存在'}), 404
+
+
+@admin_bp.route('/api/admin/logs', methods=['DELETE'])
+@admin_required
+def clear_all_logs():
+    """清空所有日志"""
+    count = DownloadLogger.clear_all_logs()
+    return jsonify({'message': f'已清理 {count} 个日志文件'})

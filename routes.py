@@ -1,13 +1,16 @@
 import os
 import asyncio
 import re
+import json
+import time
 import httpx
-from flask import Blueprint, render_template, request, jsonify, send_file, g
+from flask import Blueprint, render_template, request, jsonify, send_file, g, Response
 
 from config import Config
 from services import download_service
+from realtime_logger import log_manager
 import database
-from auth import login_required, get_current_user
+from auth import login_required, get_current_user, admin_required
 
 # 创建蓝图
 main_bp = Blueprint('main', __name__)
@@ -258,3 +261,102 @@ def get_user_avatar(user_id: str):
         return jsonify({'avatar_url': None})
     except Exception as e:
         return jsonify({'error': str(e)}), 500
+
+
+# ==================== 实时日志SSE接口 ====================
+
+@main_bp.route('/api/logs/stream')
+@admin_required
+def stream_all_logs():
+    """SSE: 实时推送所有日志"""
+    def generate():
+        q = log_manager.subscribe_all()
+        try:
+            # 先发送已有日志
+            existing = log_manager.get_all_logs(limit=50)
+            for log in reversed(existing):
+                yield f"data: {json.dumps(log, ensure_ascii=False)}\n\n"
+            
+            # 实时推送新日志
+            while True:
+                try:
+                    entry = q.get(timeout=30)
+                    yield f"data: {json.dumps(entry.to_dict(), ensure_ascii=False)}\n\n"
+                except queue.Empty:
+                    # 发送心跳保持连接
+                    yield f": heartbeat\n\n"
+        except GeneratorExit:
+            pass
+        finally:
+            log_manager.unsubscribe_all(q)
+    
+    return Response(
+        generate(),
+        mimetype='text/event-stream',
+        headers={
+            'Cache-Control': 'no-cache',
+            'X-Accel-Buffering': 'no',
+            'Connection': 'keep-alive'
+        }
+    )
+
+
+@main_bp.route('/api/logs/stream/<task_id>')
+@login_required
+def stream_task_logs(task_id: str):
+    """SSE: 实时推送指定任务日志"""
+    def generate():
+        q = log_manager.subscribe_task(task_id)
+        try:
+            # 先发送已有日志
+            existing = log_manager.get_logs(task_id)
+            for log in existing:
+                yield f"data: {json.dumps(log, ensure_ascii=False)}\n\n"
+            
+            # 实时推送新日志
+            while True:
+                try:
+                    entry = q.get(timeout=30)
+                    yield f"data: {json.dumps(entry.to_dict(), ensure_ascii=False)}\n\n"
+                except queue.Empty:
+                    yield f": heartbeat\n\n"
+        except GeneratorExit:
+            pass
+        finally:
+            log_manager.unsubscribe_task(task_id, q)
+    
+    return Response(
+        generate(),
+        mimetype='text/event-stream',
+        headers={
+            'Cache-Control': 'no-cache',
+            'X-Accel-Buffering': 'no',
+            'Connection': 'keep-alive'
+        }
+    )
+
+
+@main_bp.route('/api/logs')
+@admin_required
+def get_all_logs_api():
+    """获取所有日志（非SSE，用于初始化）"""
+    limit = request.args.get('limit', 200, type=int)
+    logs = log_manager.get_all_logs(limit=limit)
+    return jsonify({'data': logs})
+
+
+@main_bp.route('/api/logs/<task_id>')
+@login_required
+def get_task_logs_api(task_id: str):
+    """获取指定任务日志"""
+    limit = request.args.get('limit', 100, type=int)
+    logs = log_manager.get_logs(task_id, limit=limit)
+    return jsonify({'data': logs})
+
+
+@main_bp.route('/api/logs', methods=['DELETE'])
+@admin_required
+def clear_all_logs_api():
+    """清除所有日志"""
+    log_manager.clear_all_logs()
+    return jsonify({'message': '日志已清除'})

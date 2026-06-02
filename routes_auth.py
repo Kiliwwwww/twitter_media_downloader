@@ -47,9 +47,9 @@ def login():
     session['username'] = user['username']
     session['role'] = user['role']
     
-    # 记住我功能：设置session过期时间为30天
-    if remember:
-        session.permanent = True
+    # 始终设置为持久化session（30天过期）
+    # secret_key已持久化存储，重启服务器不会丢失session
+    session.permanent = True
     
     return jsonify({
         'message': '登录成功',

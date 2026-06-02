@@ -1,0 +1,594 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>实时日志 - 推特媒体下载器</title>
+    <link rel="icon" type="image/svg+xml" href="{{ url_for('static', filename='favicon.svg') }}">
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <link rel="stylesheet" href="https://unpkg.com/element-plus/dist/index.css">
+    <script src="https://unpkg.com/element-plus"></script>
+    <script src="https://unpkg.com/@element-plus/icons-vue"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/common.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/admin.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/dark-mode.css') }}">
+    <style>
+        .log-container {
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-radius: 16px;
+            border: 1px solid rgba(229, 231, 235, 0.5);
+            box-shadow: 
+                0 4px 6px -1px rgba(74, 108, 247, 0.1),
+                0 2px 4px -2px rgba(74, 108, 247, 0.1),
+                inset 0 1px 0 rgba(255, 255, 255, 0.5);
+            overflow: hidden;
+            animation: fadeIn 0.3s ease;
+        }
+        
+        .log-toolbar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 16px 20px;
+            background: rgba(249, 250, 251, 0.8);
+            border-bottom: 1px solid rgba(229, 231, 235, 0.5);
+        }
+        
+        .log-toolbar-left {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+        
+        .log-toolbar-right {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .log-status {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 13px;
+            color: #6B7280;
+            font-weight: 500;
+        }
+        
+        .log-status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #EF4444;
+            transition: background 0.3s;
+        }
+        
+        .log-status-dot.connected {
+            background: #10B981;
+            box-shadow: 0 0 8px rgba(16, 185, 129, 0.4);
+        }
+        
+        .log-count {
+            font-size: 13px;
+            color: #9CA3AF;
+            background: rgba(74, 108, 247, 0.08);
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-weight: 500;
+        }
+        
+        .log-filters {
+            display: flex;
+            gap: 4px;
+            background: rgba(255, 255, 255, 0.8);
+            padding: 4px;
+            border-radius: 10px;
+            border: 1px solid rgba(229, 231, 235, 0.5);
+        }
+        
+        .log-filter-btn {
+            padding: 6px 14px;
+            border: none;
+            border-radius: 8px;
+            background: transparent;
+            color: #6B7280;
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-family: inherit;
+        }
+        
+        .log-filter-btn:hover {
+            color: #4A6CF7;
+            background: rgba(74, 108, 247, 0.06);
+        }
+        
+        .log-filter-btn.active {
+            background: white;
+            color: #4A6CF7;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+        }
+        
+        .log-body {
+            height: calc(100vh - 320px);
+            min-height: 400px;
+            overflow-y: auto;
+            padding: 12px 0;
+            font-family: 'SF Mono', 'Fira Code', 'Consolas', 'Monaco', monospace;
+            font-size: 13px;
+            line-height: 1.8;
+            background: rgba(249, 250, 251, 0.5);
+        }
+        
+        .log-body::-webkit-scrollbar {
+            width: 6px;
+        }
+        
+        .log-body::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        
+        .log-body::-webkit-scrollbar-thumb {
+            background: rgba(156, 163, 175, 0.3);
+            border-radius: 3px;
+        }
+        
+        .log-body::-webkit-scrollbar-thumb:hover {
+            background: rgba(156, 163, 175, 0.5);
+        }
+        
+        .log-entry {
+            display: flex;
+            align-items: flex-start;
+            padding: 6px 20px;
+            margin: 0 8px;
+            border-radius: 6px;
+            transition: background 0.15s;
+        }
+        
+        .log-entry:hover {
+            background: rgba(74, 108, 247, 0.04);
+        }
+        
+        .log-time {
+            color: #9CA3AF;
+            min-width: 75px;
+            margin-right: 12px;
+            user-select: none;
+            font-size: 12px;
+        }
+        
+        .log-level {
+            min-width: 55px;
+            margin-right: 10px;
+            padding: 1px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .log-level.info {
+            background: rgba(74, 108, 247, 0.1);
+            color: #4A6CF7;
+        }
+        
+        .log-level.success {
+            background: rgba(16, 185, 129, 0.1);
+            color: #10B981;
+        }
+        
+        .log-level.warning {
+            background: rgba(245, 158, 11, 0.1);
+            color: #F59E0B;
+        }
+        
+        .log-level.error {
+            background: rgba(239, 68, 68, 0.1);
+            color: #EF4444;
+        }
+        
+        .log-category {
+            min-width: 50px;
+            margin-right: 10px;
+            font-size: 11px;
+            color: #9CA3AF;
+            font-weight: 500;
+        }
+        
+        .log-message {
+            flex: 1;
+            word-break: break-all;
+            color: #374151;
+        }
+        
+        .log-message.success {
+            color: #059669;
+        }
+        
+        .log-message.error {
+            color: #DC2626;
+        }
+        
+        .log-message.warning {
+            color: #D97706;
+        }
+        
+        .log-empty {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 300px;
+            color: #9CA3AF;
+        }
+        
+        .log-empty-icon {
+            width: 64px;
+            height: 64px;
+            background: linear-gradient(135deg, rgba(74, 108, 247, 0.1), rgba(123, 97, 255, 0.1));
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 16px;
+        }
+        
+        .log-empty-icon svg {
+            width: 32px;
+            height: 32px;
+            color: #4A6CF7;
+        }
+        
+        .log-empty h3 {
+            font-size: 16px;
+            font-weight: 600;
+            color: #6B7280;
+            margin-bottom: 4px;
+        }
+        
+        .log-empty p {
+            font-size: 14px;
+            color: #9CA3AF;
+        }
+        
+        /* 操作按钮 */
+        .log-action-btn {
+            height: 36px;
+            padding: 0 16px;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-family: inherit;
+            white-space: nowrap;
+        }
+        
+        .log-action-btn.primary {
+            background: linear-gradient(135deg, #4A6CF7, #7B61FF);
+            color: white;
+            border: none;
+            box-shadow: 0 2px 8px rgba(74, 108, 247, 0.25);
+        }
+        
+        .log-action-btn.primary:hover {
+            background: linear-gradient(135deg, #3B5DE7, #6B51E0);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(74, 108, 247, 0.35);
+        }
+        
+        .log-action-btn.secondary {
+            background: rgba(255, 255, 255, 0.9);
+            color: #6B7280;
+            border: 1.5px solid rgba(229, 231, 235, 0.8);
+        }
+        
+        .log-action-btn.secondary:hover {
+            border-color: #4A6CF7;
+            color: #4A6CF7;
+            background: rgba(74, 108, 247, 0.04);
+        }
+        
+        .log-action-btn.danger {
+            background: rgba(239, 68, 68, 0.08);
+            color: #EF4444;
+            border: 1.5px solid rgba(239, 68, 68, 0.2);
+        }
+        
+        .log-action-btn.danger:hover {
+            background: rgba(239, 68, 68, 0.15);
+            border-color: rgba(239, 68, 68, 0.4);
+        }
+        
+        .log-action-btn svg {
+            width: 16px;
+            height: 16px;
+        }
+        
+        /* 响应式 */
+        @media (max-width: 768px) {
+            .log-toolbar {
+                flex-direction: column;
+                gap: 12px;
+            }
+            
+            .log-toolbar-left {
+                width: 100%;
+                justify-content: space-between;
+            }
+            
+            .log-toolbar-right {
+                width: 100%;
+                justify-content: flex-end;
+            }
+            
+            .log-entry {
+                flex-wrap: wrap;
+                gap: 4px;
+            }
+            
+            .log-time {
+                min-width: auto;
+            }
+        }
+    </style>
+</head>
+<body>
+    {% raw %}
+    <div id="app">
+        <bg-decoration></bg-decoration>
+        <navbar active-page="logs"></navbar>
+        
+        <div class="main-container" style="max-width: 1200px;">
+            <page-header 
+                title="实时日志" 
+                subtitle="实时查看所有下载任务的日志输出"
+                icon="<path d='M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z'/><polyline points='14 2 14 8 20 8'/><line x1='16' y1='13' x2='8' y2='13'/><line x1='16' y1='17' x2='8' y2='17'/><polyline points='10 9 9 9 8 9'/>"
+            >
+                <div style="display: flex; gap: 8px;">
+                    <button class="log-action-btn primary" @click="toggleAutoScroll">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polyline points="23 4 23 10 17 10"/>
+                            <path d="M20.49 15a9 9 0 11-2.12-9.36L23 10"/>
+                        </svg>
+                        {{ autoScroll ? '暂停滚动' : '自动滚动' }}
+                    </button>
+                    <button class="log-action-btn danger" @click="clearLogs">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polyline points="3 6 5 6 21 6"/>
+                            <path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/>
+                        </svg>
+                        清空日志
+                    </button>
+                </div>
+            </page-header>
+            
+            <div class="log-container">
+                <div class="log-toolbar">
+                    <div class="log-toolbar-left">
+                        <div class="log-status">
+                            <div class="log-status-dot" :class="{ connected: isConnected }"></div>
+                            {{ isConnected ? '已连接' : '未连接' }}
+                        </div>
+                        <span class="log-count">{{ filteredLogs.length }} 条日志</span>
+                    </div>
+                    <div class="log-toolbar-right">
+                        <div class="log-filters">
+                            <button 
+                                class="log-filter-btn" 
+                                :class="{ active: filter === 'all' }"
+                                @click="filter = 'all'"
+                            >
+                                全部
+                            </button>
+                            <button 
+                                class="log-filter-btn" 
+                                :class="{ active: filter === 'download' }"
+                                @click="filter = 'download'"
+                            >
+                                下载
+                            </button>
+                            <button 
+                                class="log-filter-btn" 
+                                :class="{ active: filter === 'system' }"
+                                @click="filter = 'system'"
+                            >
+                                系统
+                            </button>
+                            <button 
+                                class="log-filter-btn" 
+                                :class="{ active: filter === 'error' }"
+                                @click="filter = 'error'"
+                            >
+                                错误
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="log-body" ref="logBody">
+                    <div v-if="filteredLogs.length === 0" class="log-empty">
+                        <div class="log-empty-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                                <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/>
+                                <polyline points="14 2 14 8 20 8"/>
+                                <line x1="16" y1="13" x2="8" y2="13"/>
+                                <line x1="16" y1="17" x2="8" y2="17"/>
+                            </svg>
+                        </div>
+                        <h3>等待日志输出</h3>
+                        <p>开始下载任务后，日志将在此处实时显示</p>
+                    </div>
+                    
+                    <div 
+                        v-for="(log, index) in filteredLogs" 
+                        :key="index"
+                        class="log-entry"
+                    >
+                        <span class="log-time">{{ formatTime(log.timestamp) }}</span>
+                        <span class="log-level" :class="log.level">{{ log.level }}</span>
+                        <span class="log-category">{{ log.category === 'download' ? '下载' : '系统' }}</span>
+                        <span class="log-message" :class="log.level">{{ log.message }}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endraw %}
+
+    <script src="{{ url_for('static', filename='js/utils.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/components.js') }}"></script>
+    <script>
+        const { createApp, ref, computed, onMounted, onUnmounted, nextTick } = Vue;
+        
+        const app = createApp({
+            setup() {
+                const logs = ref([]);
+                const isConnected = ref(false);
+                const autoScroll = ref(true);
+                const filter = ref('all');
+                const logBody = ref(null);
+                let eventSource = null;
+                
+                // 过滤日志
+                const filteredLogs = computed(() => {
+                    if (filter.value === 'all') return logs.value;
+                    if (filter.value === 'error') {
+                        return logs.value.filter(log => log.level === 'error');
+                    }
+                    return logs.value.filter(log => log.category === filter.value);
+                });
+                
+                // 连接SSE
+                const connectSSE = () => {
+                    if (eventSource) {
+                        eventSource.close();
+                    }
+                    
+                    eventSource = new EventSource('/api/logs/stream');
+                    
+                    eventSource.onopen = () => {
+                        isConnected.value = true;
+                    };
+                    
+                    eventSource.onmessage = (event) => {
+                        try {
+                            const log = JSON.parse(event.data);
+                            logs.value.push(log);
+                            
+                            // 限制日志数量
+                            if (logs.value.length > 2000) {
+                                logs.value = logs.value.slice(-1500);
+                            }
+                            
+                            // 自动滚动
+                            if (autoScroll.value) {
+                                nextTick(() => {
+                                    if (logBody.value) {
+                                        logBody.value.scrollTop = logBody.value.scrollHeight;
+                                    }
+                                });
+                            }
+                        } catch (e) {
+                            console.error('Parse log error:', e);
+                        }
+                    };
+                    
+                    eventSource.onerror = () => {
+                        isConnected.value = false;
+                        // 自动重连
+                        setTimeout(() => {
+                            if (eventSource.readyState === EventSource.CLOSED) {
+                                connectSSE();
+                            }
+                        }, 3000);
+                    };
+                };
+                
+                // 格式化时间
+                const formatTime = (timestamp) => {
+                    const date = new Date(timestamp * 1000);
+                    return date.toLocaleTimeString('zh-CN', { 
+                        hour: '2-digit', 
+                        minute: '2-digit', 
+                        second: '2-digit' 
+                    });
+                };
+                
+                // 切换自动滚动
+                const toggleAutoScroll = () => {
+                    autoScroll.value = !autoScroll.value;
+                    if (autoScroll.value) {
+                        nextTick(() => {
+                            if (logBody.value) {
+                                logBody.value.scrollTop = logBody.value.scrollHeight;
+                            }
+                        });
+                    }
+                };
+                
+                // 清空日志
+                const clearLogs = async () => {
+                    try {
+                        await ElementPlus.ElMessageBox.confirm(
+                            '确定要清空所有日志吗？',
+                            '确认清空',
+                            {
+                                confirmButtonText: '确定',
+                                cancelButtonText: '取消',
+                                type: 'warning'
+                            }
+                        );
+                        
+                        logs.value = [];
+                        await fetch('/api/logs', { method: 'DELETE' });
+                        ElementPlus.ElMessage.success('日志已清空');
+                    } catch (error) {
+                        if (error !== 'cancel') {
+                            ElementPlus.ElMessage.error('清空失败');
+                        }
+                    }
+                };
+                
+                onMounted(() => {
+                    connectSSE();
+                });
+                
+                onUnmounted(() => {
+                    if (eventSource) {
+                        eventSource.close();
+                    }
+                });
+                
+                return {
+                    logs,
+                    isConnected,
+                    autoScroll,
+                    filter,
+                    logBody,
+                    filteredLogs,
+                    formatTime,
+                    toggleAutoScroll,
+                    clearLogs
+                };
+            }
+        });
+        
+        app.use(ElementPlus);
+        for (const [key, component] of Object.entries(ElementPlusIconsVue)) {
+            app.component(key, component);
+        }
+        registerGlobalComponents(app);
+        app.mount('#app');
+    </script>
+</body>
+</html>

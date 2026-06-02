@@ -906,3 +906,154 @@ body {
     border-color: var(--input-border) !important;
     color: var(--text-primary) !important;
 }
+
+/* ===== 实时日志页面样式 ===== */
+.log-container {
+    background: var(--card-bg) !important;
+    border-color: var(--card-border) !important;
+    box-shadow: var(--card-shadow) !important;
+}
+
+.log-toolbar {
+    background: var(--item-bg) !important;
+    border-bottom-color: var(--card-border) !important;
+}
+
+.log-status {
+    color: var(--text-secondary) !important;
+}
+
+.log-status-dot.connected {
+    background: #10B981 !important;
+    box-shadow: 0 0 8px rgba(16, 185, 129, 0.5) !important;
+}
+
+.log-count {
+    color: var(--text-placeholder) !important;
+    background: var(--icon-bg) !important;
+}
+
+.log-filters {
+    background: var(--item-bg) !important;
+    border-color: var(--card-border) !important;
+}
+
+.log-filter-btn {
+    color: var(--text-tertiary) !important;
+}
+
+.log-filter-btn:hover {
+    color: var(--icon-color) !important;
+    background: var(--item-hover-bg) !important;
+}
+
+.log-filter-btn.active {
+    background: var(--input-bg) !important;
+    color: var(--icon-color) !important;
+}
+
+.log-body {
+    background: var(--item-bg) !important;
+}
+
+.log-entry:hover {
+    background: var(--item-hover-bg) !important;
+}
+
+.log-time {
+    color: var(--text-placeholder) !important;
+}
+
+.log-level.info {
+    background: rgba(74, 108, 247, 0.2) !important;
+    color: #7b9aff !important;
+}
+
+.log-level.success {
+    background: rgba(16, 185, 129, 0.2) !important;
+    color: #6ee7b7 !important;
+}
+
+.log-level.warning {
+    background: rgba(245, 158, 11, 0.2) !important;
+    color: #fcd34d !important;
+}
+
+.log-level.error {
+    background: rgba(239, 68, 68, 0.2) !important;
+    color: #fca5a5 !important;
+}
+
+.log-category {
+    color: var(--text-placeholder) !important;
+}
+
+.log-message {
+    color: var(--text-secondary) !important;
+}
+
+.log-message.success {
+    color: #6ee7b7 !important;
+}
+
+.log-message.error {
+    color: #fca5a5 !important;
+}
+
+.log-message.warning {
+    color: #fcd34d !important;
+}
+
+.log-empty h3 {
+    color: var(--text-primary) !important;
+}
+
+.log-empty p {
+    color: var(--text-placeholder) !important;
+}
+
+.log-empty-icon {
+    background: var(--icon-bg) !important;
+}
+
+.log-empty-icon svg {
+    color: var(--icon-color) !important;
+}
+
+.log-action-btn.primary {
+    color: white !important;
+}
+
+.log-action-btn.secondary {
+    background: var(--input-bg) !important;
+    border-color: var(--input-border) !important;
+    color: var(--text-secondary) !important;
+}
+
+.log-action-btn.secondary:hover {
+    border-color: var(--icon-color) !important;
+    color: var(--icon-color) !important;
+}
+
+.log-action-btn.danger {
+    background: rgba(239, 68, 68, 0.15) !important;
+    border-color: rgba(239, 68, 68, 0.3) !important;
+    color: #fca5a5 !important;
+}
+
+.log-action-btn.danger:hover {
+    background: rgba(239, 68, 68, 0.25) !important;
+}
+
+/* 暗黑模式滚动条 */
+[data-theme="dark"] .log-body::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+[data-theme="dark"] .log-body::-webkit-scrollbar-thumb {
+    background: rgba(100, 100, 130, 0.4);
+}
+
+[data-theme="dark"] .log-body::-webkit-scrollbar-thumb:hover {
+    background: rgba(100, 100, 130, 0.6);
+}

@@ -38,6 +38,7 @@ const Navbar = {
                         <a href="/config" :class="{ active: activePage === 'config' }">配置</a>
                         <a href="/history" :class="{ active: activePage === 'history' }">历史</a>
                         <a v-if="user && user.role === 'admin'" href="/admin" :class="{ active: activePage === 'admin' }">管理</a>
+                        <a v-if="user && user.role === 'admin'" href="/logs" :class="{ active: activePage === 'logs' }">日志</a>
                     </div>
                     <div class="nav-user" v-if="user">
                         <a href="/profile" class="user-avatar-btn" :title="user.nickname || user.username">

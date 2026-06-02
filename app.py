@@ -10,6 +10,16 @@ from routes_admin import admin_bp
 import database
 
 
+def get_or_create_secret_key() -> str:
+    """获取或创建持久化的secret_key"""
+    database.init_db()
+    key = database.get_config('secret_key')
+    if not key:
+        key = secrets.token_hex(32)
+        database.update_config('secret_key', key)
+    return key
+
+
 def create_app() -> Flask:
     """创建Flask应用"""
     app = Flask(__name__)
@@ -18,13 +28,10 @@ def create_app() -> Flask:
     app.config['MAX_CONTENT_LENGTH'] = Config.MAX_CONTENT_LENGTH
     app.config['DOWNLOAD_FOLDER'] = Config.DOWNLOAD_FOLDER
     
-    # Session配置
-    app.secret_key = os.environ.get('SECRET_KEY', secrets.token_hex(32))
+    # Session配置 - 使用持久化的secret_key
+    app.secret_key = get_or_create_secret_key()
     app.config['SESSION_TYPE'] = 'filesystem'
     app.config['PERMANENT_SESSION_LIFETIME'] = 86400 * 30  # 30天
-    
-    # 初始化数据库
-    database.init_db()
     
     # 注册蓝图
     app.register_blueprint(main_bp)

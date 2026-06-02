@@ -105,6 +105,12 @@ def init_db():
         if 'account_user_id' not in columns:
             cursor.execute('ALTER TABLE download_history ADD COLUMN account_user_id INTEGER')
         
+        # 迁移：为现有表添加 skipped_files 和 failed_files 字段
+        if 'skipped_files' not in columns:
+            cursor.execute('ALTER TABLE download_history ADD COLUMN skipped_files INTEGER DEFAULT 0')
+        if 'failed_files' not in columns:
+            cursor.execute('ALTER TABLE download_history ADD COLUMN failed_files INTEGER DEFAULT 0')
+        
         # 插入默认配置
         default_configs = [
             ('proxy', '', '代理地址（如: http://127.0.0.1:7890）'),

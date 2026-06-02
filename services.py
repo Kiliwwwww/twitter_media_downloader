@@ -8,6 +8,8 @@ from typing import Dict, Optional
 from config import Config
 from models import DownloadTask
 from downloader.twitter_downloader import TwitterDownloader
+from logger import DownloadLogger
+from realtime_logger import log_manager
 import database
 
 
@@ -20,6 +22,9 @@ class DownloadService:
         
         # 确保下载目录存在
         os.makedirs(Config.DOWNLOAD_FOLDER, exist_ok=True)
+        
+        # 确保日志目录存在
+        os.makedirs(DownloadLogger.LOG_DIR, exist_ok=True)
         
         # 初始化数据库
         database.init_db()
@@ -56,6 +61,9 @@ class DownloadService:
         # 添加到数据库
         database.add_download_history(task_id, user_id, account_user_id=account_user_id)
         
+        # 记录实时日志
+        log_manager.info(task_id, user_id, f'下载任务已创建: {user_id}', 'system')
+        
         # 在后台线程中启动下载
         thread = threading.Thread(target=self._run_download, args=(task_id,))
         thread.daemon = True
@@ -69,17 +77,22 @@ class DownloadService:
         if not task:
             return
         
+        # 初始化日志器
+        file_logger = DownloadLogger(task_id, task.user_id)
+        
         try:
             task.status = 'downloading'
             database.update_download_history(task_id, status='downloading')
+            log_manager.info(task_id, task.user_id, '开始下载...', 'system')
             
             # 创建用户下载目录
             user_download_path = os.path.join(Config.DOWNLOAD_FOLDER, task.user_id)
             os.makedirs(user_download_path, exist_ok=True)
             task.download_path = user_download_path
+            log_manager.info(task_id, task.user_id, f'下载目录: {user_download_path}', 'system')
             
             # 进度回调函数
-            def progress_callback(progress: int, downloaded_files: int, total_files: int):
+            def progress_callback(progress: int, downloaded_files: int, total_files: int, skipped_files: int = 0):
                 task.progress = progress
                 task.downloaded_files = downloaded_files
                 task.total_files = total_files
@@ -100,8 +113,14 @@ class DownloadService:
                 download_path=user_download_path,
                 proxy=proxy,
                 cookie=cookie,
-                progress_callback=progress_callback
+                task_id=task_id,
+                progress_callback=progress_callback,
+                skip_existing=True,
+                max_retries=50
             )
+            
+            # 将实时日志管理器传递给下载器
+            downloader.set_log_manager(log_manager)
             
             # 创建新的事件循环来运行异步下载
             loop = asyncio.new_event_loop()
@@ -109,9 +128,15 @@ class DownloadService:
             
             try:
                 result = loop.run_until_complete(downloader.start_download())
-                task.total_files = result.get('downloaded_files', 0)
+                task.total_files = result.get('downloaded_files', 0) + result.get('skipped_files', 0)
                 task.downloaded_files = result.get('downloaded_files', 0)
                 task.progress = 100
+                
+                log_manager.success(
+                    task_id, task.user_id,
+                    f'下载完成 - 成功: {result.get("downloaded_files", 0)}, 跳过: {result.get("skipped_files", 0)}, 失败: {result.get("failed_files", 0)}',
+                    'system'
+                )
                 
                 # 更新数据库
                 database.update_download_history(
@@ -125,7 +150,9 @@ class DownloadService:
                 loop.close()
             
             # 创建ZIP文件
+            log_manager.info(task_id, task.user_id, '正在创建ZIP压缩文件...', 'system')
             self._create_zip(task)
+            log_manager.success(task_id, task.user_id, f'ZIP文件创建完成: {os.path.basename(task.zip_path)}', 'system')
             
             task.status = 'completed'
             task.end_time = time.time()
@@ -144,10 +171,14 @@ class DownloadService:
                 completed_at=time.strftime('%Y-%m-%d %H:%M:%S')
             )
             
+            log_manager.success(task_id, task.user_id, '任务已完成!', 'system')
+            
         except Exception as e:
             task.status = 'failed'
             task.error_message = str(e)
             task.end_time = time.time()
+            
+            log_manager.error(task_id, task.user_id, f'任务失败: {str(e)}', 'system')
             
             # 更新数据库
             database.update_download_history(
@@ -156,6 +187,16 @@ class DownloadService:
                 error_message=str(e),
                 completed_at=time.strftime('%Y-%m-%d %H:%M:%S')
             )
+        
+        finally:
+            # 清理内存中的任务（延迟清理，保持一段时间可查询）
+            def cleanup():
+                with self._lock:
+                    if task_id in self._tasks:
+                        del self._tasks[task_id]
+            timer = threading.Timer(3600, cleanup)  # 1小时后清理
+            timer.daemon = True
+            timer.start()
     
     def clear_all_cache(self) -> dict:
         """清理所有缓存文件和下载历史"""

@@ -7,16 +7,45 @@ import httpx
 from datetime import datetime
 from typing import Callable, Optional
 
+from logger import DownloadLogger
+
+
 class TwitterDownloader:
     def __init__(self, user_id: str, download_path: str, 
                  proxy: str = "",
                  cookie: str = "",
-                 progress_callback: Optional[Callable] = None):
+                 task_id: str = None,
+                 progress_callback: Optional[Callable] = None,
+                 skip_existing: bool = True,
+                 max_retries: int = 50):
         self.user_id = user_id
         self.download_path = download_path
         self.proxy = proxy
         self.cookie = cookie
+        self.task_id = task_id
         self.progress_callback = progress_callback
+        self.skip_existing = skip_existing
+        self.max_retries = max_retries
+        
+        # 初始化日志器
+        self.logger = DownloadLogger(task_id or 'unknown', user_id) if task_id else None
+        self._log_manager = None
+    
+    def set_log_manager(self, log_manager):
+        """设置实时日志管理器"""
+        self._log_manager = log_manager
+    
+    def _log(self, level: str, message: str, category: str = ''):
+        """记录日志（同时写入文件和实时推送）"""
+        # 写入文件日志
+        if self.logger:
+            getattr(self.logger, level, self.logger.info)(message)
+        
+        # 实时推送
+        if self._log_manager and self.task_id:
+            getattr(self._log_manager, level, self._log_manager.info)(
+                self.task_id, self.user_id, message, category
+            )
         
         self.user_info = {
             'screen_name': user_id,
@@ -48,6 +77,8 @@ class TwitterDownloader:
         self.down_count = 0
         self.total_files = 0
         self.downloaded_files = 0
+        self.skipped_files = 0
+        self.failed_files = 0
         
         # 下载配置
         self.has_retweet = False
@@ -90,6 +121,21 @@ class TwitterDownloader:
         elif now < start:
             start_label = False
         return [start_down, start_label]
+    
+    def _file_exists(self, file_path: str) -> bool:
+        """检查文件是否已存在且大小大于0"""
+        if not self.skip_existing:
+            return False
+        return os.path.exists(file_path) and os.path.getsize(file_path) > 0
+    
+    @staticmethod
+    def _format_size(size: int) -> str:
+        """格式化文件大小"""
+        for unit in ['B', 'KB', 'MB', 'GB']:
+            if size < 1024:
+                return f'{size:.1f} {unit}'
+            size /= 1024
+        return f'{size:.1f} TB'
     
     async def get_other_info(self):
         url = f'https://twitter.com/i/api/graphql/xc8f1g7BYqr6VTzTbvNlGw/UserByScreenName?variables={{"screen_name":"{self.user_info["screen_name"]}","withSafetyModeUserFields":false}}&features={{"hidden_profile_likes_enabled":false,"hidden_profile_subscriptions_enabled":false,"responsive_web_graphql_exclude_directive_enabled":true,"verified_phone_label_enabled":false,"subscriptions_verification_info_verified_since_enabled":true,"highlights_tweets_tab_ui_enabled":true,"creator_subscriptions_tweet_preview_api_enabled":true,"responsive_web_graphql_skip_user_profile_image_extensions_enabled":false,"responsive_web_graphql_timeline_navigation_enabled":true}}&fieldToggles={{"withAuxiliaryUserLabels":false}}'
@@ -135,8 +181,12 @@ class TwitterDownloader:
                 # 更新总文件数（估算）
                 self.total_files = min(self.user_info['media_count'] or 100, 500)
                 
+                self._log('info', f'获取用户信息成功: {self.user_info["name"]} (@{self.user_info["screen_name"]})', 'system')
+                self._log('info', f'媒体数量: {self.user_info["media_count"]}', 'system')
+                
                 return True
         except Exception as e:
+            self._log('error', f'获取用户信息失败: {e}', 'system')
             print(f'获取用户信息失败: {e}')
             raise
     
@@ -242,10 +292,10 @@ class TwitterDownloader:
             url_bottom = '"includePromotedContent":false,"withClientEventToken":false,"withBirdwatchNotes":false,"withVoice":true,"withV2Timeline":true}&features={"responsive_web_graphql_exclude_directive_enabled":true,"verified_phone_label_enabled":false,"creator_subscriptions_tweet_preview_api_enabled":true,"responsive_web_graphql_timeline_navigation_enabled":true,"responsive_web_graphql_skip_user_profile_image_extensions_enabled":false,"c9s_tweet_anatomy_moderator_badge_enabled":true,"tweetypie_unmention_optimization_enabled":true,"responsive_web_edit_tweet_api_enabled":true,"graphql_is_translatable_rweb_tweet_is_translatable_enabled":true,"view_counts_everywhere_api_enabled":true,"longform_notetweets_consumption_enabled":true,"responsive_web_twitter_article_tweet_consumption_enabled":false,"tweet_awards_web_tipping_enabled":false,"freedom_of_speech_not_reach_fetch_enabled":true,"standardized_nudges_misinfo":true,"tweet_with_visibility_results_prefer_gql_limited_actions_policy_enabled":true,"rweb_video_timestamps_enabled":true,"longform_notetweets_rich_text_read_enabled":true,"longform_notetweets_inline_media_enabled":true,"responsive_web_media_download_video_enabled":false,"responsive_web_enhance_cards_enabled":false}'
         elif self.has_retweet:
             url_top = f'https://twitter.com/i/api/graphql/2GIWTr7XwadIixZDtyXd4A/UserTweets?variables={{"userId":"{self.user_info["rest_id"]}","count":20,'
-            url_bottom = '"includePromotedContent":false,"withQuickPromoteEligibilityTweetFields":true,"withVoice":true,"withV2Timeline":true}&features={"rweb_lists_timeline_redesign_enabled":true,"responsive_web_graphql_exclude_directive_enabled":true,"verified_phone_label_enabled":false,"creator_subscriptions_tweet_preview_api_enabled":true,"responsive_web_graphql_timeline_navigation_enabled":true,"responsive_web_graphql_skip_user_profile_image_extensions_enabled":false,"tweetypie_unmention_optimization_enabled":true,"responsive_web_edit_tweet_api_enabled":true,"graphql_is_translatable_rweb_tweet_is_translatable_enabled":true,"view_counts_everywhere_api_enabled":true,"longform_notetweets_consumption_enabled":true,"responsive_web_twitter_article_tweet_consumption_enabled":false,"tweet_awards_web_tipping_enabled":false,"freedom_of_speech_not_reach_fetch_enabled":true,"standardized_nudges_misinfo":true,"tweet_with_visibility_results_prefer_gql_limited_actions_policy_enabled":true,"longform_notetweets_rich_text_read_enabled":true,"longform_notetweets_inline_media_enabled":true,"responsive_web_media_download_video_enabled":false,"responsive_web_enhance_cards_enabled":false}&fieldToggles={"withAuxiliaryUserLabels":false,"withArticleRichContentState":false}'
+            url_bottom = '"includePromotedContent":false,"withQuickPromoteEligibilityTweetFields":true,"withVoice":true,"withV2Timeline":true}&features={"rweb_lists_timeline_redesign_enabled":true,"responsive_web_graphql_exclude_directive_enabled":true,"verified_phone_label_enabled":false,"creator_subscriptions_tweet_preview_api_enabled":true,"responsive_web_graphql_timeline_navigation_enabled":true,"responsive_web_graphql_skip_user_profile_image_extensions_enabled":false,"tweetypie_unmention_optimization_enabled":true,"responsive_web_edit_tweet_api_enabled":true,"graphql_is_translatable_rweb_tweet_is_translatable_enabled":true,"view_counts_everywhere_api_enabled":true,"longform_notetweets_consumption_enabled":true,"responsive_web_twitter_article_tweet_consumption_enabled":false,"tweet_awards_web_tipping_enabled":false,"freedom_of_speech_not_reach_fetch_enabled":true,"standardized_nudges_misinfo":true,"tweet_with_visibility_results_prefer_gql_limited_actions_policy_enabled":true,"rweb_video_timestamps_enabled":true,"longform_notetweets_rich_text_read_enabled":true,"longform_notetweets_inline_media_enabled":true,"responsive_web_media_download_video_enabled":false,"responsive_web_enhance_cards_enabled":false}&fieldToggles={"withAuxiliaryUserLabels":false,"withArticleRichContentState":false}'
         else:
             url_top = f'https://twitter.com/i/api/graphql/Le6KlbilFmSu-5VltFND-Q/UserMedia?variables={{"userId":"{self.user_info["rest_id"]}","count":500,'
-            url_bottom = '"includePromotedContent":false,"withClientEventToken":false,"withBirdwatchNotes":false,"withVoice":true,"withV2Timeline":true}&features={"responsive_web_graphql_exclude_directive_enabled":true,"verified_phone_label_enabled":false,"creator_subscriptions_tweet_preview_api_enabled":true,"responsive_web_graphql_timeline_navigation_enabled":true,"responsive_web_graphql_skip_user_profile_image_extensions_enabled":false,"tweetypie_unmention_optimization_enabled":true,"responsive_web_edit_tweet_api_enabled":true,"graphql_is_translatable_rweb_tweet_is_translatable_enabled":true,"view_counts_everywhere_api_enabled":true,"longform_notetweets_consumption_enabled":true,"responsive_web_twitter_article_tweet_consumption_enabled":false,"tweet_awards_web_tipping_enabled":false,"freedom_of_speech_not_reach_fetch_enabled":true,"standardized_nudges_misinfo":true,"tweet_with_visibility_results_prefer_gql_limited_actions_policy_enabled":true,"longform_notetweets_rich_text_read_enabled":true,"longform_notetweets_inline_media_enabled":true,"responsive_web_media_download_video_enabled":false,"responsive_web_enhance_cards_enabled":false}'
+            url_bottom = '"includePromotedContent":false,"withClientEventToken":false,"withBirdwatchNotes":false,"withVoice":true,"withV2Timeline":true}&features={"responsive_web_graphql_exclude_directive_enabled":true,"verified_phone_label_enabled":false,"creator_subscriptions_tweet_preview_api_enabled":true,"responsive_web_graphql_timeline_navigation_enabled":true,"responsive_web_graphql_skip_user_profile_image_extensions_enabled":false,"tweetypie_unmention_optimization_enabled":true,"responsive_web_edit_tweet_api_enabled":true,"graphql_is_translatable_rweb_tweet_is_translatable_enabled":true,"view_counts_everywhere_api_enabled":true,"longform_notetweets_consumption_enabled":true,"responsive_web_twitter_article_tweet_consumption_enabled":false,"tweet_awards_web_tipping_enabled":false,"freedom_of_speech_not_reach_fetch_enabled":true,"standardized_nudges_misinfo":true,"tweet_with_visibility_results_prefer_gql_limited_actions_policy_enabled":true,"rweb_video_timestamps_enabled":true,"longform_notetweets_rich_text_read_enabled":true,"longform_notetweets_inline_media_enabled":true,"responsive_web_media_download_video_enabled":false,"responsive_web_enhance_cards_enabled":false}'
         
         if self.user_info['cursor']:
             url = url_top + f'"cursor":"{self.user_info["cursor"]}",' + url_bottom
@@ -261,8 +311,12 @@ class TwitterDownloader:
                     raw_data = response.json()
                 except Exception:
                     if 'Rate limit exceeded' in response.text:
+                        if self.logger:
+                            self.logger.error('API次数已超限')
                         print('API次数已超限')
                     else:
+                        if self.logger:
+                            self.logger.error('获取数据失败')
                         print('获取数据失败')
                     return None
                 
@@ -300,6 +354,8 @@ class TwitterDownloader:
                     photo_lst.append(True)
         
         except Exception as e:
+            if self.logger:
+                self.logger.error(f'获取推文信息错误: {e}')
             print(f'获取推文信息错误: {e}')
             return False
         
@@ -323,6 +379,12 @@ class TwitterDownloader:
                 print(url)
                 return False
         
+        # 检查文件是否已存在
+        if self._file_exists(file_name):
+            self.skipped_files += 1
+            self._log('info', f'[跳过] 文件已存在: {os.path.basename(file_name)}', 'download')
+            return True
+        
         count = 0
         while True:
             try:
@@ -333,10 +395,15 @@ class TwitterDownloader:
                     self.down_count += 1
                     self.downloaded_files += 1
                     
+                    # 记录下载成功
+                    file_size = len(response.content)
+                    size_str = self._format_size(file_size)
+                    self._log('success', f'[下载成功] {os.path.basename(file_name)} ({size_str})', 'download')
+                    
                     # 更新进度
                     if self.progress_callback:
-                        progress = min(int((self.downloaded_files / max(self.total_files, 1)) * 100), 100)
-                        self.progress_callback(progress, self.downloaded_files, self.total_files)
+                        progress = min(int(((self.downloaded_files + self.skipped_files) / max(self.total_files, 1)) * 100), 100)
+                        self.progress_callback(progress, self.downloaded_files, self.total_files, self.skipped_files)
                 
                 with open(file_name, 'wb') as f:
                     f.write(response.content)
@@ -345,20 +412,25 @@ class TwitterDownloader:
             except Exception as e:
                 if '.mp4' in url or self.orig_format or str(e) != "404":
                     count += 1
-                    if count >= 50:
-                        print(f'{file_name}=====>第{count}次下载失败，已跳过该文件。')
+                    if count >= self.max_retries:
+                        self.failed_files += 1
+                        self._log('error', f'[下载失败] {os.path.basename(file_name)} - 错误: {e} (已重试{count}次)', 'download')
                         break
-                    print(f'{file_name}=====>第{count}次下载失败,正在重试')
+                    self._log('warning', f'[重试] {os.path.basename(file_name)} - 第{count}/{self.max_retries}次重试', 'download')
                 else:
                     url = url.replace('name=orig', 'name=4096x4096')
     
     async def download_control(self):
+        page_count = 0
         while True:
             photo_lst = await self.get_download_url()
             if not photo_lst:
                 break
             elif photo_lst[0] == True:
                 continue
+            
+            page_count += 1
+            self._log('info', f'开始处理第 {page_count} 页，包含 {len(photo_lst)} 个媒体文件', 'system')
             
             semaphore = asyncio.Semaphore(self.max_concurrent_requests)
             
@@ -369,11 +441,19 @@ class TwitterDownloader:
             
             await asyncio.gather(*tasks)
             self.user_info['count'] += len(photo_lst)
+            
+            # 记录进度
+            if self.logger:
+                self.logger.log_progress(self.downloaded_files, self.downloaded_files + self.skipped_files + self.failed_files, self.skipped_files)
     
     async def start_download(self):
         """开始下载任务"""
+        start_time = time.time()
+        
         # 创建下载目录
         os.makedirs(self.download_path, exist_ok=True)
+        
+        self._log('info', f'下载目录: {self.download_path}', 'system')
         
         # 获取用户信息
         if not await self.get_other_info():
@@ -382,10 +462,19 @@ class TwitterDownloader:
         # 开始下载
         await self.download_control()
         
+        # 计算总耗时
+        total_time = time.time() - start_time
+        
+        # 记录任务完成
+        self._log('info', f'下载完成 - 成功: {self.downloaded_files}, 失败: {self.failed_files}, 跳过: {self.skipped_files}, 耗时: {total_time:.1f}秒', 'system')
+        
         return {
             'user_name': self.user_info['name'],
             'avatar_url': self.user_info['avatar_url'],
             'media_count': self.user_info['media_count'],
             'downloaded_files': self.downloaded_files,
-            'request_count': self.request_count
+            'skipped_files': self.skipped_files,
+            'failed_files': self.failed_files,
+            'request_count': self.request_count,
+            'total_time': total_time
         }
