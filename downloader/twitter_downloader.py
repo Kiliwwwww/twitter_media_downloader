@@ -58,6 +58,7 @@ class TwitterDownloader:
         self.headers['referer'] = f'https://twitter.com/{self.user_id}'
         
         self.request_count = 0
+        self.tweets_info = []  # 收集帖子信息，用于导出xlsx
         self.down_count = 0
         self.total_files = 0
         self.downloaded_files = 0
@@ -231,9 +232,11 @@ class TwitterDownloader:
                                     if 'video_info' in _media and self.has_video:
                                         url = self.get_heighest_video_quality(_media['video_info']['variants'])
                                         photo_lst.append((url, f'{timestr}-vid', [tweet_msecs, name, f'@{screen_name}', _media['expanded_url'], 'Video', url, '', a['full_text']]))
+                                        self.tweets_info.append({'time': timestr, 'name': name, 'screen_name': f'@{screen_name}', 'text': a['full_text'], 'type': 'Video', 'media_url': _media['expanded_url'], 'download_url': url})
                                     else:
                                         url = _media['media_url_https']
                                         photo_lst.append((url, f'{timestr}-img', [tweet_msecs, name, f'@{screen_name}', _media['expanded_url'], 'Image', url, '', a['full_text']]))
+                                        self.tweets_info.append({'time': timestr, 'name': name, 'screen_name': f'@{screen_name}', 'text': a['full_text'], 'type': 'Image', 'media_url': _media['expanded_url'], 'download_url': url})
                         elif self.has_retweet:
                             name = a['retweeted_status_result']['result']['core']['user_results']['result']['legacy']['name']
                             screen_name = a['retweeted_status_result']['result']['core']['user_results']['result']['legacy']['screen_name']
@@ -244,9 +247,11 @@ class TwitterDownloader:
                                     if 'video_info' in _media and self.has_video:
                                         url = self.get_heighest_video_quality(_media['video_info']['variants'])
                                         photo_lst.append((url, f'{timestr}-vid-retweet', [tweet_msecs, name, f"@{screen_name}", _media['expanded_url'], 'Video', url, '', full_text]))
+                                        self.tweets_info.append({'time': timestr, 'name': name, 'screen_name': f'@{screen_name}', 'text': full_text, 'type': 'Video', 'media_url': _media['expanded_url'], 'download_url': url})
                                     else:
                                         url = _media['media_url_https']
                                         photo_lst.append((url, f'{timestr}-img-retweet', [tweet_msecs, name, f"@{screen_name}", _media['expanded_url'], 'Image', url, '', full_text]))
+                                        self.tweets_info.append({'time': timestr, 'name': name, 'screen_name': f'@{screen_name}', 'text': full_text, 'type': 'Image', 'media_url': _media['expanded_url'], 'download_url': url})
                     elif not result[1]:
                         self.start_label = False
                         break
@@ -268,9 +273,11 @@ class TwitterDownloader:
                                 if 'video_info' in _media and self.has_video:
                                     url = self.get_heighest_video_quality(_media['video_info']['variants'])
                                     photo_lst.append((url, f'{timestr}-vid', [tweet_msecs, self.user_info['name'], f'@{self.user_info["screen_name"]}', _media['expanded_url'], 'Video', url, '', a['full_text']]))
+                                    self.tweets_info.append({'time': timestr, 'name': self.user_info['name'], 'screen_name': f'@{self.user_info["screen_name"]}', 'text': a['full_text'], 'type': 'Video', 'media_url': _media['expanded_url'], 'download_url': url})
                                 else:
                                     url = _media['media_url_https']
                                     photo_lst.append((url, f'{timestr}-img', [tweet_msecs, self.user_info['name'], f'@{self.user_info["screen_name"]}', _media['expanded_url'], 'Image', url, '', a['full_text']]))
+                                    self.tweets_info.append({'time': timestr, 'name': self.user_info['name'], 'screen_name': f'@{self.user_info["screen_name"]}', 'text': a['full_text'], 'type': 'Image', 'media_url': _media['expanded_url'], 'download_url': url})
                     elif not result[1]:
                         self.start_label = False
                         break
@@ -476,5 +483,6 @@ class TwitterDownloader:
             'skipped_files': self.skipped_files,
             'failed_files': self.failed_files,
             'request_count': self.request_count,
-            'total_time': total_time
+            'total_time': total_time,
+            'tweets_info': self.tweets_info
         }

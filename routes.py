@@ -45,6 +45,7 @@ def start_download():
     data = request.get_json()
     user_ids = data.get('user_id', '').strip()
     download_type = data.get('download_type', 'all')  # all, video, image
+    export_xlsx = data.get('export_xlsx', False)  # 是否导出xlsx
     
     if not user_ids:
         return jsonify({'error': '请输入用户ID'}), 400
@@ -65,7 +66,7 @@ def start_download():
     # 创建下载任务
     tasks = []
     for user_id in user_id_list:
-        task = download_service.create_task(user_id, download_type, account_user_id)
+        task = download_service.create_task(user_id, download_type, account_user_id, export_xlsx=export_xlsx)
         tasks.append({
             'task_id': task.task_id,
             'user_id': user_id

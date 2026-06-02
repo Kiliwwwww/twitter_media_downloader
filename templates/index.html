@@ -128,6 +128,30 @@
                                 </span>
                                 图片
                             </label>
+                            <label 
+                                class="type-option" 
+                                :class="{ active: exportXlsx }"
+                            >
+                                <input 
+                                    type="checkbox" 
+                                    v-model="exportXlsx"
+                                    :disabled="isDownloading"
+                                >
+                                <span class="custom-checkbox">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+                                        <polyline points="20 6 9 17 4 12"/>
+                                    </svg>
+                                </span>
+                                <span class="type-icon">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/>
+                                        <polyline points="14 2 14 8 20 8"/>
+                                        <line x1="16" y1="13" x2="8" y2="13"/>
+                                        <line x1="16" y1="17" x2="8" y2="17"/>
+                                    </svg>
+                                </span>
+                                导出xlsx
+                            </label>
                         </div>
                     </div>
                 </div>
@@ -255,6 +279,7 @@
                 const errorMessage = ref('');
                 const isDownloading = ref(false);
                 const downloadTypes = ref(['video', 'image']);
+                const exportXlsx = ref(false);
                 
                 let progressInterval = null;
                 let timeInterval = null;
@@ -325,7 +350,8 @@
                             headers: { 'Content-Type': 'application/json' },
                             body: JSON.stringify({ 
                                 user_id: userId.value.trim(),
-                                download_type: downloadType
+                                download_type: downloadType,
+                                export_xlsx: exportXlsx.value
                             })
                         });
                         const data = await response.json();
@@ -362,7 +388,7 @@
                 
                 return {
                     userId, taskId, status, progress, totalFiles, downloadedFiles,
-                    elapsedTime, errorMessage, isDownloading, statusText, downloadTypes,
+                    elapsedTime, errorMessage, isDownloading, statusText, downloadTypes, exportXlsx,
                     startDownload, downloadZip
                 };
             }

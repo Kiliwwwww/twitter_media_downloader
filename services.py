@@ -4,6 +4,7 @@ import zipfile
 import asyncio
 import threading
 from typing import Dict, Optional
+from datetime import datetime
 
 from config import Config
 from models import DownloadTask
@@ -50,10 +51,10 @@ class DownloadService:
         
         return None
     
-    def create_task(self, user_id: str, download_type: str = 'all', account_user_id: int = None) -> DownloadTask:
+    def create_task(self, user_id: str, download_type: str = 'all', account_user_id: int = None, export_xlsx: bool = False) -> DownloadTask:
         """创建下载任务"""
         task_id = f"{user_id}_{int(time.time())}"
-        task = DownloadTask(task_id, user_id, download_type, account_user_id=account_user_id)
+        task = DownloadTask(task_id, user_id, download_type, account_user_id=account_user_id, export_xlsx=export_xlsx)
         
         with self._lock:
             self._tasks[task_id] = task
@@ -130,6 +131,7 @@ class DownloadService:
                 result = loop.run_until_complete(downloader.start_download())
                 task.total_files = result.get('downloaded_files', 0) + result.get('skipped_files', 0)
                 task.downloaded_files = result.get('downloaded_files', 0)
+                task.tweets_info = result.get('tweets_info', [])
                 task.progress = 100
                 
                 log_manager.success(
@@ -303,8 +305,94 @@ class DownloadService:
                     # 构建ZIP内的路径：根目录/分类文件夹/原文件名
                     arcname = f'{folder_name}/{category}/{file}'
                     zipf.write(file_path, arcname)
+            
+            # 如果需要导出xlsx
+            if task.export_xlsx and task.tweets_info:
+                log_manager.info(task.task_id, task.user_id, '正在生成xlsx文件...', 'system')
+                xlsx_path = self._create_xlsx(task)
+                if xlsx_path:
+                    xlsx_filename = f'{task.user_id}_tweets.xlsx'
+                    zipf.write(xlsx_path, f'{folder_name}/{xlsx_filename}')
+                    log_manager.success(task.task_id, task.user_id, f'xlsx文件生成完成，共 {len(task.tweets_info)} 条记录', 'system')
+                    # 清理临时xlsx文件
+                    try:
+                        os.remove(xlsx_path)
+                    except Exception:
+                        pass
+                else:
+                    log_manager.error(task.task_id, task.user_id, 'xlsx文件生成失败', 'system')
         
         task.zip_path = zip_path
+    
+    def _create_xlsx(self, task: DownloadTask) -> str:
+        """创建xlsx文件，返回文件路径"""
+        try:
+            from openpyxl import Workbook
+            from openpyxl.styles import Font, Alignment, PatternFill, Border, Side
+            
+            wb = Workbook()
+            ws = wb.active
+            ws.title = '推文数据'
+            
+            # 定义表头
+            headers = ['发布时间', '用户名', '用户ID', '推文内容', '媒体类型', '媒体URL', '下载URL']
+            
+            # 表头样式
+            header_font = Font(bold=True, color='FFFFFF', size=11)
+            header_fill = PatternFill(start_color='4A6CF7', end_color='4A6CF7', fill_type='solid')
+            header_alignment = Alignment(horizontal='center', vertical='center')
+            thin_border = Border(
+                left=Side(style='thin'),
+                right=Side(style='thin'),
+                top=Side(style='thin'),
+                bottom=Side(style='thin')
+            )
+            
+            # 写入表头
+            for col, header in enumerate(headers, 1):
+                cell = ws.cell(row=1, column=col, value=header)
+                cell.font = header_font
+                cell.fill = header_fill
+                cell.alignment = header_alignment
+                cell.border = thin_border
+            
+            # 写入数据
+            for row_idx, tweet in enumerate(task.tweets_info, 2):
+                ws.cell(row=row_idx, column=1, value=tweet.get('time', '')).border = thin_border
+                ws.cell(row=row_idx, column=2, value=tweet.get('name', '')).border = thin_border
+                ws.cell(row=row_idx, column=3, value=tweet.get('screen_name', '')).border = thin_border
+                
+                # 推文内容，限制长度避免单元格过大
+                text = tweet.get('text', '')
+                if len(text) > 500:
+                    text = text[:500] + '...'
+                cell = ws.cell(row=row_idx, column=4, value=text)
+                cell.border = thin_border
+                cell.alignment = Alignment(wrap_text=True, vertical='top')
+                
+                ws.cell(row=row_idx, column=5, value=tweet.get('type', '')).border = thin_border
+                ws.cell(row=row_idx, column=6, value=tweet.get('media_url', '')).border = thin_border
+                ws.cell(row=row_idx, column=7, value=tweet.get('download_url', '')).border = thin_border
+            
+            # 设置列宽
+            ws.column_dimensions['A'].width = 20
+            ws.column_dimensions['B'].width = 15
+            ws.column_dimensions['C'].width = 15
+            ws.column_dimensions['D'].width = 60
+            ws.column_dimensions['E'].width = 10
+            ws.column_dimensions['F'].width = 40
+            ws.column_dimensions['G'].width = 40
+            
+            # 保存到临时文件
+            xlsx_path = os.path.join(Config.DOWNLOAD_FOLDER, f'{task.user_id}_{task.task_id}_tweets.xlsx')
+            wb.save(xlsx_path)
+            return xlsx_path
+            
+        except Exception as e:
+            error_msg = f'创建xlsx失败: {e}'
+            print(error_msg)
+            log_manager.error(task.task_id, task.user_id, error_msg, 'system')
+            return None
 
 
 # 全局下载服务实例
