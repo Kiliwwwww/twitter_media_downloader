@@ -128,6 +128,8 @@ def get_configs():
         return jsonify({'error': '未登录'}), 401
     
     configs = database.get_all_configs(user_id=current_user['id'])
+    # 过滤掉系统配置项
+    configs = [c for c in configs if c['key'] != 'secret_key']
     return jsonify(configs)
 
 
