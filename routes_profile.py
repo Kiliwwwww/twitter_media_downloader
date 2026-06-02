@@ -40,8 +40,8 @@ def update_profile():
     user = get_current_user()
     data = request.get_json()
     
-    nickname = data.get('nickname', '').strip()
-    email = data.get('email', '').strip()
+    nickname = (data.get('nickname') or '').strip()
+    email = (data.get('email') or '').strip()
     
     # 更新资料
     update_data = {}
@@ -63,7 +63,7 @@ def update_twitter_id():
     user = get_current_user()
     data = request.get_json()
     
-    twitter_id = data.get('twitter_id', '').strip()
+    twitter_id = (data.get('twitter_id') or '').strip()
     
     # 更新推特ID
     database.update_user(user['id'], twitter_id=twitter_id)
