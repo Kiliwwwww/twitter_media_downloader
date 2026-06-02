@@ -66,7 +66,6 @@ class RealtimeLogManager:
             for q in self._global_subscribers:
                 try:
                     q.put_nowait(entry)
-                    q.q
                 except queue.Full:
                     pass
     
