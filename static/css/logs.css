@@ -1,0 +1,328 @@
+/* 实时日志页面样式 */
+
+.log-container {
+    background: rgba(255, 255, 255, 0.85);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-radius: 16px;
+    border: 1px solid rgba(229, 231, 235, 0.5);
+    box-shadow: 
+        0 4px 6px -1px rgba(74, 108, 247, 0.1),
+        0 2px 4px -2px rgba(74, 108, 247, 0.1),
+        inset 0 1px 0 rgba(255, 255, 255, 0.5);
+    overflow: hidden;
+    animation: fadeIn 0.3s ease;
+}
+
+.log-toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 20px;
+    background: rgba(249, 250, 251, 0.8);
+    border-bottom: 1px solid rgba(229, 231, 235, 0.5);
+}
+
+.log-toolbar-left {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.log-toolbar-right {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.log-status {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    color: #6B7280;
+    font-weight: 500;
+}
+
+.log-status-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #EF4444;
+    transition: background 0.3s;
+}
+
+.log-status-dot.connected {
+    background: #10B981;
+    box-shadow: 0 0 8px rgba(16, 185, 129, 0.4);
+}
+
+.log-count {
+    font-size: 13px;
+    color: #9CA3AF;
+    background: rgba(74, 108, 247, 0.08);
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-weight: 500;
+}
+
+.log-filters {
+    display: flex;
+    gap: 4px;
+    background: rgba(255, 255, 255, 0.8);
+    padding: 4px;
+    border-radius: 10px;
+    border: 1px solid rgba(229, 231, 235, 0.5);
+}
+
+.log-filter-btn {
+    padding: 6px 14px;
+    border: none;
+    border-radius: 8px;
+    background: transparent;
+    color: #6B7280;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-family: inherit;
+}
+
+.log-filter-btn:hover {
+    color: #4A6CF7;
+    background: rgba(74, 108, 247, 0.06);
+}
+
+.log-filter-btn.active {
+    background: white;
+    color: #4A6CF7;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.log-body {
+    height: calc(100vh - 320px);
+    min-height: 400px;
+    overflow-y: auto;
+    padding: 12px 0;
+    font-family: 'SF Mono', 'Fira Code', 'Consolas', 'Monaco', monospace;
+    font-size: 13px;
+    line-height: 1.8;
+    background: rgba(249, 250, 251, 0.5);
+}
+
+.log-body::-webkit-scrollbar {
+    width: 6px;
+}
+
+.log-body::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.log-body::-webkit-scrollbar-thumb {
+    background: rgba(156, 163, 175, 0.3);
+    border-radius: 3px;
+}
+
+.log-body::-webkit-scrollbar-thumb:hover {
+    background: rgba(156, 163, 175, 0.5);
+}
+
+.log-entry {
+    display: flex;
+    align-items: flex-start;
+    padding: 6px 20px;
+    margin: 0 8px;
+    border-radius: 6px;
+    transition: background 0.15s;
+}
+
+.log-entry:hover {
+    background: rgba(74, 108, 247, 0.04);
+}
+
+.log-time {
+    color: #9CA3AF;
+    min-width: 75px;
+    margin-right: 12px;
+    user-select: none;
+    font-size: 12px;
+}
+
+.log-level {
+    min-width: 55px;
+    margin-right: 10px;
+    padding: 1px 8px;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.log-level.info {
+    background: rgba(74, 108, 247, 0.1);
+    color: #4A6CF7;
+}
+
+.log-level.success {
+    background: rgba(16, 185, 129, 0.1);
+    color: #10B981;
+}
+
+.log-level.warning {
+    background: rgba(245, 158, 11, 0.1);
+    color: #F59E0B;
+}
+
+.log-level.error {
+    background: rgba(239, 68, 68, 0.1);
+    color: #EF4444;
+}
+
+.log-category {
+    min-width: 50px;
+    margin-right: 10px;
+    font-size: 11px;
+    color: #9CA3AF;
+    font-weight: 500;
+}
+
+.log-message {
+    flex: 1;
+    word-break: break-all;
+    color: #374151;
+}
+
+.log-message.success {
+    color: #059669;
+}
+
+.log-message.error {
+    color: #DC2626;
+}
+
+.log-message.warning {
+    color: #D97706;
+}
+
+.log-empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 300px;
+    color: #9CA3AF;
+}
+
+.log-empty-icon {
+    width: 64px;
+    height: 64px;
+    background: linear-gradient(135deg, rgba(74, 108, 247, 0.1), rgba(123, 97, 255, 0.1));
+    border-radius: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 16px;
+}
+
+.log-empty-icon svg {
+    width: 32px;
+    height: 32px;
+    color: #4A6CF7;
+}
+
+.log-empty h3 {
+    font-size: 16px;
+    font-weight: 600;
+    color: #6B7280;
+    margin-bottom: 4px;
+}
+
+.log-empty p {
+    font-size: 14px;
+    color: #9CA3AF;
+}
+
+/* 操作按钮 */
+.log-action-btn {
+    height: 36px;
+    padding: 0 16px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-family: inherit;
+    white-space: nowrap;
+}
+
+.log-action-btn.primary {
+    background: linear-gradient(135deg, #4A6CF7, #7B61FF);
+    color: white;
+    border: none;
+    box-shadow: 0 2px 8px rgba(74, 108, 247, 0.25);
+}
+
+.log-action-btn.primary:hover {
+    background: linear-gradient(135deg, #3B5DE7, #6B51E0);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(74, 108, 247, 0.35);
+}
+
+.log-action-btn.secondary {
+    background: rgba(255, 255, 255, 0.9);
+    color: #6B7280;
+    border: 1.5px solid rgba(229, 231, 235, 0.8);
+}
+
+.log-action-btn.secondary:hover {
+    border-color: #4A6CF7;
+    color: #4A6CF7;
+    background: rgba(74, 108, 247, 0.04);
+}
+
+.log-action-btn.danger {
+    background: rgba(239, 68, 68, 0.08);
+    color: #EF4444;
+    border: 1.5px solid rgba(239, 68, 68, 0.2);
+}
+
+.log-action-btn.danger:hover {
+    background: rgba(239, 68, 68, 0.15);
+    border-color: rgba(239, 68, 68, 0.4);
+}
+
+.log-action-btn svg {
+    width: 16px;
+    height: 16px;
+}
+
+/* 响应式 */
+@media (max-width: 768px) {
+    .log-toolbar {
+        flex-direction: column;
+        gap: 12px;
+    }
+    
+    .log-toolbar-left {
+        width: 100%;
+        justify-content: space-between;
+    }
+    
+    .log-toolbar-right {
+        width: 100%;
+        justify-content: flex-end;
+    }
+    
+    .log-entry {
+        flex-wrap: wrap;
+        gap: 4px;
+    }
+    
+    .log-time {
+        min-width: auto;
+    }
+}
