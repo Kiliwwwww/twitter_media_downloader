@@ -27,7 +27,7 @@
                 subtitle="查看和管理之前的下载记录"
                 icon="<circle cx='12' cy='12' r='10'/><polyline points='12 6 12 12 16 14'/>"
             >
-                <button class="btn btn-secondary" @click="clearCache">
+                <button v-if="user && user.role === 'admin'" class="btn btn-secondary" @click="clearCache">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
                         <path d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
                         <path d="M9 10h6M9 14h6"/>
@@ -196,6 +196,7 @@
         
         const app = createApp({
             setup() {
+                const user = ref(null);
                 const history = ref([]);
                 const loading = ref(false);
                 const currentPage = ref(1);
@@ -354,7 +355,19 @@
                 
                 let refreshInterval = null;
                 
+                const fetchUser = async () => {
+                    try {
+                        const response = await fetch('/api/auth/me');
+                        if (response.ok) {
+                            user.value = await response.json();
+                        }
+                    } catch (error) {
+                        // 静默失败
+                    }
+                };
+                
                 onMounted(() => {
+                    fetchUser();
                     fetchHistory();
                     refreshInterval = setInterval(() => {
                         fetchHistory(currentPage.value, false);
@@ -369,7 +382,7 @@
                 });
                 
                 return {
-                    history, loading, currentPage, pageSize, total,
+                    user, history, loading, currentPage, pageSize, total,
                     totalPages, getStatusText, formatFileSize,
                     filters, debounceSearch, resetFilters,
                     fetchHistory, downloadFile, deleteHistory, clearCache
