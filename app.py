@@ -16,7 +16,16 @@ def get_or_create_secret_key() -> str:
     key = database.get_config('secret_key')
     if not key:
         key = secrets.token_hex(32)
-        database.update_config('secret_key', key)
+        # 使用 INSERT OR IGNORE 确保不会重复插入
+        with database.get_db() as conn:
+            cursor = conn.cursor()
+            cursor.execute('''
+                INSERT OR IGNORE INTO config (key, value, description)
+                VALUES (?, ?, ?)
+            ''', ('secret_key', key, 'Flask session密钥（自动生成）'))
+        # 如果已存在则更新
+        if not database.get_config('secret_key'):
+            database.update_config('secret_key', key)
     return key
 
 
