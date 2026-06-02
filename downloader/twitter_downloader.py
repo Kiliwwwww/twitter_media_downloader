@@ -30,22 +30,6 @@ class TwitterDownloader:
         # 初始化日志器
         self.logger = DownloadLogger(task_id or 'unknown', user_id) if task_id else None
         self._log_manager = None
-    
-    def set_log_manager(self, log_manager):
-        """设置实时日志管理器"""
-        self._log_manager = log_manager
-    
-    def _log(self, level: str, message: str, category: str = ''):
-        """记录日志（同时写入文件和实时推送）"""
-        # 写入文件日志
-        if self.logger:
-            getattr(self.logger, level, self.logger.info)(message)
-        
-        # 实时推送
-        if self._log_manager and self.task_id:
-            getattr(self._log_manager, level, self._log_manager.info)(
-                self.task_id, self.user_id, message, category
-            )
         
         self.user_info = {
             'screen_name': user_id,
@@ -95,6 +79,22 @@ class TwitterDownloader:
         
         # 处理代理配置
         self._proxy = proxy if proxy and proxy.strip() else None
+    
+    def set_log_manager(self, log_manager):
+        """设置实时日志管理器"""
+        self._log_manager = log_manager
+    
+    def _log(self, level: str, message: str, category: str = ''):
+        """记录日志（同时写入文件和实时推送）"""
+        # 写入文件日志
+        if self.logger:
+            getattr(self.logger, level, self.logger.info)(message)
+        
+        # 实时推送
+        if self._log_manager and self.task_id:
+            getattr(self._log_manager, level, self._log_manager.info)(
+                self.task_id, self.user_id, message, category
+            )
     
     def _get_client(self) -> httpx.AsyncClient:
         """创建httpx客户端，支持可选代理"""
