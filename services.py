@@ -39,7 +39,7 @@ class DownloadService:
         # 内存中没有，从数据库获取
         history = database.get_download_by_task_id(task_id)
         if history:
-            task = DownloadTask(task_id, history['user_id'])
+            task = DownloadTask(task_id, history['user_id'], account_user_id=history.get('account_user_id'))
             task.status = history['status']
             task.total_files = history.get('total_files', 0)
             task.downloaded_files = history.get('downloaded_files', 0)
@@ -53,7 +53,7 @@ class DownloadService:
     def create_task(self, user_id: str, download_type: str = 'all', account_user_id: int = None) -> DownloadTask:
         """创建下载任务"""
         task_id = f"{user_id}_{int(time.time())}"
-        task = DownloadTask(task_id, user_id, download_type)
+        task = DownloadTask(task_id, user_id, download_type, account_user_id=account_user_id)
         
         with self._lock:
             self._tasks[task_id] = task
@@ -103,9 +103,9 @@ class DownloadService:
                     total_files=total_files
                 )
             
-            # 从数据库获取配置
-            proxy = Config.get_proxy()
-            cookie = Config.get_cookie()
+            # 从数据库获取配置（使用用户特定的配置）
+            proxy = Config.get_proxy(user_id=task.account_user_id)
+            cookie = Config.get_cookie(user_id=task.account_user_id)
             
             # 创建下载器
             downloader = TwitterDownloader(

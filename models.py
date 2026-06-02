@@ -3,10 +3,11 @@ import time
 class DownloadTask:
     """下载任务模型"""
     
-    def __init__(self, task_id: str, user_id: str, download_type: str = 'all'):
+    def __init__(self, task_id: str, user_id: str, download_type: str = 'all', account_user_id: int = None):
         self.task_id = task_id
         self.user_id = user_id
         self.download_type = download_type  # all, video, image
+        self.account_user_id = account_user_id  # 登录用户的ID，用于配置隔离
         self.status = 'pending'  # pending, downloading, completed, failed
         self.progress = 0
         self.total_files = 0

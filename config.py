@@ -17,17 +17,17 @@ class Config:
     PORT = 12345
     
     @classmethod
-    def get_proxy(cls) -> str:
+    def get_proxy(cls, user_id: int = None) -> str:
         """获取代理配置（从数据库）"""
         from database import get_config
-        return get_config('proxy') or 'http://127.0.0.1:7890'
+        return get_config('proxy', user_id) or 'http://127.0.0.1:7890'
     
     @classmethod
-    def get_cookie(cls) -> str:
+    def get_cookie(cls, user_id: int = None) -> str:
         """获取Cookie配置（从数据库拼接）"""
         from database import get_config
-        auth_token = get_config('auth_token') or ''
-        ct0 = get_config('ct0') or ''
+        auth_token = get_config('auth_token', user_id) or ''
+        ct0 = get_config('ct0', user_id) or ''
         if auth_token and ct0:
             return f'auth_token={auth_token}; ct0={ct0};'
         return ''

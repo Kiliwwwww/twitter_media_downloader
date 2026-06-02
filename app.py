@@ -13,19 +13,12 @@ import database
 def get_or_create_secret_key() -> str:
     """获取或创建持久化的secret_key"""
     database.init_db()
-    key = database.get_config('secret_key')
+    # secret_key 是全局配置，使用 user_id=0 表示
+    key = database.get_config('secret_key', user_id=0)
     if not key:
         key = secrets.token_hex(32)
-        # 使用 INSERT OR IGNORE 确保不会重复插入
-        with database.get_db() as conn:
-            cursor = conn.cursor()
-            cursor.execute('''
-                INSERT OR IGNORE INTO config (key, value, description)
-                VALUES (?, ?, ?)
-            ''', ('secret_key', key, 'Flask session密钥（自动生成）'))
-        # 如果已存在则更新
-        if not database.get_config('secret_key'):
-            database.update_config('secret_key', key)
+        # 使用 update_config 来插入或更新
+        database.update_config('secret_key', key, user_id=0)
     return key
 
 

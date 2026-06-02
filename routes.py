@@ -120,15 +120,25 @@ def download_file(task_id: str):
 
 # 配置管理API
 @main_bp.route('/api/configs')
+@login_required
 def get_configs():
-    """获取所有配置"""
-    configs = database.get_all_configs()
+    """获取当前用户的配置"""
+    current_user = get_current_user()
+    if not current_user:
+        return jsonify({'error': '未登录'}), 401
+    
+    configs = database.get_all_configs(user_id=current_user['id'])
     return jsonify(configs)
 
 
 @main_bp.route('/api/configs', methods=['PUT'])
+@login_required
 def update_configs():
-    """更新配置"""
+    """更新当前用户的配置"""
+    current_user = get_current_user()
+    if not current_user:
+        return jsonify({'error': '未登录'}), 401
+    
     data = request.get_json()
     
     if not data:
@@ -136,7 +146,7 @@ def update_configs():
     
     try:
         for key, value in data.items():
-            database.update_config(key, value)
+            database.update_config(key, value, user_id=current_user['id'])
         return jsonify({'message': '配置已更新'})
     except Exception as e:
         return jsonify({'error': str(e)}), 500
@@ -210,10 +220,10 @@ def clear_cache():
         return jsonify({'error': str(e)}), 500
 
 
-async def _fetch_user_avatar(user_id: str) -> str:
+async def _fetch_user_avatar(user_id: str, account_user_id: int = None) -> str:
     """异步获取用户头像URL"""
-    proxy = Config.get_proxy()
-    cookie = Config.get_cookie()
+    proxy = Config.get_proxy(user_id=account_user_id)
+    cookie = Config.get_cookie(user_id=account_user_id)
     
     headers = {
         'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36',
@@ -247,11 +257,15 @@ async def _fetch_user_avatar(user_id: str) -> str:
 
 
 @main_bp.route('/api/avatar/<user_id>')
+@login_required
 def get_user_avatar(user_id: str):
     """获取用户头像"""
     try:
+        current_user = get_current_user()
+        account_user_id = current_user['id'] if current_user else None
+        
         loop = asyncio.new_event_loop()
-        avatar_url = loop.run_until_complete(_fetch_user_avatar(user_id))
+        avatar_url = loop.run_until_complete(_fetch_user_avatar(user_id, account_user_id=account_user_id))
         loop.close()
         
         if avatar_url:

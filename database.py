@@ -32,15 +32,54 @@ def init_db():
     with get_db() as conn:
         cursor = conn.cursor()
         
-        # 创建配置表
-        cursor.execute('''
-            CREATE TABLE IF NOT EXISTS config (
-                key TEXT PRIMARY KEY,
-                value TEXT NOT NULL,
-                description TEXT,
-                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-            )
-        ''')
+        # 检查 config 表是否存在
+        cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='config'")
+        config_table_exists = cursor.fetchone()
+        
+        if config_table_exists:
+            # 检查是否有 user_id 字段
+            cursor.execute("PRAGMA table_info(config)")
+            columns = [col['name'] for col in cursor.fetchall()]
+            
+            if 'user_id' not in columns:
+                # 需要迁移：创建新表并迁移数据
+                cursor.execute('''
+                    CREATE TABLE IF NOT EXISTS config_new (
+                        user_id INTEGER NOT NULL,
+                        key TEXT NOT NULL,
+                        value TEXT NOT NULL,
+                        description TEXT,
+                        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                        PRIMARY KEY (user_id, key),
+                        FOREIGN KEY (user_id) REFERENCES users(id)
+                    )
+                ''')
+                
+                # 将旧数据迁移到新表（分配给管理员用户 id=1）
+                cursor.execute('''
+                    INSERT INTO config_new (user_id, key, value, description, updated_at)
+                    SELECT 1, key, value, description, updated_at FROM config
+                ''')
+                
+                # 删除旧表
+                cursor.execute('DROP TABLE config')
+                
+                # 重命名新表
+                cursor.execute('ALTER TABLE config_new RENAME TO config')
+            # 如果已有 user_id 字段，表结构已经正确
+        else:
+            # 创建配置表（包含 user_id）
+            cursor.execute('''
+                CREATE TABLE IF NOT EXISTS config (
+                    user_id INTEGER NOT NULL,
+                    key TEXT NOT NULL,
+                    value TEXT NOT NULL,
+                    description TEXT,
+                    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    PRIMARY KEY (user_id, key),
+                    FOREIGN KEY (user_id) REFERENCES users(id)
+                )
+            ''')
         
         # 创建用户表
         cursor.execute('''
@@ -111,7 +150,20 @@ def init_db():
         if 'failed_files' not in columns:
             cursor.execute('ALTER TABLE download_history ADD COLUMN failed_files INTEGER DEFAULT 0')
         
-        # 插入默认配置
+        # 创建默认超管账号 admin/123456
+        cursor.execute('SELECT id FROM users WHERE username = ?', ('admin',))
+        admin_user = cursor.fetchone()
+        if not admin_user:
+            password_hash = generate_password_hash('123456')
+            cursor.execute('''
+                INSERT INTO users (username, password_hash, nickname, role, is_active)
+                VALUES (?, ?, ?, ?, ?)
+            ''', ('admin', password_hash, '管理员', 'admin', 1))
+            admin_id = cursor.lastrowid
+        else:
+            admin_id = admin_user['id']
+        
+        # 为管理员用户插入默认配置（如果不存在）
         default_configs = [
             ('proxy', '', '代理地址（如: http://127.0.0.1:7890）'),
             ('auth_token', '', 'auth_token'),
@@ -120,45 +172,87 @@ def init_db():
         
         for key, value, description in default_configs:
             cursor.execute('''
-                INSERT OR IGNORE INTO config (key, value, description)
-                VALUES (?, ?, ?)
-            ''', (key, value, description))
-        
-        # 创建默认超管账号 admin/123456
-        cursor.execute('SELECT id FROM users WHERE username = ?', ('admin',))
-        if not cursor.fetchone():
-            password_hash = generate_password_hash('123456')
-            cursor.execute('''
-                INSERT INTO users (username, password_hash, nickname, role, is_active)
-                VALUES (?, ?, ?, ?, ?)
-            ''', ('admin', password_hash, '管理员', 'admin', 1))
+                INSERT OR IGNORE INTO config (user_id, key, value, description)
+                VALUES (?, ?, ?, ?)
+            ''', (admin_id, key, value, description))
 
 
-def get_config(key: str) -> Optional[str]:
+def get_config(key: str, user_id: int = None) -> Optional[str]:
     """获取配置值"""
     with get_db() as conn:
         cursor = conn.cursor()
-        cursor.execute('SELECT value FROM config WHERE key = ?', (key,))
+        if user_id is not None:
+            cursor.execute('SELECT value FROM config WHERE key = ? AND user_id = ?', (key, user_id))
+        else:
+            # 兼容旧逻辑：如果没有 user_id，尝试获取第一个匹配的配置
+            cursor.execute('SELECT value FROM config WHERE key = ? LIMIT 1', (key,))
         row = cursor.fetchone()
         return row['value'] if row else None
 
 
-def get_all_configs() -> List[Dict[str, Any]]:
+def get_all_configs(user_id: int = None) -> List[Dict[str, Any]]:
     """获取所有配置"""
     with get_db() as conn:
         cursor = conn.cursor()
-        cursor.execute('SELECT key, value, description, updated_at FROM config ORDER BY key')
-        return [dict(row) for row in cursor.fetchall()]
+        if user_id is not None:
+            cursor.execute('SELECT key, value, description, updated_at FROM config WHERE user_id = ? ORDER BY key', (user_id,))
+            configs = [dict(row) for row in cursor.fetchall()]
+            
+            # 如果用户没有配置，自动创建默认配置
+            if not configs:
+                default_configs = [
+                    ('proxy', '', '代理地址（如: http://127.0.0.1:7890）'),
+                    ('auth_token', '', 'auth_token'),
+                    ('ct0', '', 'ct0'),
+                ]
+                
+                for key, value, description in default_configs:
+                    cursor.execute('''
+                        INSERT INTO config (user_id, key, value, description)
+                        VALUES (?, ?, ?, ?)
+                    ''', (user_id, key, value, description))
+                
+                # 重新查询
+                cursor.execute('SELECT key, value, description, updated_at FROM config WHERE user_id = ? ORDER BY key', (user_id,))
+                configs = [dict(row) for row in cursor.fetchall()]
+            
+            return configs
+        else:
+            cursor.execute('SELECT key, value, description, updated_at FROM config ORDER BY key')
+            return [dict(row) for row in cursor.fetchall()]
 
 
-def update_config(key: str, value: str):
+def update_config(key: str, value: str, user_id: int = None):
     """更新配置"""
     with get_db() as conn:
         cursor = conn.cursor()
-        cursor.execute('''
-            UPDATE config SET value = ?, updated_at = CURRENT_TIMESTAMP
-            WHERE key = ?
-        ''', (value, key))
+        if user_id is not None:
+            # 先尝试更新
+            cursor.execute('''
+                UPDATE config SET value = ?, updated_at = CURRENT_TIMESTAMP
+                WHERE key = ? AND user_id = ?
+            ''', (value, key, user_id))
+            
+            # 如果没有更新任何行，则插入新记录
+            if cursor.rowcount == 0:
+                # 获取配置描述
+                descriptions = {
+                    'proxy': '代理地址（如: http://127.0.0.1:7890）',
+                    'auth_token': 'auth_token',
+                    'ct0': 'ct0',
+                    'secret_key': 'Flask session密钥（自动生成）'
+                }
+                description = descriptions.get(key, key)
+                cursor.execute('''
+                    INSERT INTO config (user_id, key, value, description)
+                    VALUES (?, ?, ?, ?)
+                ''', (user_id, key, value, description))
+        else:
+            # 兼容旧逻辑
+            cursor.execute('''
+                UPDATE config SET value = ?, updated_at = CURRENT_TIMESTAMP
+                WHERE key = ?
+            ''', (value, key))
 
 
 def add_download_history(task_id: str, user_id: str, user_name: str = None, account_user_id: int = None):
@@ -324,7 +418,22 @@ def create_user(username: str, password: str, nickname: str = None,
             INSERT INTO users (username, password_hash, nickname, email, role, is_active)
             VALUES (?, ?, ?, ?, ?, 1)
         ''', (username, password_hash, nickname or username, email, role))
-        return cursor.lastrowid
+        user_id = cursor.lastrowid
+        
+        # 为新用户创建默认配置
+        default_configs = [
+            ('proxy', '', '代理地址（如: http://127.0.0.1:7890）'),
+            ('auth_token', '', 'auth_token'),
+            ('ct0', '', 'ct0'),
+        ]
+        
+        for key, value, description in default_configs:
+            cursor.execute('''
+                INSERT INTO config (user_id, key, value, description)
+                VALUES (?, ?, ?, ?)
+            ''', (user_id, key, value, description))
+        
+        return user_id
 
 
 def update_user(user_id: int, **kwargs):
