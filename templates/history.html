@@ -293,7 +293,7 @@
                 };
                 
                 const downloadFile = (taskId) => {
-                    window.location.href = `/api/download/${taskId}`;
+                    window.location.href = `/api/download/${encodeURIComponent(taskId)}`;
                 };
                 
                 const deleteHistory = async (taskId) => {
@@ -308,7 +308,7 @@
                             }
                         );
                         
-                        const response = await fetch(`/api/history/${taskId}`, { method: 'DELETE' });
+                        const response = await fetch(`/api/history/${encodeURIComponent(taskId)}`, { method: 'DELETE' });
                         if (response.ok) {
                             ElementPlus.ElMessage.success('已删除');
                             fetchHistory(currentPage.value);
