@@ -390,6 +390,10 @@ class TwitterDownloader:
         if self._file_exists(file_name):
             self.skipped_files += 1
             self._log('info', f'[跳过] 文件已存在: {os.path.basename(file_name)}', 'download')
+            # 更新进度
+            if self.progress_callback:
+                progress = min(int(((self.downloaded_files + self.skipped_files) / max(self.total_files, 1)) * 100), 100)
+                self.progress_callback(progress, self.downloaded_files, self.total_files, self.skipped_files)
             return True
         
         count = 0
