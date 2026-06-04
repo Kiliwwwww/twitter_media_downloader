@@ -1,5 +1,7 @@
 # 推特媒体下载器
 
+中文 | [English](README_EN.md)
+
 基于 [twitter_download](https://github.com/caolvchong-top/twitter_download) 项目实现的Web版本，使用 Flask + Vue3 + Element Plus 构建。
 
 ## 功能特性
