@@ -904,7 +904,8 @@ body {
 }
 
 /* ===== 下拉菜单暗黑模式 ===== */
-.dropdown-menu {
+.dropdown-menu,
+.locale-menu {
     background: var(--card-bg) !important;
     border-color: var(--card-border) !important;
     box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3), 0 8px 10px -6px rgba(0, 0, 0, 0.3) !important;
@@ -926,12 +927,19 @@ body {
     background: var(--card-border) !important;
 }
 
-.dropdown-item {
+.dropdown-item,
+.locale-item {
     color: var(--text-secondary) !important;
 }
 
-.dropdown-item:hover {
+.dropdown-item:hover,
+.locale-item:hover {
     background: var(--item-hover-bg) !important;
+    color: var(--icon-color) !important;
+}
+
+.locale-item.active {
+    background: rgba(74, 108, 247, 0.15) !important;
     color: var(--icon-color) !important;
 }
 
@@ -942,6 +950,23 @@ body {
 .dropdown-item.danger:hover {
     background: rgba(239, 68, 68, 0.1) !important;
     color: #EF4444 !important;
+}
+
+/* ===== 语言切换按钮暗黑模式 ===== */
+.locale-btn {
+    background: transparent !important;
+    border-color: var(--navbar-border) !important;
+    color: var(--text-secondary) !important;
+}
+
+.locale-btn:hover {
+    background: var(--item-bg) !important;
+    color: var(--icon-color) !important;
+    border-color: var(--icon-color) !important;
+}
+
+.locale-btn svg {
+    stroke: currentColor !important;
 }
 
 /* ===== Twitter输入行 ===== */
