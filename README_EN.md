@@ -156,6 +156,19 @@ When deploying with Docker, the following data will be persisted to the host:
 
 ---
 
+## Default Account
+
+The system will automatically create a default admin account on first startup:
+
+| Item | Value |
+|------|-------|
+| Username | `admin` |
+| Password | `123456` |
+
+> ⚠️ Please change the default password after first login!
+
+---
+
 ## Pages
 
 ### Home (/)
