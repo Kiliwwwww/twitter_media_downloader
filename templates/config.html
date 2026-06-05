@@ -23,8 +23,8 @@
         <!-- 主内容 -->
         <div class="main-container">
             <page-header 
-                title="配置管理" 
-                subtitle="管理代理、Cookie等配置信息"
+                :title="t('config.title')" 
+                :subtitle="t('config.subtitle')"
                 icon="<circle cx='12' cy='12' r='3'/><path d='M12 1v4m0 14v4M4.22 4.22l2.83 2.83m9.9 9.9l2.83 2.83M1 12h4m14 0h4M4.22 19.78l2.83-2.83m9.9-9.9l2.83-2.83'/>"
             ></page-header>
             
@@ -42,16 +42,12 @@
                         <div v-if="cfg.key === 'auth_token' || cfg.key === 'ct0'" class="tip-wrapper">
                             <span class="tip-tag">
                                 <el-icon><Warning /></el-icon>
-                                如何获取？
+                                {{ t('config.howToGet') }}
                             </span>
                             <div class="tip-content">
-                                <div class="tip-content-title">获取方式：</div>
+                                <div class="tip-content-title">{{ t('config.howToGetTitle') }}</div>
                                 <ul class="tip-content-list">
-                                    <li>登录 twitter.com</li>
-                                    <li>打开浏览器开发者工具 (F12)</li>
-                                    <li>切换到 Application/存储 标签</li>
-                                    <li>在 Cookies 中找到 twitter.com</li>
-                                    <li>分别复制 auth_token 和 ct0 的值</li>
+                                    <li v-for="step in t('config.howToGetSteps')" :key="step">{{ step }}</li>
                                 </ul>
                             </div>
                         </div>
@@ -59,7 +55,7 @@
                     <input
                         class="config-input"
                         v-model="configList[index].value"
-                        :placeholder="cfg.key === 'auth_token' ? '请输入auth_token值' : (cfg.key === 'ct0' ? '请输入ct0值' : '请输入' + (cfg.description || cfg.key))"
+                        :placeholder="cfg.key === 'auth_token' ? t('config.authTokenPlaceholder') : (cfg.key === 'ct0' ? t('config.ct0Placeholder') : t('config.inputPlaceholder') + (cfg.description || cfg.key))"
                         @keyup.enter="saveConfigs"
                     >
                     <div v-if="cfg.updated_at" class="config-hint">
@@ -67,7 +63,7 @@
                             <circle cx="12" cy="12" r="10"/>
                             <path d="M12 6v6l4 2"/>
                         </svg>
-                        最后更新: {{ cfg.updated_at }}
+                        {{ t('config.lastUpdated') }}{{ cfg.updated_at }}
                     </div>
                 </div>
                 
@@ -82,7 +78,7 @@
                         <polyline points="17 21 17 13 7 13 7 21"/>
                         <polyline points="7 3 7 8 15 8"/>
                     </svg>
-                    {{ saving ? '保存中...' : '保存配置' }}
+                    {{ saving ? t('config.saving') : t('config.saveConfig') }}
                 </button>
             </div>
         </div>
@@ -91,8 +87,11 @@
 
     <script src="{{ url_for('static', filename='js/utils.js') }}"></script>
     <script src="{{ url_for('static', filename='js/components.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/i18n.js') }}"></script>
     <script>
         const { createApp, ref, onMounted } = Vue;
+        
+        const t = (key, params) => i18n.t(key, params);
         
         const app = createApp({
             setup() {
@@ -107,7 +106,7 @@
                         const data = await response.json();
                         configList.value = data;
                     } catch (error) {
-                        ElementPlus.ElMessage.error('获取配置失败');
+                        ElementPlus.ElMessage.error(t('config.fetchFailed'));
                     } finally {
                         loading.value = false;
                     }
@@ -128,13 +127,13 @@
                         });
                         
                         if (response.ok) {
-                            ElementPlus.ElMessage.success('配置已保存');
+                            ElementPlus.ElMessage.success(t('config.configSaved'));
                             fetchConfigs();
                         } else {
-                            ElementPlus.ElMessage.error('保存失败');
+                            ElementPlus.ElMessage.error(t('config.saveFailed'));
                         }
                     } catch (error) {
-                        ElementPlus.ElMessage.error('保存失败: ' + error.message);
+                        ElementPlus.ElMessage.error(t('config.saveFailed') + ': ' + error.message);
                     } finally {
                         saving.value = false;
                     }
@@ -142,7 +141,7 @@
                 
                 onMounted(() => fetchConfigs());
                 
-                return { configList, loading, saving, saveConfigs };
+                return { configList, loading, saving, saveConfigs, t };
             }
         });
         
@@ -152,7 +151,9 @@
             app.component(key, component);
         }
         registerGlobalComponents(app);
-        app.mount('#app');
+        i18n.init().then(() => {
+            app.mount('#app');
+        });
     </script>
 </body>
 </html>

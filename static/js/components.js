@@ -30,14 +30,35 @@ const Navbar = {
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
                     </svg>
-                    Twitter Media Downloader
+                    {{ t('common.appName') }}
                 </a>
                 <div class="nav-right">
                     <div class="nav-links">
-                        <a href="/" :class="{ active: activePage === 'home' }">首页</a>
-                        <a href="/history" :class="{ active: activePage === 'history' }">历史</a>
+                        <a href="/" :class="{ active: activePage === 'home' }">{{ t('nav.home') }}</a>
+                        <a href="/history" :class="{ active: activePage === 'history' }">{{ t('nav.history') }}</a>
                     </div>
-                    <button class="theme-toggle" @click="toggleTheme" :title="isDark ? '切换到浅色模式' : '切换到深色模式'">
+                    <div class="locale-switcher" @mouseenter="showLocaleMenu = true" @mouseleave="showLocaleMenu = false">
+                        <button class="locale-btn">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
+                                <circle cx="12" cy="12" r="10"/>
+                                <line x1="2" y1="12" x2="22" y2="12"/>
+                                <path d="M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z"/>
+                            </svg>
+                            {{ currentLocaleName }}
+                        </button>
+                        <div class="locale-menu" :class="{ show: showLocaleMenu }">
+                            <a 
+                                v-for="locale in supportedLocales" 
+                                :key="locale"
+                                class="locale-item" 
+                                :class="{ active: locale === currentLocale }"
+                                @click.prevent="switchLocale(locale)"
+                            >
+                                {{ getLocaleName(locale) }}
+                            </a>
+                        </div>
+                    </div>
+                    <button class="theme-toggle" @click="toggleTheme" :title="isDark ? t('nav.lightMode') : t('nav.darkMode')">
                         <svg v-if="isDark" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                             <circle cx="12" cy="12" r="5"/>
                             <line x1="12" y1="1" x2="12" y2="3"/>
@@ -65,7 +86,7 @@ const Navbar = {
                             <div class="dropdown-header">
                                 <div class="dropdown-user-info">
                                     <div class="dropdown-user-name">{{ user.nickname || user.username }}</div>
-                                    <div class="dropdown-user-role">{{ user.role === 'admin' ? '管理员' : '普通用户' }}</div>
+                                    <div class="dropdown-user-role">{{ user.role === 'admin' ? t('profile.admin') : t('profile.user') }}</div>
                                 </div>
                             </div>
                             <div class="dropdown-divider"></div>
@@ -74,14 +95,14 @@ const Navbar = {
                                     <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/>
                                     <circle cx="12" cy="7" r="4"/>
                                 </svg>
-                                个人设置
+                                {{ t('nav.profile') }}
                             </a>
                             <a href="/config" class="dropdown-item">
                                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                     <circle cx="12" cy="12" r="3"/>
                                     <path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-2 2 2 2 0 01-2-2v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83 0 2 2 0 010-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 01-2-2 2 2 0 012-2h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 010-2.83 2 2 0 012.83 0l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 012-2 2 2 0 012 2v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 0 2 2 0 010 2.83l-.06.06a1.65 1.65 0 00-.33 1.82V9a1.65 1.65 0 001.51 1H21a2 2 0 012 2 2 2 0 01-2 2h-.09a1.65 1.65 0 00-1.51 1z"/>
                                 </svg>
-                                配置管理
+                                {{ t('nav.config') }}
                             </a>
                             <a v-if="user.role === 'admin'" href="/admin" class="dropdown-item">
                                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -90,7 +111,7 @@ const Navbar = {
                                     <path d="M23 21v-2a4 4 0 00-3-3.87"/>
                                     <path d="M16 3.13a4 4 0 010 7.75"/>
                                 </svg>
-                                用户管理
+                                {{ t('nav.admin') }}
                             </a>
                             <a v-if="user.role === 'admin'" href="/logs" class="dropdown-item">
                                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -99,7 +120,7 @@ const Navbar = {
                                     <line x1="16" y1="13" x2="8" y2="13"/>
                                     <line x1="16" y1="17" x2="8" y2="17"/>
                                 </svg>
-                                实时日志
+                                {{ t('nav.logs') }}
                             </a>
                             <div class="dropdown-divider"></div>
                             <a href="#" class="dropdown-item danger" @click.prevent="logout">
@@ -108,7 +129,7 @@ const Navbar = {
                                     <polyline points="16 17 21 12 16 7"/>
                                     <line x1="21" y1="12" x2="9" y2="12"/>
                                 </svg>
-                                退出登录
+                                {{ t('nav.logout') }}
                             </a>
                         </div>
                     </div>
@@ -120,12 +141,27 @@ const Navbar = {
         const isDark = ref(localStorage.getItem('theme') === 'dark');
         const user = ref(null);
         const showDropdown = ref(false);
+        const showLocaleMenu = ref(false);
+        const supportedLocales = i18n.getSupportedLocales();
+        
+        const t = (key, params) => i18n.t(key, params);
+        
+        // 直接依赖i18n.locale响应式ref，语言切换时自动更新
+        const currentLocale = Vue.computed(() => i18n.locale ? i18n.locale.value : 'zh-CN');
+        const currentLocaleName = Vue.computed(() => i18n.getLocaleName(currentLocale.value));
         
         const toggleTheme = () => {
             isDark.value = !isDark.value;
             document.documentElement.setAttribute('data-theme', isDark.value ? 'dark' : 'light');
             localStorage.setItem('theme', isDark.value ? 'dark' : 'light');
         };
+        
+        const switchLocale = async (locale) => {
+            await i18n.switchLocale(locale);
+            showLocaleMenu.value = false;
+        };
+        
+        const getLocaleName = (locale) => i18n.getLocaleName(locale);
         
         const fetchUser = async () => {
             try {
@@ -149,13 +185,16 @@ const Navbar = {
             }
         };
         
-        // 初始化
-        onMounted(() => {
+        Vue.onMounted(() => {
             document.documentElement.setAttribute('data-theme', isDark.value ? 'dark' : 'light');
             fetchUser();
         });
         
-        return { isDark, user, showDropdown, toggleTheme, logout };
+        return { 
+            isDark, user, showDropdown, showLocaleMenu, 
+            currentLocale, currentLocaleName, supportedLocales,
+            toggleTheme, switchLocale, getLocaleName, logout, t
+        };
     }
 };
 
@@ -247,9 +286,13 @@ const LoadingState = {
     template: `
         <div style="text-align: center; padding: 40px;">
             <div class="spinner" style="margin: 0 auto; width: 32px; height: 32px; border-width: 3px; border-color: rgba(74, 108, 247, 0.3); border-top-color: #4A6CF7;"></div>
-            <p style="margin-top: 16px; color: #9CA3AF;">加载中...</p>
+            <p style="margin-top: 16px; color: #9CA3AF;">{{ t('common.loadingState') }}</p>
         </div>
-    `
+    `,
+    setup() {
+        const t = (key, params) => i18n.t(key, params);
+        return { t };
+    }
 };
 
 /**
@@ -259,7 +302,7 @@ const EmptyState = {
     props: {
         title: {
             type: String,
-            default: '暂无数据'
+            default: ''
         },
         description: {
             type: String,
@@ -275,11 +318,16 @@ const EmptyState = {
                     <path d="M18 12a2 2 0 000 4h4v-4h-4z"/>
                 </svg>
             </div>
-            <h3 class="empty-title">{{ title }}</h3>
+            <h3 class="empty-title">{{ displayTitle }}</h3>
             <p class="empty-desc" v-if="description">{{ description }}</p>
             <slot></slot>
         </div>
-    `
+    `,
+    setup(props) {
+        const t = (key, params) => i18n.t(key, params);
+        const displayTitle = computed(() => props.title || t('common.emptyState'));
+        return { t, displayTitle };
+    }
 };
 
 // 注册全局组件

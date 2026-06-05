@@ -1,5 +1,7 @@
 const { createApp, ref, computed, onMounted, onUnmounted, nextTick } = Vue;
 
+const t = (key, params) => i18n.t(key, params);
+
 const app = createApp({
     setup() {
         const logs = ref([]);
@@ -90,21 +92,21 @@ const app = createApp({
         const clearLogs = async () => {
             try {
                 await ElementPlus.ElMessageBox.confirm(
-                    '确定要清空所有日志吗？',
-                    '确认清空',
+                    t('logs.clearConfirm'),
+                    t('logs.clearTitle'),
                     {
-                        confirmButtonText: '确定',
-                        cancelButtonText: '取消',
+                        confirmButtonText: t('common.confirm'),
+                        cancelButtonText: t('common.cancel'),
                         type: 'warning'
                     }
                 );
                 
                 logs.value = [];
                 await fetch('/api/logs', { method: 'DELETE' });
-                ElementPlus.ElMessage.success('日志已清空');
+                ElementPlus.ElMessage.success(t('logs.cleared'));
             } catch (error) {
                 if (error !== 'cancel') {
-                    ElementPlus.ElMessage.error('清空失败');
+                    ElementPlus.ElMessage.error(t('logs.clearFailed'));
                 }
             }
         };
@@ -128,7 +130,8 @@ const app = createApp({
             filteredLogs,
             formatTime,
             toggleAutoScroll,
-            clearLogs
+            clearLogs,
+            t
         };
     }
 });
@@ -138,4 +141,6 @@ for (const [key, component] of Object.entries(ElementPlusIconsVue)) {
     app.component(key, component);
 }
 registerGlobalComponents(app);
-app.mount('#app');
+i18n.init().then(() => {
+    app.mount('#app');
+});

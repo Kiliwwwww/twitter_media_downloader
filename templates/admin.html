@@ -23,8 +23,8 @@
         <!-- 主内容 -->
         <div class="main-container" style="max-width: 1000px;">
             <page-header 
-                title="用户管理" 
-                subtitle="管理平台用户和邀请码"
+                :title="t('admin.title')" 
+                :subtitle="t('admin.subtitle')"
                 icon="<path d='M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2'/><circle cx='9' cy='7' r='4'/><path d='M23 21v-2a4 4 0 00-3-3.87'/><path d='M16 3.13a4 4 0 010 7.75'/>"
             ></page-header>
             
@@ -41,7 +41,7 @@
                         <path d="M23 21v-2a4 4 0 00-3-3.87"/>
                         <path d="M16 3.13a4 4 0 010 7.75"/>
                     </svg>
-                    用户管理
+                    {{ t('admin.userManagement') }}
                 </button>
                 <button 
                     class="admin-tab" 
@@ -54,7 +54,7 @@
                         <path d="M6 12h4"/>
                         <path d="M14 12h4"/>
                     </svg>
-                    邀请码管理
+                    {{ t('admin.inviteCodeManagement') }}
                 </button>
             </div>
             
@@ -71,7 +71,7 @@
                                 type="text" 
                                 class="search-input" 
                                 v-model="userSearch" 
-                                placeholder="搜索用户名、昵称或邮箱..."
+                                :placeholder="t('admin.searchPlaceholder')"
                                 @input="debounceUserSearch"
                             >
                         </div>
@@ -82,7 +82,7 @@
                                 <line x1="12" y1="5" x2="12" y2="19"/>
                                 <line x1="5" y1="12" x2="19" y2="12"/>
                             </svg>
-                            添加用户
+                            {{ t('admin.addUser') }}
                         </button>
                     </div>
                 </div>
@@ -91,19 +91,19 @@
                 
                 <empty-state 
                     v-else-if="users.length === 0" 
-                    title="暂无用户数据"
-                    description="点击上方按钮添加第一个用户"
+                    :title="t('admin.noUsers')"
+                    :description="t('admin.noUsersDesc')"
                 ></empty-state>
                 
                 <table v-else class="data-table">
                     <thead>
                         <tr>
-                            <th>用户</th>
-                            <th>角色</th>
-                            <th>状态</th>
-                            <th>推特ID</th>
-                            <th>创建时间</th>
-                            <th>操作</th>
+                            <th>{{ t('admin.userColumn') }}</th>
+                            <th>{{ t('admin.roleColumn') }}</th>
+                            <th>{{ t('admin.statusColumn') }}</th>
+                            <th>{{ t('admin.twitterIdColumn') }}</th>
+                            <th>{{ t('admin.createdAtColumn') }}</th>
+                            <th>{{ t('admin.actionsColumn') }}</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -122,31 +122,31 @@
                                 </div>
                             </td>
                             <td>
-                                <span class="role-badge" :class="user.role">{{ user.role === 'admin' ? '管理员' : '普通用户' }}</span>
+                                <span class="role-badge" :class="user.role">{{ user.role === 'admin' ? t('admin.adminRole') : t('admin.normalUser') }}</span>
                             </td>
                             <td>
                                 <span class="status-badge" :class="user.is_active ? 'active' : 'inactive'">
                                     <span class="status-dot"></span>
-                                    {{ user.is_active ? '已启用' : '已禁用' }}
+                                    {{ user.is_active ? t('admin.active') : t('admin.inactive') }}
                                 </span>
                             </td>
                             <td>{{ user.twitter_id || '-' }}</td>
                             <td>{{ formatTime(user.created_at) }}</td>
                             <td>
                                 <div class="action-buttons">
-                                    <button class="action-btn" title="编辑" @click="openEditUserModal(user)">
+                                    <button class="action-btn" :title="t('admin.editTooltip')" @click="openEditUserModal(user)">
                                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                             <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/>
                                             <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/>
                                         </svg>
                                     </button>
-                                    <button class="action-btn" title="重置密码" @click="openResetPasswordModal(user)">
+                                    <button class="action-btn" :title="t('admin.resetPasswordTooltip')" @click="openResetPasswordModal(user)">
                                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                             <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
                                             <path d="M7 11V7a5 5 0 0110 0v4"/>
                                         </svg>
                                     </button>
-                                    <button class="action-btn" :title="user.is_active ? '禁用' : '启用'" @click="toggleUser(user)">
+                                    <button class="action-btn" :title="user.is_active ? t('admin.disableTooltip') : t('admin.enableTooltip')" @click="toggleUser(user)">
                                         <svg v-if="user.is_active" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                             <circle cx="12" cy="12" r="10"/>
                                             <line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/>
@@ -156,7 +156,7 @@
                                             <polyline points="22 4 12 14.01 9 11.01"/>
                                         </svg>
                                     </button>
-                                    <button class="action-btn danger" title="删除" @click="deleteUser(user)">
+                                    <button class="action-btn danger" :title="t('admin.deleteTooltip')" @click="deleteUser(user)">
                                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                             <polyline points="3 6 5 6 21 6"/>
                                             <path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/>
@@ -181,7 +181,7 @@
             <div v-if="activeTab === 'invite'" class="table-card">
                 <div class="toolbar">
                     <div class="toolbar-left">
-                        <h3 style="font-size: 16px; font-weight: 600; color: #1F2937;">邀请码列表</h3>
+                        <h3 style="font-size: 16px; font-weight: 600; color: #1F2937;">{{ t('admin.inviteCodeList') }}</h3>
                     </div>
                     <div class="toolbar-right">
                         <button class="add-btn" @click="generateInviteCodes(1)">
@@ -189,14 +189,14 @@
                                 <line x1="12" y1="5" x2="12" y2="19"/>
                                 <line x1="5" y1="12" x2="19" y2="12"/>
                             </svg>
-                            生成邀请码
+                            {{ t('admin.generateInviteCode') }}
                         </button>
                         <button class="add-btn" style="background: linear-gradient(135deg, #10B981, #059669);" @click="generateInviteCodes(5)">
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                 <line x1="12" y1="5" x2="12" y2="19"/>
                                 <line x1="5" y1="12" x2="19" y2="12"/>
                             </svg>
-                            批量生成(5个)
+                            {{ t('admin.batchGenerate') }}
                         </button>
                     </div>
                 </div>
@@ -205,8 +205,8 @@
                 
                 <empty-state 
                     v-else-if="inviteCodes.length === 0" 
-                    title="暂无邀请码"
-                    description="点击上方按钮生成邀请码"
+                    :title="t('admin.noInviteCodes')"
+                    :description="t('admin.noInviteCodesDesc')"
                 ></empty-state>
                 
                 <div v-else>
@@ -214,21 +214,21 @@
                         <div class="invite-code-info">
                             <div class="invite-code">{{ code.code }}</div>
                             <div class="invite-code-meta">
-                                <span>创建者: {{ code.creator_name }}</span>
-                                <span>{{ code.is_used ? '已使用' : '未使用' }}</span>
-                                <span v-if="code.used_by_name">使用者: {{ code.used_by_name }}</span>
+                                <span>{{ t('admin.creator', { name: code.creator_name }) }}</span>
+                                <span>{{ code.is_used ? t('admin.used') : t('admin.unused') }}</span>
+                                <span v-if="code.used_by_name">{{ t('admin.usedBy', { name: code.used_by_name }) }}</span>
                                 <span>{{ formatTime(code.created_at) }}</span>
                             </div>
                         </div>
                         <div class="invite-code-actions">
-                            <button class="copy-btn" @click="copyCode(code.code)" title="复制">
+                            <button class="copy-btn" @click="copyCode(code.code)" :title="t('admin.copyTooltip')">
                                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                     <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
                                     <path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/>
                                 </svg>
-                                复制
+                                {{ t('admin.copy') }}
                             </button>
-                            <button class="action-btn danger" title="删除" @click="deleteInviteCode(code.id)">
+                            <button class="action-btn danger" :title="t('admin.deleteTooltip')" @click="deleteInviteCode(code.id)">
                                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                     <polyline points="3 6 5 6 21 6"/>
                                     <path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/>
@@ -252,7 +252,7 @@
         <div v-if="showUserModal" class="modal-overlay" @click.self="showUserModal = false">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h3 class="modal-title">{{ editingUser ? '编辑用户' : '添加用户' }}</h3>
+                    <h3 class="modal-title">{{ editingUser ? t('admin.editUser') : t('admin.addUserTitle') }}</h3>
                     <button class="modal-close" @click="showUserModal = false">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                             <line x1="18" y1="6" x2="6" y2="18"/>
@@ -264,60 +264,60 @@
                 <div class="modal-body">
                     <div class="modal-form">
                         <div class="form-group">
-                            <label class="form-label">用户名 *</label>
+                            <label class="form-label">{{ t('admin.usernameLabel') }}</label>
                             <input 
                                 type="text" 
                                 class="form-input" 
                                 v-model="userForm.username"
-                                placeholder="3-20个字符"
+                                :placeholder="t('admin.usernamePlaceholder')"
                                 :disabled="editingUser"
                             >
                         </div>
                         
                         <div v-if="!editingUser" class="form-group">
-                            <label class="form-label">密码 *</label>
+                            <label class="form-label">{{ t('admin.passwordLabel') }}</label>
                             <input 
                                 type="password" 
                                 class="form-input" 
                                 v-model="userForm.password"
-                                placeholder="至少6个字符"
+                                :placeholder="t('admin.passwordPlaceholder')"
                             >
                         </div>
                         
                         <div class="form-group">
-                            <label class="form-label">昵称</label>
+                            <label class="form-label">{{ t('admin.nicknameLabel') }}</label>
                             <input 
                                 type="text" 
                                 class="form-input" 
                                 v-model="userForm.nickname"
-                                placeholder="可选"
+                                :placeholder="t('admin.optionalPlaceholder')"
                             >
                         </div>
                         
                         <div class="form-group">
-                            <label class="form-label">邮箱</label>
+                            <label class="form-label">{{ t('admin.emailLabel') }}</label>
                             <input 
                                 type="email" 
                                 class="form-input" 
                                 v-model="userForm.email"
-                                placeholder="可选"
+                                :placeholder="t('admin.optionalPlaceholder')"
                             >
                         </div>
                         
                         <div class="form-group">
-                            <label class="form-label">角色</label>
+                            <label class="form-label">{{ t('admin.roleLabel') }}</label>
                             <select class="form-select" v-model="userForm.role">
-                                <option value="user">普通用户</option>
-                                <option value="admin">管理员</option>
+                                <option value="user">{{ t('admin.normalUser') }}</option>
+                                <option value="admin">{{ t('admin.adminRole') }}</option>
                             </select>
                         </div>
                     </div>
                 </div>
                 
                 <div class="modal-footer">
-                    <button class="modal-btn cancel" @click="showUserModal = false">取消</button>
+                    <button class="modal-btn cancel" @click="showUserModal = false">{{ t('common.cancel') }}</button>
                     <button class="modal-btn primary" @click="saveUser" :disabled="savingUser">
-                        {{ savingUser ? '保存中...' : '保存' }}
+                        {{ savingUser ? t('admin.saving') : t('admin.save') }}
                     </button>
                 </div>
             </div>
@@ -327,7 +327,7 @@
         <div v-if="showPasswordModal" class="modal-overlay" @click.self="showPasswordModal = false">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h3 class="modal-title">重置密码</h3>
+                    <h3 class="modal-title">{{ t('admin.resetPasswordTitle') }}</h3>
                     <button class="modal-close" @click="showPasswordModal = false">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                             <line x1="18" y1="6" x2="6" y2="18"/>
@@ -338,25 +338,25 @@
                 
                 <div class="modal-body">
                     <p style="color: #6B7280; margin-bottom: 16px;">
-                        为用户 <strong>{{ resetPasswordUser?.nickname || resetPasswordUser?.username }}</strong> 设置新密码
+                        {{ t('admin.resetPasswordDesc', { name: resetPasswordUser?.nickname || resetPasswordUser?.username }) }}
                     </p>
                     <div class="modal-form">
                         <div class="form-group">
-                            <label class="form-label">新密码 *</label>
+                            <label class="form-label">{{ t('admin.newPasswordLabel') }}</label>
                             <input 
                                 type="password" 
                                 class="form-input" 
                                 v-model="newPassword"
-                                placeholder="至少6个字符"
+                                :placeholder="t('admin.newPasswordPlaceholder')"
                             >
                         </div>
                     </div>
                 </div>
                 
                 <div class="modal-footer">
-                    <button class="modal-btn cancel" @click="showPasswordModal = false">取消</button>
+                    <button class="modal-btn cancel" @click="showPasswordModal = false">{{ t('common.cancel') }}</button>
                     <button class="modal-btn primary" @click="resetPassword" :disabled="resettingPassword">
-                        {{ resettingPassword ? '重置中...' : '重置密码' }}
+                        {{ resettingPassword ? t('admin.resetting') : t('admin.resetPasswordButton') }}
                     </button>
                 </div>
             </div>
@@ -364,10 +364,13 @@
     </div>
     {% endraw %}
 
+    <script src="{{ url_for('static', filename='js/i18n.js') }}"></script>
     <script src="{{ url_for('static', filename='js/utils.js') }}"></script>
     <script src="{{ url_for('static', filename='js/components.js') }}"></script>
     <script>
         const { createApp, ref, reactive, computed, onMounted } = Vue;
+        
+        const t = (key, params) => i18n.t(key, params);
         
         const app = createApp({
             setup() {
@@ -436,11 +439,11 @@
                             userTotal.value = data.total || 0;
                             userPage.value = data.page || 1;
                         } else if (response.status === 403) {
-                            ElementPlus.ElMessage.error('权限不足');
+                            ElementPlus.ElMessage.error(t('admin.permissionDenied'));
                             window.location.href = '/';
                         }
                     } catch (error) {
-                        ElementPlus.ElMessage.error('获取用户列表失败');
+                        ElementPlus.ElMessage.error(t('admin.fetchUsersFailed'));
                     } finally {
                         loadingUsers.value = false;
                     }
@@ -471,7 +474,7 @@
                 // 保存用户
                 const saveUser = async () => {
                     if (!editingUser.value && (!userForm.username || !userForm.password)) {
-                        ElementPlus.ElMessage.warning('请填写用户名和密码');
+                        ElementPlus.ElMessage.warning(t('admin.fillUsernamePassword'));
                         return;
                     }
                     
@@ -505,15 +508,15 @@
                         }
                         
                         if (response.ok) {
-                            ElementPlus.ElMessage.success(editingUser.value ? '用户已更新' : '用户已创建');
+                            ElementPlus.ElMessage.success(editingUser.value ? t('admin.userUpdated') : t('admin.userCreated'));
                             showUserModal.value = false;
                             fetchUsers(userPage.value);
                         } else {
                             const data = await response.json();
-                            ElementPlus.ElMessage.error(data.error || '操作失败');
+                            ElementPlus.ElMessage.error(data.error || t('admin.operationFailed'));
                         }
                     } catch (error) {
-                        ElementPlus.ElMessage.error('操作失败');
+                        ElementPlus.ElMessage.error(t('admin.operationFailed'));
                     } finally {
                         savingUser.value = false;
                     }
@@ -529,10 +532,10 @@
                             fetchUsers(userPage.value);
                         } else {
                             const data = await response.json();
-                            ElementPlus.ElMessage.error(data.error || '操作失败');
+                            ElementPlus.ElMessage.error(data.error || t('admin.operationFailed'));
                         }
                     } catch (error) {
-                        ElementPlus.ElMessage.error('操作失败');
+                        ElementPlus.ElMessage.error(t('admin.operationFailed'));
                     }
                 };
                 
@@ -540,26 +543,26 @@
                 const deleteUser = async (user) => {
                     try {
                         await ElementPlus.ElMessageBox.confirm(
-                            `确定要删除用户 "${user.nickname || user.username}" 吗？此操作不可恢复。`,
-                            '确认删除',
+                            t('admin.deleteUserConfirm', { name: user.nickname || user.username }),
+                            t('admin.confirmDeleteTitle'),
                             {
-                                confirmButtonText: '确定删除',
-                                cancelButtonText: '取消',
+                                confirmButtonText: t('admin.confirmDeleteButton'),
+                                cancelButtonText: t('common.cancel'),
                                 type: 'warning'
                             }
                         );
                         
                         const response = await fetch(`/api/admin/users/${user.id}`, { method: 'DELETE' });
                         if (response.ok) {
-                            ElementPlus.ElMessage.success('用户已删除');
+                            ElementPlus.ElMessage.success(t('admin.userDeleted'));
                             fetchUsers(userPage.value);
                         } else {
                             const data = await response.json();
-                            ElementPlus.ElMessage.error(data.error || '删除失败');
+                            ElementPlus.ElMessage.error(data.error || t('admin.deleteFailed'));
                         }
                     } catch (error) {
                         if (error !== 'cancel') {
-                            ElementPlus.ElMessage.error('删除失败');
+                            ElementPlus.ElMessage.error(t('admin.deleteFailed'));
                         }
                     }
                 };
@@ -574,7 +577,7 @@
                 // 重置密码
                 const resetPassword = async () => {
                     if (!newPassword.value || newPassword.value.length < 6) {
-                        ElementPlus.ElMessage.warning('密码长度不能少于6个字符');
+                        ElementPlus.ElMessage.warning(t('admin.passwordLengthError'));
                         return;
                     }
                     
@@ -587,14 +590,14 @@
                         });
                         
                         if (response.ok) {
-                            ElementPlus.ElMessage.success('密码已重置');
+                            ElementPlus.ElMessage.success(t('admin.passwordReset'));
                             showPasswordModal.value = false;
                         } else {
                             const data = await response.json();
-                            ElementPlus.ElMessage.error(data.error || '重置失败');
+                            ElementPlus.ElMessage.error(data.error || t('admin.resetFailed'));
                         }
                     } catch (error) {
-                        ElementPlus.ElMessage.error('重置失败');
+                        ElementPlus.ElMessage.error(t('admin.resetFailed'));
                     } finally {
                         resettingPassword.value = false;
                     }
@@ -612,7 +615,7 @@
                             codePage.value = data.page || 1;
                         }
                     } catch (error) {
-                        ElementPlus.ElMessage.error('获取邀请码列表失败');
+                        ElementPlus.ElMessage.error(t('admin.fetchInviteCodesFailed'));
                     } finally {
                         loadingCodes.value = false;
                     }
@@ -628,7 +631,7 @@
                             fetchInviteCodes(codePage.value);
                         }
                     } catch (error) {
-                        ElementPlus.ElMessage.error('生成邀请码失败');
+                        ElementPlus.ElMessage.error(t('admin.generateInviteCodeFailed'));
                     }
                 };
                 
@@ -636,7 +639,7 @@
                 const copyCode = async (code) => {
                     try {
                         await navigator.clipboard.writeText(code);
-                        ElementPlus.ElMessage.success('已复制到剪贴板');
+                        ElementPlus.ElMessage.success(t('admin.copiedToClipboard'));
                     } catch (error) {
                         // 降级方案
                         const textarea = document.createElement('textarea');
@@ -645,7 +648,7 @@
                         textarea.select();
                         document.execCommand('copy');
                         document.body.removeChild(textarea);
-                        ElementPlus.ElMessage.success('已复制到剪贴板');
+                        ElementPlus.ElMessage.success(t('admin.copiedToClipboard'));
                     }
                 };
                 
@@ -653,23 +656,23 @@
                 const deleteInviteCode = async (codeId) => {
                     try {
                         await ElementPlus.ElMessageBox.confirm(
-                            '确定要删除这个邀请码吗？',
-                            '确认删除',
+                            t('admin.deleteInviteCodeConfirm'),
+                            t('admin.confirmDeleteTitle'),
                             {
-                                confirmButtonText: '确定',
-                                cancelButtonText: '取消',
+                                confirmButtonText: t('common.confirm'),
+                                cancelButtonText: t('common.cancel'),
                                 type: 'warning'
                             }
                         );
                         
                         const response = await fetch(`/api/admin/invite-codes/${codeId}`, { method: 'DELETE' });
                         if (response.ok) {
-                            ElementPlus.ElMessage.success('邀请码已删除');
+                            ElementPlus.ElMessage.success(t('admin.inviteCodeDeleted'));
                             fetchInviteCodes(codePage.value);
                         }
                     } catch (error) {
                         if (error !== 'cancel') {
-                            ElementPlus.ElMessage.error('删除失败');
+                            ElementPlus.ElMessage.error(t('admin.deleteFailed'));
                         }
                     }
                 };
@@ -714,7 +717,8 @@
                     generateInviteCodes,
                     copyCode,
                     deleteInviteCode,
-                    formatTime
+                    formatTime,
+                    t
                 };
             }
         });
@@ -724,7 +728,9 @@
             app.component(key, component);
         }
         registerGlobalComponents(app);
-        app.mount('#app');
+        i18n.init().then(() => {
+            app.mount('#app');
+        });
     </script>
 </body>
 </html>

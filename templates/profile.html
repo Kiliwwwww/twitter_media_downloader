@@ -23,8 +23,8 @@
         <!-- 主内容 -->
         <div class="main-container" style="max-width: 700px;">
             <page-header 
-                title="个人资料" 
-                subtitle="管理您的账号信息和偏好设置"
+                :title="t('profile.title')" 
+                :subtitle="t('profile.subtitle')"
                 icon="<path d='M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2'/><circle cx='12' cy='7' r='4'/>"
             ></page-header>
             
@@ -39,13 +39,13 @@
                     <div class="avatar-info">
                         <h3>{{ profile.nickname || profile.username }}</h3>
                         <p>@{{ profile.username }}</p>
-                        <span class="role-tag" :class="profile.role">{{ profile.role === 'admin' ? '管理员' : '普通用户' }}</span>
+                        <span class="role-tag" :class="profile.role">{{ profile.role === 'admin' ? t('profile.admin') : t('profile.user') }}</span>
                     </div>
                 </div>
                 
                 <h3 class="profile-card-title">
                     <el-icon><User /></el-icon>
-                    基本信息
+                    {{ t('profile.basicInfo') }}
                 </h3>
                 
                 <div class="profile-form">
@@ -56,13 +56,13 @@
                                     <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/>
                                     <circle cx="12" cy="7" r="4"/>
                                 </svg>
-                                昵称
+                                {{ t('profile.nickname') }}
                             </label>
                             <input 
                                 type="text" 
                                 class="form-input" 
                                 v-model="profile.nickname"
-                                placeholder="请输入昵称"
+                                :placeholder="t('profile.nicknamePlaceholder')"
                             >
                         </div>
                         
@@ -72,13 +72,13 @@
                                     <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
                                     <polyline points="22,6 12,13 2,6"/>
                                 </svg>
-                                邮箱
+                                {{ t('profile.email') }}
                             </label>
                             <input 
                                 type="email" 
                                 class="form-input" 
                                 v-model="profile.email"
-                                placeholder="请输入邮箱"
+                                :placeholder="t('profile.emailPlaceholder')"
                             >
                         </div>
                     </div>
@@ -94,7 +94,7 @@
                             <polyline points="17 21 17 13 7 13 7 21"/>
                             <polyline points="7 3 7 8 15 8"/>
                         </svg>
-                        {{ savingProfile ? '保存中...' : '保存资料' }}
+                        {{ savingProfile ? t('profile.savingProfile') : t('profile.saveProfile') }}
                     </button>
                 </div>
             </div>
@@ -105,7 +105,7 @@
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <path d="M23 3a10.9 10.9 0 01-3.14 1.53 4.48 4.48 0 00-7.86 3v1A10.66 10.66 0 013 4s-4 9 5 13a11.64 11.64 0 01-7 2c9 5 20 0 20-11.5a4.5 4.5 0 00-.08-.83A7.72 7.72 0 0023 3z"/>
                     </svg>
-                    推特ID配置
+                    {{ t('profile.twitterConfig') }}
                 </h3>
                 
                 <div class="profile-form">
@@ -115,14 +115,14 @@
                                 <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/>
                                 <circle cx="12" cy="7" r="4"/>
                             </svg>
-                            推特用户名
+                            {{ t('profile.twitterUsername') }}
                         </label>
                         <div class="twitter-input-row">
                             <input 
                                 type="text" 
                                 class="form-input" 
                                 v-model="profile.twitter_id"
-                                placeholder="请输入您的推特用户名（不带@）"
+                                :placeholder="t('profile.twitterPlaceholder')"
                             >
                             <button 
                                 class="fetch-avatar-btn"
@@ -135,14 +135,14 @@
                                 <svg v-else viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                     <path d="M23 3a10.9 10.9 0 01-3.14 1.53 4.48 4.48 0 00-7.86 3v1A10.66 10.66 0 013 4s-4 9 5 13a11.64 11.64 0 01-7 2c9 5 20 0 20-11.5a4.5 4.5 0 00-.08-.83A7.72 7.72 0 0023 3z"/>
                                 </svg>
-                                {{ fetchingAvatar ? '获取中...' : '获取头像' }}
+                                {{ fetchingAvatar ? t('profile.fetchingAvatar') : t('profile.fetchAvatar') }}
                             </button>
                         </div>
                         <div class="form-hint">
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                 <path d="M16 12a4 4 0 10-8 0 4 4 0 008 0zm0 0v1.5a2.5 2.5 0 005 0V12a9 9 0 10-9 9m4.5-1.206a8.959 8.959 0 01-4.5 1.207"/>
                             </svg>
-                            设置推特用户名后，系统将自动获取您的推特头像
+                            {{ t('profile.avatarHint') }}
                         </div>
                     </div>
                     
@@ -157,7 +157,7 @@
                             <polyline points="17 21 17 13 7 13 7 21"/>
                             <polyline points="7 3 7 8 15 8"/>
                         </svg>
-                        {{ savingTwitter ? '保存中...' : '保存推特ID' }}
+                        {{ savingTwitter ? t('profile.savingTwitter') : t('profile.saveTwitterId') }}
                     </button>
                 </div>
             </div>
@@ -169,7 +169,7 @@
                         <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
                         <path d="M7 11V7a5 5 0 0110 0v4"/>
                     </svg>
-                    修改密码
+                    {{ t('profile.changePassword') }}
                 </h3>
                 
                 <div class="profile-form">
@@ -179,13 +179,13 @@
                                 <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
                                 <path d="M7 11V7a5 5 0 0110 0v4"/>
                             </svg>
-                            当前密码
+                            {{ t('profile.currentPassword') }}
                         </label>
                         <input 
                             type="password" 
                             class="form-input" 
                             v-model="passwordForm.oldPassword"
-                            placeholder="请输入当前密码"
+                            :placeholder="t('profile.currentPasswordPlaceholder')"
                         >
                     </div>
                     
@@ -196,13 +196,13 @@
                                     <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
                                     <path d="M7 11V7a5 5 0 0110 0v4"/>
                                 </svg>
-                                新密码
+                                {{ t('profile.newPassword') }}
                             </label>
                             <input 
                                 type="password" 
                                 class="form-input" 
                                 v-model="passwordForm.newPassword"
-                                placeholder="至少6个字符"
+                                :placeholder="t('profile.newPasswordPlaceholder')"
                             >
                         </div>
                         
@@ -212,13 +212,13 @@
                                     <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
                                     <path d="M7 11V7a5 5 0 0110 0v4"/>
                                 </svg>
-                                确认新密码
+                                {{ t('profile.confirmPassword') }}
                             </label>
                             <input 
                                 type="password" 
                                 class="form-input" 
                                 v-model="passwordForm.confirmPassword"
-                                placeholder="再次输入新密码"
+                                :placeholder="t('profile.confirmPasswordPlaceholder')"
                             >
                         </div>
                     </div>
@@ -234,7 +234,7 @@
                             <polyline points="17 21 17 13 7 13 7 21"/>
                             <polyline points="7 3 7 8 15 8"/>
                         </svg>
-                        {{ savingPassword ? '保存中...' : '修改密码' }}
+                        {{ savingPassword ? t('profile.savingPassword') : t('profile.savePassword') }}
                     </button>
                 </div>
             </div>
@@ -244,8 +244,11 @@
 
     <script src="{{ url_for('static', filename='js/utils.js') }}"></script>
     <script src="{{ url_for('static', filename='js/components.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/i18n.js') }}"></script>
     <script>
         const { createApp, ref, reactive, onMounted } = Vue;
+        
+        const t = (key, params) => i18n.t(key, params);
         
         const app = createApp({
             setup() {
@@ -280,7 +283,7 @@
                             window.location.href = '/login';
                         }
                     } catch (error) {
-                        console.error('获取资料失败:', error);
+                        console.error('Fetch profile failed:', error);
                     }
                 };
                 
@@ -297,13 +300,13 @@
                         });
                         
                         if (response.ok) {
-                            ElementPlus.ElMessage.success('资料已保存');
+                            ElementPlus.ElMessage.success(t('profile.profileSaved'));
                         } else {
                             const data = await response.json();
-                            ElementPlus.ElMessage.error(data.error || '保存失败');
+                            ElementPlus.ElMessage.error(data.error || t('profile.saveFailed'));
                         }
                     } catch (error) {
-                        ElementPlus.ElMessage.error('保存失败');
+                        ElementPlus.ElMessage.error(t('profile.saveFailed'));
                     } finally {
                         savingProfile.value = false;
                     }
@@ -325,13 +328,13 @@
                             if (data.avatar_url) {
                                 profile.avatar_url = data.avatar_url;
                             }
-                            ElementPlus.ElMessage.success('推特ID已保存');
+                            ElementPlus.ElMessage.success(t('profile.twitterIdSaved'));
                         } else {
                             const data = await response.json();
-                            ElementPlus.ElMessage.error(data.error || '保存失败');
+                            ElementPlus.ElMessage.error(data.error || t('profile.saveFailed'));
                         }
                     } catch (error) {
-                        ElementPlus.ElMessage.error('保存失败');
+                        ElementPlus.ElMessage.error(t('profile.saveFailed'));
                     } finally {
                         savingTwitter.value = false;
                     }
@@ -353,13 +356,13 @@
                                     headers: { 'Content-Type': 'application/json' },
                                     body: JSON.stringify({ twitter_id: profile.twitter_id })
                                 });
-                                ElementPlus.ElMessage.success('头像已更新');
+                                ElementPlus.ElMessage.success(t('profile.avatarUpdated'));
                             } else {
-                                ElementPlus.ElMessage.warning('未找到该用户的头像');
+                                ElementPlus.ElMessage.warning(t('profile.avatarNotFound'));
                             }
                         }
                     } catch (error) {
-                        ElementPlus.ElMessage.error('获取头像失败');
+                        ElementPlus.ElMessage.error(t('profile.fetchAvatarFailed'));
                     } finally {
                         fetchingAvatar.value = false;
                     }
@@ -367,17 +370,17 @@
                 
                 const changePassword = async () => {
                     if (!passwordForm.oldPassword || !passwordForm.newPassword || !passwordForm.confirmPassword) {
-                        ElementPlus.ElMessage.warning('请填写所有密码字段');
+                        ElementPlus.ElMessage.warning(t('profile.fillAllPasswordFields'));
                         return;
                     }
                     
                     if (passwordForm.newPassword.length < 6) {
-                        ElementPlus.ElMessage.warning('新密码长度不能少于6个字符');
+                        ElementPlus.ElMessage.warning(t('profile.passwordLengthError'));
                         return;
                     }
                     
                     if (passwordForm.newPassword !== passwordForm.confirmPassword) {
-                        ElementPlus.ElMessage.warning('两次输入的密码不一致');
+                        ElementPlus.ElMessage.warning(t('profile.passwordMismatch'));
                         return;
                     }
                     
@@ -394,16 +397,16 @@
                         });
                         
                         if (response.ok) {
-                            ElementPlus.ElMessage.success('密码已修改');
+                            ElementPlus.ElMessage.success(t('profile.passwordChanged'));
                             passwordForm.oldPassword = '';
                             passwordForm.newPassword = '';
                             passwordForm.confirmPassword = '';
                         } else {
                             const data = await response.json();
-                            ElementPlus.ElMessage.error(data.error || '修改失败');
+                            ElementPlus.ElMessage.error(data.error || t('profile.passwordChangeFailed'));
                         }
                     } catch (error) {
-                        ElementPlus.ElMessage.error('修改失败');
+                        ElementPlus.ElMessage.error(t('profile.passwordChangeFailed'));
                     } finally {
                         savingPassword.value = false;
                     }
@@ -423,7 +426,8 @@
                     saveProfile,
                     saveTwitterId,
                     fetchAvatar,
-                    changePassword
+                    changePassword,
+                    t
                 };
             }
         });
@@ -433,7 +437,9 @@
             app.component(key, component);
         }
         registerGlobalComponents(app);
-        app.mount('#app');
+        i18n.init().then(() => {
+            app.mount('#app');
+        });
     </script>
 </body>
 </html>

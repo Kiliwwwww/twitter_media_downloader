@@ -23,8 +23,8 @@
         <!-- 主内容 -->
         <div class="main-container">
             <page-header 
-                title="下载历史" 
-                subtitle="查看和管理之前的下载记录"
+                :title="t('history.title')" 
+                :subtitle="t('history.subtitle')"
                 icon="<circle cx='12' cy='12' r='10'/><polyline points='12 6 12 12 16 14'/>"
             >
                 <button v-if="user && user.role === 'admin'" class="btn btn-secondary" @click="clearCache">
@@ -32,7 +32,7 @@
                         <path d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
                         <path d="M9 10h6M9 14h6"/>
                     </svg>
-                    清理缓存
+                    {{ t('history.clearCache') }}
                 </button>
             </page-header>
             
@@ -47,7 +47,7 @@
                         type="text" 
                         class="filter-input" 
                         v-model="filters.keyword" 
-                        placeholder="搜索用户ID或名称..."
+                        :placeholder="t('history.searchPlaceholder')"
                         @input="debounceSearch"
                     >
                 </div>
@@ -56,11 +56,11 @@
                         <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/>
                     </svg>
                     <select class="filter-select" v-model="filters.status" @change="fetchHistory(1)">
-                        <option value="">全部状态</option>
-                        <option value="downloading">下载中</option>
-                        <option value="completed">已完成</option>
-                        <option value="failed">失败</option>
-                        <option value="pending">等待中</option>
+                        <option value="">{{ t('history.allStatus') }}</option>
+                        <option value="downloading">{{ t('history.downloading') }}</option>
+                        <option value="completed">{{ t('history.completed') }}</option>
+                        <option value="failed">{{ t('history.failed') }}</option>
+                        <option value="pending">{{ t('history.pending') }}</option>
                     </select>
                 </div>
                 <div class="filter-item">
@@ -84,7 +84,7 @@
                         <path d="M21 12a9 9 0 01-9 9 9.75 9.75 0 01-6.74-2.74L3 16"/>
                         <path d="M8 16H3v5"/>
                     </svg>
-                    重置
+                    {{ t('common.reset') }}
                 </button>
             </div>
             
@@ -94,14 +94,14 @@
                 
                 <empty-state 
                     v-else-if="history.length === 0" 
-                    title="暂无下载记录" 
-                    description="开始下载你的第一个推特媒体吧"
+                    :title="t('history.noRecords')" 
+                    :description="t('history.noRecordsDesc')"
                 >
                     <a href="/" class="empty-btn">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                             <path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
                         </svg>
-                        去下载
+                        {{ t('common.goDownload') }}
                     </a>
                 </empty-state>
                 
@@ -114,7 +114,7 @@
                             </div>
                             <div class="history-details">
                                 <div class="history-user">
-                                    {{ item.user_name || '未知用户' }}
+                                    {{ item.user_name || t('history.unknownUser') }}
                                     <span class="history-user-id">@{{ item.user_id }}</span>
                                     <span 
                                         class="status-tag" 
@@ -132,7 +132,7 @@
                                             <path d="M13 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V9z"/>
                                             <polyline points="13 2 13 9 20 9"/>
                                         </svg>
-                                        {{ item.downloaded_files || 0 }}/{{ item.total_files || 0 }} 个文件
+                                        {{ item.downloaded_files || 0 }}/{{ item.total_files || 0 }} {{ t('history.files') }}
                                     </span>
                                     <span v-if="item.file_size" class="history-meta-item">
                                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -161,7 +161,7 @@
                                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                     <path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
                                 </svg>
-                                下载
+                                {{ t('history.download') }}
                             </button>
                             <button 
                                 class="action-btn action-delete"
@@ -171,7 +171,7 @@
                                     <polyline points="3 6 5 6 21 6"/>
                                     <path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/>
                                 </svg>
-                                删除
+                                {{ t('common.delete') }}
                             </button>
                         </div>
                     </div>
@@ -189,10 +189,13 @@
     </div>
     {% endraw %}
 
+    <script src="{{ url_for('static', filename='js/i18n.js') }}"></script>
     <script src="{{ url_for('static', filename='js/utils.js') }}"></script>
     <script src="{{ url_for('static', filename='js/components.js') }}"></script>
     <script>
         const { createApp, ref, computed, onMounted, onUnmounted } = Vue;
+        
+        const t = (key, params) => i18n.t(key, params);
         
         const app = createApp({
             setup() {
@@ -257,7 +260,7 @@
                         fetchMissingAvatars(newData);
                     } catch (error) {
                         if (showLoading) {
-                            ElementPlus.ElMessage.error('获取历史记录失败');
+                            ElementPlus.ElMessage.error(t('history.fetchFailed'));
                         }
                         history.value = [];
                     } finally {
@@ -299,25 +302,25 @@
                 const deleteHistory = async (taskId) => {
                     try {
                         await ElementPlus.ElMessageBox.confirm(
-                            '确定要删除这条记录吗？',
-                            '确认删除',
+                            t('history.deleteConfirm'),
+                            t('history.deleteTitle'),
                             {
-                                confirmButtonText: '确定',
-                                cancelButtonText: '取消',
+                                confirmButtonText: t('common.confirm'),
+                                cancelButtonText: t('common.cancel'),
                                 type: 'warning'
                             }
                         );
                         
                         const response = await fetch(`/api/history/${encodeURIComponent(taskId)}`, { method: 'DELETE' });
                         if (response.ok) {
-                            ElementPlus.ElMessage.success('已删除');
+                            ElementPlus.ElMessage.success(t('history.deleted'));
                             fetchHistory(currentPage.value);
                         } else {
-                            ElementPlus.ElMessage.error('删除失败');
+                            ElementPlus.ElMessage.error(t('history.deleteFailed'));
                         }
                     } catch (error) {
                         if (error !== 'cancel') {
-                            ElementPlus.ElMessage.error('删除失败');
+                            ElementPlus.ElMessage.error(t('history.deleteFailed'));
                         }
                     }
                 };
@@ -325,11 +328,11 @@
                 const clearCache = async () => {
                     try {
                         await ElementPlus.ElMessageBox.confirm(
-                            '确定要清理所有缓存文件吗？这将删除所有已下载的媒体文件、ZIP压缩包以及全部下载历史记录。',
-                            '清理缓存',
+                            t('history.clearCacheConfirm'),
+                            t('history.clearCacheTitle'),
                             {
-                                confirmButtonText: '确定清理',
-                                cancelButtonText: '取消',
+                                confirmButtonText: t('history.clearCacheButton'),
+                                cancelButtonText: t('common.cancel'),
                                 type: 'warning'
                             }
                         );
@@ -342,11 +345,11 @@
                             ElementPlus.ElMessage.success(data.message);
                             fetchHistory(currentPage.value);
                         } else {
-                            ElementPlus.ElMessage.error(data.error || '清理失败');
+                            ElementPlus.ElMessage.error(data.error || t('history.clearFailed'));
                         }
                     } catch (error) {
                         if (error !== 'cancel') {
-                            ElementPlus.ElMessage.error('清理失败');
+                            ElementPlus.ElMessage.error(t('history.clearFailed'));
                         }
                     } finally {
                         loading.value = false;
@@ -385,7 +388,7 @@
                     user, history, loading, currentPage, pageSize, total,
                     totalPages, getStatusText, formatFileSize,
                     filters, debounceSearch, resetFilters,
-                    fetchHistory, downloadFile, deleteHistory, clearCache
+                    fetchHistory, downloadFile, deleteHistory, clearCache, t
                 };
             }
         });
@@ -396,7 +399,9 @@
             app.component(key, component);
         }
         registerGlobalComponents(app);
-        app.mount('#app');
+        i18n.init().then(() => {
+            app.mount('#app');
+        });
     </script>
 </body>
 </html>

@@ -27,8 +27,8 @@
                             <path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
                         </svg>
                     </div>
-                    <h1 class="login-title">推特媒体下载器</h1>
-                    <p class="login-subtitle">{{ activeTab === 'login' ? '欢迎回来，请登录您的账号' : '使用邀请码注册新账号' }}</p>
+                    <h1 class="login-title">{{ t('login.title') }}</h1>
+                    <p class="login-subtitle">{{ activeTab === 'login' ? t('login.loginSubtitle') : t('login.registerSubtitle') }}</p>
                 </div>
                 
                 <!-- 标签切换 -->
@@ -38,14 +38,14 @@
                         :class="{ active: activeTab === 'login' }"
                         @click="switchTab('login')"
                     >
-                        登录
+                        {{ t('login.login') }}
                     </button>
                     <button 
                         class="login-tab" 
                         :class="{ active: activeTab === 'register' }"
                         @click="switchTab('register')"
                     >
-                        注册
+                        {{ t('login.register') }}
                     </button>
                 </div>
                 
@@ -68,13 +68,13 @@
                                     <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/>
                                     <circle cx="12" cy="7" r="4"/>
                                 </svg>
-                                用户名
+                                {{ t('login.username') }}
                             </label>
                             <input 
                                 type="text" 
                                 class="form-input" 
                                 v-model="loginForm.username"
-                                placeholder="请输入用户名"
+                                :placeholder="t('login.usernamePlaceholder')"
                                 autocomplete="username"
                             >
                         </div>
@@ -85,14 +85,14 @@
                                     <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
                                     <path d="M7 11V7a5 5 0 0110 0v4"/>
                                 </svg>
-                                密码
+                                {{ t('login.password') }}
                             </label>
                             <div class="form-input-wrapper">
                                 <input 
                                     :type="showPassword ? 'text' : 'password'" 
                                     class="form-input password-input" 
                                     v-model="loginForm.password"
-                                    placeholder="请输入密码"
+                                    :placeholder="t('login.passwordPlaceholder')"
                                     autocomplete="current-password"
                                 >
                                 <button type="button" class="password-toggle" @click="showPassword = !showPassword">
@@ -111,7 +111,7 @@
                         <div class="remember-row">
                             <label class="remember-checkbox">
                                 <input type="checkbox" v-model="loginForm.remember">
-                                <span>记住我</span>
+                                <span>{{ t('login.rememberMe') }}</span>
                             </label>
                         </div>
                         
@@ -121,7 +121,7 @@
                             :disabled="loading"
                         >
                             <span v-if="loading" class="spinner"></span>
-                            {{ loading ? '登录中...' : '登录' }}
+                            {{ loading ? t('login.loggingIn') : t('login.login') }}
                         </button>
                     </form>
                     
@@ -133,13 +133,13 @@
                                     <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/>
                                     <circle cx="12" cy="7" r="4"/>
                                 </svg>
-                                用户名
+                                {{ t('login.username') }}
                             </label>
                             <input 
                                 type="text" 
                                 class="form-input" 
                                 v-model="registerForm.username"
-                                placeholder="3-20个字符"
+                                :placeholder="t('login.usernameLength')"
                                 autocomplete="username"
                             >
                         </div>
@@ -150,13 +150,13 @@
                                     <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/>
                                     <circle cx="12" cy="7" r="4"/>
                                 </svg>
-                                昵称
+                                {{ t('login.nickname') }}
                             </label>
                             <input 
                                 type="text" 
                                 class="form-input" 
                                 v-model="registerForm.nickname"
-                                placeholder="可选，默认为用户名"
+                                :placeholder="t('login.nicknamePlaceholder')"
                             >
                         </div>
                         
@@ -166,14 +166,14 @@
                                     <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
                                     <path d="M7 11V7a5 5 0 0110 0v4"/>
                                 </svg>
-                                密码
+                                {{ t('login.password') }}
                             </label>
                             <div class="form-input-wrapper">
                                 <input 
                                     :type="showPassword ? 'text' : 'password'" 
                                     class="form-input password-input" 
                                     v-model="registerForm.password"
-                                    placeholder="至少6个字符"
+                                    :placeholder="t('login.passwordLength')"
                                     autocomplete="new-password"
                                 >
                                 <button type="button" class="password-toggle" @click="showPassword = !showPassword">
@@ -195,13 +195,13 @@
                                     <rect x="2" y="4" width="20" height="16" rx="2"/>
                                     <path d="M22 7l-8.97 5.7a1.94 1.94 0 01-2.06 0L2 7"/>
                                 </svg>
-                                邀请码
+                                {{ t('login.inviteCode') }}
                             </label>
                             <input 
                                 type="text" 
                                 class="form-input" 
                                 v-model="registerForm.inviteCode"
-                                placeholder="请输入邀请码"
+                                :placeholder="t('login.inviteCodePlaceholder')"
                             >
                         </div>
                         
@@ -211,7 +211,7 @@
                             :disabled="loading"
                         >
                             <span v-if="loading" class="spinner"></span>
-                            {{ loading ? '注册中...' : '注册' }}
+                            {{ loading ? t('login.registering') : t('login.register') }}
                         </button>
                     </form>
                 </div>
@@ -220,10 +220,13 @@
     </div>
     {% endraw %}
 
+    <script src="{{ url_for('static', filename='js/i18n.js') }}"></script>
     <script src="{{ url_for('static', filename='js/utils.js') }}"></script>
     <script src="{{ url_for('static', filename='js/components.js') }}"></script>
     <script>
         const { createApp, ref, reactive } = Vue;
+        
+        const t = (key, params) => i18n.t(key, params);
         
         const app = createApp({
             setup() {
@@ -252,7 +255,7 @@
                 
                 const handleLogin = async () => {
                     if (!loginForm.username || !loginForm.password) {
-                        errorMessage.value = '请输入用户名和密码';
+                        errorMessage.value = t('login.enterUsernamePassword');
                         return;
                     }
                     
@@ -273,15 +276,15 @@
                         const data = await response.json();
                         
                         if (response.ok) {
-                            ElementPlus.ElMessage.success('登录成功');
+                            ElementPlus.ElMessage.success(t('login.loginSuccess'));
                             setTimeout(() => {
                                 window.location.href = '/';
                             }, 500);
                         } else {
-                            errorMessage.value = data.error || '登录失败';
+                            errorMessage.value = data.error || t('login.loginFailed');
                         }
                     } catch (error) {
-                        errorMessage.value = '网络错误，请稍后重试';
+                        errorMessage.value = t('login.networkError');
                     } finally {
                         loading.value = false;
                     }
@@ -289,17 +292,17 @@
                 
                 const handleRegister = async () => {
                     if (!registerForm.username || !registerForm.password || !registerForm.inviteCode) {
-                        errorMessage.value = '请填写所有必填字段';
+                        errorMessage.value = t('login.fillAllFields');
                         return;
                     }
                     
                     if (registerForm.username.length < 3 || registerForm.username.length > 20) {
-                        errorMessage.value = '用户名长度应为3-20个字符';
+                        errorMessage.value = t('login.usernameLengthError');
                         return;
                     }
                     
                     if (registerForm.password.length < 6) {
-                        errorMessage.value = '密码长度不能少于6个字符';
+                        errorMessage.value = t('login.passwordLengthError');
                         return;
                     }
                     
@@ -321,7 +324,7 @@
                         const data = await response.json();
                         
                         if (response.ok) {
-                            ElementPlus.ElMessage.success('注册成功，请登录');
+                            ElementPlus.ElMessage.success(t('login.registerSuccess'));
                             activeTab.value = 'login';
                             loginForm.username = registerForm.username;
                             loginForm.password = '';
@@ -331,10 +334,10 @@
                             registerForm.password = '';
                             registerForm.inviteCode = '';
                         } else {
-                            errorMessage.value = data.error || '注册失败';
+                            errorMessage.value = data.error || t('login.registerFailed');
                         }
                     } catch (error) {
-                        errorMessage.value = '网络错误，请稍后重试';
+                        errorMessage.value = t('login.networkError');
                     } finally {
                         loading.value = false;
                     }
@@ -349,7 +352,8 @@
                     registerForm,
                     switchTab,
                     handleLogin,
-                    handleRegister
+                    handleRegister,
+                    t
                 };
             }
         });
@@ -359,7 +363,9 @@
             app.component(key, component);
         }
         registerGlobalComponents(app);
-        app.mount('#app');
+        i18n.init().then(() => {
+            app.mount('#app');
+        });
     </script>
 </body>
 </html>

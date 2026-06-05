@@ -23,6 +23,11 @@ function formatFileSize(bytes) {
  * @returns {string} 状态文本
  */
 function getStatusText(status) {
+    // 使用i18n获取翻译后的状态文本
+    if (typeof i18n !== 'undefined' && i18n.t) {
+        return i18n.t(`status.${status}`) || i18n.t('status.unknown');
+    }
+    // 如果i18n未初始化，返回默认中文文本
     const map = {
         'pending': '等待中',
         'downloading': '下载中',
@@ -72,6 +77,17 @@ function formatTime(timestamp) {
  * @returns {string} 格式化后的耗时
  */
 function formatElapsedTime(seconds) {
+    // 使用i18n获取翻译后的时间文本
+    if (typeof i18n !== 'undefined' && i18n.t) {
+        const secondsText = i18n.t('time.seconds') || '秒';
+        const minutesText = i18n.t('time.minutes') || '分';
+        const hoursText = i18n.t('time.hours') || '小时';
+        
+        if (seconds < 60) return `${Math.floor(seconds)}${secondsText}`;
+        if (seconds < 3600) return `${Math.floor(seconds / 60)}${minutesText}${Math.floor(seconds % 60)}${secondsText}`;
+        return `${Math.floor(seconds / 3600)}${hoursText}${Math.floor((seconds % 3600) / 60)}${minutesText}`;
+    }
+    // 如果i18n未初始化，返回默认中文文本
     if (seconds < 60) return `${Math.floor(seconds)}秒`;
     if (seconds < 3600) return `${Math.floor(seconds / 60)}分${Math.floor(seconds % 60)}秒`;
     return `${Math.floor(seconds / 3600)}小时${Math.floor((seconds % 3600) / 60)}分`;
