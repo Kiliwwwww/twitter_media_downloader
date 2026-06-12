@@ -134,7 +134,7 @@ class DownloadService:
                 failed = result.get('failed_files', 0)
                 
                 task.total_files = downloaded + skipped + failed
-                task.downloaded_files = downloaded
+                task.downloaded_files = downloaded + skipped  # 跳过的也算已完成
                 task.skipped_files = skipped
                 task.failed_files = failed
                 task.tweets_info = result.get('tweets_info', [])
@@ -142,7 +142,7 @@ class DownloadService:
                 
                 log_manager.success(
                     task_id, task.user_id,
-                    f'下载完成 - 成功: {downloaded}, 跳过: {skipped}, 失败: {failed}',
+                    f'下载完成 - 新增: {downloaded}, 跳过: {skipped}, 失败: {failed}',
                     'system'
                 )
                 
@@ -152,7 +152,7 @@ class DownloadService:
                     user_name=result.get('user_name'),
                     avatar_url=result.get('avatar_url'),
                     total_files=task.total_files,
-                    downloaded_files=downloaded
+                    downloaded_files=task.downloaded_files
                 )
             finally:
                 loop.close()
