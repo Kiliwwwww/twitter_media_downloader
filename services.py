@@ -129,14 +129,20 @@ class DownloadService:
             
             try:
                 result = loop.run_until_complete(downloader.start_download())
-                task.total_files = result.get('downloaded_files', 0) + result.get('skipped_files', 0)
-                task.downloaded_files = result.get('downloaded_files', 0)
+                downloaded = result.get('downloaded_files', 0)
+                skipped = result.get('skipped_files', 0)
+                failed = result.get('failed_files', 0)
+                
+                task.total_files = downloaded + skipped + failed
+                task.downloaded_files = downloaded
+                task.skipped_files = skipped
+                task.failed_files = failed
                 task.tweets_info = result.get('tweets_info', [])
                 task.progress = 100
                 
                 log_manager.success(
                     task_id, task.user_id,
-                    f'下载完成 - 成功: {result.get("downloaded_files", 0)}, 跳过: {result.get("skipped_files", 0)}, 失败: {result.get("failed_files", 0)}',
+                    f'下载完成 - 成功: {downloaded}, 跳过: {skipped}, 失败: {failed}',
                     'system'
                 )
                 
@@ -146,7 +152,7 @@ class DownloadService:
                     user_name=result.get('user_name'),
                     avatar_url=result.get('avatar_url'),
                     total_files=task.total_files,
-                    downloaded_files=task.downloaded_files
+                    downloaded_files=downloaded
                 )
             finally:
                 loop.close()
