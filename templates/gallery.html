@@ -211,19 +211,26 @@
                         }
                     }
                     
-                    for (const userId of missingUsers) {
+                    if (missingUsers.size === 0) return;
+                    
+                    const promises = Array.from(missingUsers).map(async (userId) => {
                         try {
                             const resp = await fetch(`/api/avatar/${encodeURIComponent(userId)}`);
                             const data = await resp.json();
-                            if (data.avatar_url) {
-                                for (const item of users.value) {
-                                    if (item.user_id === userId) {
-                                        item.avatar_url = data.avatar_url;
-                                    }
-                                }
-                            }
+                            return { userId, avatarUrl: data.avatar_url };
                         } catch (e) {
-                            // 静默失败
+                            return { userId, avatarUrl: null };
+                        }
+                    });
+                    
+                    const results = await Promise.all(promises);
+                    
+                    for (const result of results) {
+                        if (result.avatarUrl) {
+                            const index = users.value.findIndex(u => u.user_id === result.userId);
+                            if (index !== -1) {
+                                users.value[index] = { ...users.value[index], avatar_url: result.avatarUrl };
+                            }
                         }
                     }
                 };
