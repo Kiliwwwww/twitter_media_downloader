@@ -209,6 +209,10 @@ class TwitterDownloader:
         x_label = 'content' if (self.has_retweet or self.has_highlights) else 'item'
         
         for i in content:
+            # 先检查是否有游标
+            if 'cursor-bottom' in i.get('entryId', ''):
+                self.user_info['cursor'] = i['content']['value']
+            
             try:
                 if 'promoted-tweet' in i['entryId']:
                     continue
@@ -297,9 +301,6 @@ class TwitterDownloader:
             
             except Exception as e:
                 continue
-            
-            if 'cursor-bottom' in i['entryId']:
-                self.user_info['cursor'] = i['content']['value']
         
         return photo_lst
     
@@ -361,14 +362,15 @@ class TwitterDownloader:
                             raw_data = raw_data[-1]['entries'][0]['content']['items']
                             self.First_Page = False
                         else:
-                            if 'moduleItems' not in raw_data[0]:
-                                return False
+                            if not raw_data or 'moduleItems' not in raw_data[0]:
+                                # 没有更多数据了
+                                return None
                             else:
                                 raw_data = raw_data[0]['moduleItems']
                     
                     photo_lst = self.get_url_from_content(raw_data)
                 else:
-                    return False
+                    return None
                 
                 if not photo_lst:
                     photo_lst.append(True)
@@ -456,15 +458,17 @@ class TwitterDownloader:
         page_count = 0
         while True:
             photo_lst = await self.get_download_url()
-            if not photo_lst:
+            
+            # 没有更多数据
+            if photo_lst is None:
                 break
-            elif photo_lst[0] == True:
+            
+            # 空列表或只有True标记，继续下一页
+            if not photo_lst or (len(photo_lst) == 1 and photo_lst[0] == True):
                 continue
             
             page_count += 1
             self._log('info', f'开始处理第 {page_count} 页，包含 {len(photo_lst)} 个媒体文件', 'system')
-            
-            semaphore = asyncio.Semaphore(self.max_concurrent_requests)
             
             tasks = []
             for order, item in enumerate(photo_lst):
