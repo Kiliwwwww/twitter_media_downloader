@@ -123,7 +123,7 @@
                 <loading-state v-if="loading"></loading-state>
                 
                 <empty-state 
-                    v-else-if="filteredFiles.length === 0" 
+                    v-else-if="files.length === 0" 
                     :title="t('detail.noMedia')" 
                     :description="t('detail.noMediaDesc')"
                 >
@@ -197,11 +197,11 @@
                     </div>
                 </div>
                 
-                <pagination-component 
+                    <pagination-component 
                     v-if="totalPages > 1"
                     :current-page="currentPage"
                     :total-pages="totalPages"
-                    :total="filteredFiles.length"
+                    :total="totalPages * pageSize"
                     @page-change="goToPage"
                 ></pagination-component>
             </div>
@@ -268,30 +268,17 @@
                 const viewMode = ref('grid');
                 const currentPage = ref(1);
                 const pageSize = ref(24);
+                const totalPages = ref(1);
                 const previewFile = ref(null);
                 const previewIndex = ref(-1);
                 
-                const stats = computed(() => {
-                    const images = files.value.filter(f => f.type === 'image').length;
-                    const videos = files.value.filter(f => f.type === 'video').length;
-                    return {
-                        images,
-                        videos,
-                        total: files.value.length
-                    };
+                const stats = ref({
+                    images: 0,
+                    videos: 0,
+                    total: 0
                 });
                 
-                const filteredFiles = computed(() => {
-                    if (filterType.value === 'all') return files.value;
-                    return files.value.filter(f => f.type === filterType.value);
-                });
-                
-                const totalPages = computed(() => Math.ceil(filteredFiles.value.length / pageSize.value));
-                
-                const paginatedFiles = computed(() => {
-                    const start = (currentPage.value - 1) * pageSize.value;
-                    return filteredFiles.value.slice(start, start + pageSize.value);
-                });
+                const paginatedFiles = ref([]);
                 
                 const canGoPrev = computed(() => {
                     if (previewIndex.value <= 0) return false;
@@ -299,22 +286,39 @@
                 });
                 
                 const canGoNext = computed(() => {
-                    if (previewIndex.value >= filteredFiles.value.length - 1) return false;
+                    if (previewIndex.value >= paginatedFiles.value.length - 1) return false;
                     return true;
                 });
                 
-                const fetchFiles = async () => {
+                const fetchFiles = async (page = 1) => {
                     loading.value = true;
                     try {
-                        const response = await fetch(`/api/user-media/${encodeURIComponent(userId)}`);
+                        const params = new URLSearchParams({
+                            page: page,
+                            per_page: pageSize.value,
+                            type: filterType.value
+                        });
+                        
+                        const response = await fetch(`/api/user-media/${encodeURIComponent(userId)}?${params.toString()}`);
                         const data = await response.json();
                         if (data.error) {
                             throw new Error(data.error);
                         }
+                        
                         files.value = data.files || [];
+                        paginatedFiles.value = data.files || [];
+                        totalPages.value = data.total_pages || 1;
+                        currentPage.value = data.page || 1;
+                        
+                        stats.value = {
+                            images: data.images || 0,
+                            videos: data.videos || 0,
+                            total: (data.images || 0) + (data.videos || 0)
+                        };
                     } catch (error) {
                         ElementPlus.ElMessage.error(t('detail.fetchFailed'));
                         files.value = [];
+                        paginatedFiles.value = [];
                     } finally {
                         loading.value = false;
                     }
@@ -333,16 +337,16 @@
                 };
                 
                 const applyFilter = () => {
-                    currentPage.value = 1;
+                    fetchFiles(1);
                 };
                 
                 const goToPage = (page) => {
-                    currentPage.value = page;
+                    fetchFiles(page);
                 };
                 
                 const openPreview = (file) => {
                     previewFile.value = file;
-                    previewIndex.value = filteredFiles.value.findIndex(f => f.name === file.name);
+                    previewIndex.value = paginatedFiles.value.findIndex(f => f.name === file.name);
                 };
                 
                 const closePreview = () => {
@@ -353,14 +357,14 @@
                 const prevFile = () => {
                     if (canGoPrev.value) {
                         previewIndex.value--;
-                        previewFile.value = filteredFiles.value[previewIndex.value];
+                        previewFile.value = paginatedFiles.value[previewIndex.value];
                     }
                 };
                 
                 const nextFile = () => {
                     if (canGoNext.value) {
                         previewIndex.value++;
-                        previewFile.value = filteredFiles.value[previewIndex.value];
+                        previewFile.value = paginatedFiles.value[previewIndex.value];
                     }
                 };
                 
@@ -414,7 +418,7 @@
                     userId, user, loading, files, avatarUrl,
                     filterType, viewMode, currentPage, pageSize,
                     previewFile, previewIndex,
-                    stats, filteredFiles, totalPages, paginatedFiles,
+                    stats, totalPages, paginatedFiles,
                     canGoPrev, canGoNext,
                     fetchFiles, applyFilter, goToPage,
                     openPreview, closePreview, prevFile, nextFile,

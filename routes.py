@@ -419,6 +419,11 @@ def get_user_media(user_id: str):
     try:
         from config import Config
         
+        # 分页参数
+        page = request.args.get('page', 1, type=int)
+        per_page = request.args.get('per_page', 24, type=int)
+        file_type = request.args.get('type', 'all').strip()  # all, image, video
+        
         # 构建用户目录路径
         user_dir = os.path.join(Config.BASE_DIR, 'downloads', user_id)
         thumb_dir = os.path.join(Config.BASE_DIR, 'downloads', '.thumbnails', user_id)
@@ -429,14 +434,17 @@ def get_user_media(user_id: str):
                 'files': [],
                 'total': 0,
                 'images': 0,
-                'videos': 0
+                'videos': 0,
+                'page': page,
+                'per_page': per_page,
+                'total_pages': 0
             })
         
         # 获取所有媒体文件
         image_extensions = {'.jpg', '.jpeg', '.png', '.gif', '.webp'}
         video_extensions = {'.mp4', '.mov', '.avi', '.mkv', '.webm'}
         
-        files = []
+        all_files = []
         image_count = 0
         video_count = 0
         
@@ -446,13 +454,13 @@ def get_user_media(user_id: str):
                 continue
             
             ext = os.path.splitext(filename)[1].lower()
-            file_type = None
+            file_type_detected = None
             
             if ext in image_extensions:
-                file_type = 'image'
+                file_type_detected = 'image'
                 image_count += 1
             elif ext in video_extensions:
-                file_type = 'video'
+                file_type_detected = 'video'
                 video_count += 1
             else:
                 continue
@@ -469,17 +477,40 @@ def get_user_media(user_id: str):
             file_info = {
                 'name': filename,
                 'path': f'/api/media-file/{user_id}/{filename}',
-                'type': file_type,
+                'type': file_type_detected,
                 'size': stat.st_size,
                 'date': date_str,
                 'modified': datetime.fromtimestamp(stat.st_mtime).strftime('%Y-%m-%d %H:%M:%S'),
                 'thumb': None
             }
             
-            # 为视频生成缩略图
-            if file_type == 'video':
-                thumb_filename = os.path.splitext(filename)[0] + '.jpg'
+            all_files.append(file_info)
+        
+        # 按修改时间倒序排列
+        all_files.sort(key=lambda x: x['modified'], reverse=True)
+        
+        # 按类型筛选
+        if file_type == 'image':
+            filtered_files = [f for f in all_files if f['type'] == 'image']
+        elif file_type == 'video':
+            filtered_files = [f for f in all_files if f['type'] == 'video']
+        else:
+            filtered_files = all_files
+        
+        total = len(filtered_files)
+        total_pages = (total + per_page - 1) // per_page
+        
+        # 分页
+        start = (page - 1) * per_page
+        end = start + per_page
+        page_files = filtered_files[start:end]
+        
+        # 只为当前页的视频生成缩略图
+        for file_info in page_files:
+            if file_info['type'] == 'video':
+                thumb_filename = os.path.splitext(file_info['name'])[0] + '.jpg'
                 thumb_path = os.path.join(thumb_dir, thumb_filename)
+                filepath = os.path.join(user_dir, file_info['name'])
                 
                 # 如果缩略图不存在则生成
                 if not os.path.exists(thumb_path):
@@ -487,18 +518,16 @@ def get_user_media(user_id: str):
                 
                 if os.path.exists(thumb_path):
                     file_info['thumb'] = f'/api/thumbnail/{user_id}/{thumb_filename}'
-            
-            files.append(file_info)
-        
-        # 按修改时间倒序排列
-        files.sort(key=lambda x: x['modified'], reverse=True)
         
         return jsonify({
             'user_id': user_id,
-            'files': files,
-            'total': len(files),
+            'files': page_files,
+            'total': total,
             'images': image_count,
-            'videos': video_count
+            'videos': video_count,
+            'page': page,
+            'per_page': per_page,
+            'total_pages': total_pages
         })
     except Exception as e:
         return jsonify({'error': str(e)}), 500
