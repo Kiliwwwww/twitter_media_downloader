@@ -451,7 +451,7 @@ def update_avatar_by_user_id(user_id: str, avatar_url: str):
     with get_db() as conn:
         cursor = conn.cursor()
         cursor.execute('''
-            UPDATE download_history SET avatar_url = ? WHERE user_id = ? AND (avatar_url IS NULL OR avatar_url = '')
+            UPDATE download_history SET avatar_url = ? WHERE user_id = ?
         ''', (avatar_url, user_id))
 
 

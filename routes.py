@@ -310,24 +310,81 @@ async def _fetch_user_avatar(user_id: str, account_user_id: int = None) -> str:
     return None
 
 
+async def _download_avatar(url: str, save_path: str, account_user_id: int = None) -> bool:
+    """下载头像并保存到本地"""
+    try:
+        proxy = Config.get_proxy(user_id=account_user_id)
+        _proxy = proxy if proxy and proxy.strip() else None
+        
+        async with httpx.AsyncClient(proxy=_proxy) as client:
+            response = await client.get(url, timeout=15.0)
+            if response.status_code == 200:
+                os.makedirs(os.path.dirname(save_path), exist_ok=True)
+                with open(save_path, 'wb') as f:
+                    f.write(response.content)
+                return True
+    except Exception:
+        pass
+    return False
+
+
 @main_bp.route('/api/avatar/<user_id>')
 @login_required
 def get_user_avatar(user_id: str):
-    """获取用户头像"""
+    """获取用户头像并保存到本地"""
     try:
         current_user = get_current_user()
         account_user_id = current_user['id'] if current_user else None
         
+        # 检查本地是否已有头像
+        avatar_dir = os.path.join(Config.BASE_DIR, 'downloads', '.avatars')
+        for ext in ['.jpg', '.jpeg', '.png', '.webp']:
+            local_path = os.path.join(avatar_dir, f'{user_id}{ext}')
+            if os.path.exists(local_path):
+                return jsonify({'avatar_url': f'/api/avatar-file/{user_id}'})
+        
+        # 从 Twitter 获取头像 URL
         loop = asyncio.new_event_loop()
         avatar_url = loop.run_until_complete(_fetch_user_avatar(user_id, account_user_id=account_user_id))
         loop.close()
         
         if avatar_url:
-            # 更新所有该用户的历史记录
-            database.update_avatar_by_user_id(user_id, avatar_url)
-            return jsonify({'avatar_url': avatar_url})
+            # 下载并保存到本地
+            ext = '.jpg'
+            if '.png' in avatar_url:
+                ext = '.png'
+            elif '.webp' in avatar_url:
+                ext = '.webp'
+            
+            save_path = os.path.join(avatar_dir, f'{user_id}{ext}')
+            loop = asyncio.new_event_loop()
+            success = loop.run_until_complete(_download_avatar(avatar_url, save_path, account_user_id))
+            loop.close()
+            
+            if success:
+                local_url = f'/api/avatar-file/{user_id}'
+                database.update_avatar_by_user_id(user_id, local_url)
+                return jsonify({'avatar_url': local_url})
         
         return jsonify({'avatar_url': None})
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+@main_bp.route('/api/avatar-file/<user_id>')
+@login_required
+def serve_avatar_file(user_id: str):
+    """提供本地头像文件访问"""
+    try:
+        avatar_dir = os.path.join(Config.BASE_DIR, 'downloads', '.avatars')
+        
+        # 查找头像文件
+        for ext in ['.jpg', '.jpeg', '.png', '.webp']:
+            file_path = os.path.join(avatar_dir, f'{user_id}{ext}')
+            if os.path.exists(file_path):
+                return send_file(file_path)
+        
+        return jsonify({'error': '头像不存在'}), 404
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
