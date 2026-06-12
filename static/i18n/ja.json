@@ -235,6 +235,24 @@
         "cleared": "ログをクリアしました",
         "clearFailed": "ログのクリアに失敗しました"
     },
+    "detail": {
+        "title": "メディア詳細",
+        "subtitle": "ユーザーがダウンロードしたすべてのメディアファイルを表示",
+        "images": "画像",
+        "videos": "動画",
+        "totalFiles": "合計ファイル数",
+        "allTypes": "すべてのタイプ",
+        "imagesOnly": "画像のみ",
+        "videosOnly": "動画のみ",
+        "gridView": "グリッド表示",
+        "listView": "リスト表示",
+        "noMedia": "メディアファイルなし",
+        "noMediaDesc": "このユーザーはまだメディアファイルをダウンロードしていません",
+        "image": "画像",
+        "video": "動画",
+        "download": "ダウンロード",
+        "fetchFailed": "メディアファイルの取得に失敗しました"
+    },
     "admin": {
         "title": "ユーザー管理",
         "subtitle": "プラットフォームユーザーと招待コードの管理",

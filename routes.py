@@ -5,6 +5,7 @@ import json
 import time
 import queue
 import httpx
+from datetime import datetime
 from flask import Blueprint, render_template, request, jsonify, send_file, g, Response
 
 from config import Config
@@ -36,6 +37,13 @@ def config_page():
 def history_page():
     """下载历史页面"""
     return render_template('history.html')
+
+
+@main_bp.route('/detail/<user_id>')
+@login_required
+def detail_page(user_id: str):
+    """用户媒体详情页面"""
+    return render_template('detail.html', user_id=user_id)
 
 
 @main_bp.route('/api/download', methods=['POST'])
@@ -277,6 +285,155 @@ def get_user_avatar(user_id: str):
             return jsonify({'avatar_url': avatar_url})
         
         return jsonify({'avatar_url': None})
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+# ==================== 用户媒体详情API ====================
+
+def _generate_video_thumbnail(video_path: str, thumb_path: str) -> bool:
+    """使用ffmpeg生成视频缩略图"""
+    try:
+        import subprocess
+        # 确保缩略图目录存在
+        os.makedirs(os.path.dirname(thumb_path), exist_ok=True)
+        # 使用ffmpeg提取第1秒的帧作为缩略图
+        cmd = [
+            'ffmpeg', '-i', video_path,
+            '-ss', '00:00:01',
+            '-vframes', '1',
+            '-vf', 'scale=320:-1',
+            '-y',
+            thumb_path
+        ]
+        result = subprocess.run(cmd, capture_output=True, timeout=10)
+        return result.returncode == 0 and os.path.exists(thumb_path)
+    except Exception:
+        return False
+
+
+@main_bp.route('/api/user-media/<user_id>')
+@login_required
+def get_user_media(user_id: str):
+    """获取指定用户的本地媒体文件列表"""
+    try:
+        from config import Config
+        
+        # 构建用户目录路径
+        user_dir = os.path.join(Config.BASE_DIR, 'downloads', user_id)
+        thumb_dir = os.path.join(Config.BASE_DIR, 'downloads', '.thumbnails', user_id)
+        
+        if not os.path.exists(user_dir):
+            return jsonify({
+                'user_id': user_id,
+                'files': [],
+                'total': 0,
+                'images': 0,
+                'videos': 0
+            })
+        
+        # 获取所有媒体文件
+        image_extensions = {'.jpg', '.jpeg', '.png', '.gif', '.webp'}
+        video_extensions = {'.mp4', '.mov', '.avi', '.mkv', '.webm'}
+        
+        files = []
+        image_count = 0
+        video_count = 0
+        
+        for filename in os.listdir(user_dir):
+            filepath = os.path.join(user_dir, filename)
+            if not os.path.isfile(filepath):
+                continue
+            
+            ext = os.path.splitext(filename)[1].lower()
+            file_type = None
+            
+            if ext in image_extensions:
+                file_type = 'image'
+                image_count += 1
+            elif ext in video_extensions:
+                file_type = 'video'
+                video_count += 1
+            else:
+                continue
+            
+            # 获取文件信息
+            stat = os.stat(filepath)
+            
+            # 从文件名解析日期 (格式: YYYY-MM-DD HH-MM-type_id.ext)
+            date_str = ''
+            parts = filename.split(' ')
+            if len(parts) >= 2:
+                date_str = parts[0] + ' ' + parts[1].split('-')[0] + ':' + parts[1].split('-')[1] if len(parts[1].split('-')) >= 2 else ''
+            
+            file_info = {
+                'name': filename,
+                'path': f'/api/media-file/{user_id}/{filename}',
+                'type': file_type,
+                'size': stat.st_size,
+                'date': date_str,
+                'modified': datetime.fromtimestamp(stat.st_mtime).strftime('%Y-%m-%d %H:%M:%S'),
+                'thumb': None
+            }
+            
+            # 为视频生成缩略图
+            if file_type == 'video':
+                thumb_filename = os.path.splitext(filename)[0] + '.jpg'
+                thumb_path = os.path.join(thumb_dir, thumb_filename)
+                
+                # 如果缩略图不存在则生成
+                if not os.path.exists(thumb_path):
+                    _generate_video_thumbnail(filepath, thumb_path)
+                
+                if os.path.exists(thumb_path):
+                    file_info['thumb'] = f'/api/thumbnail/{user_id}/{thumb_filename}'
+            
+            files.append(file_info)
+        
+        # 按修改时间倒序排列
+        files.sort(key=lambda x: x['modified'], reverse=True)
+        
+        return jsonify({
+            'user_id': user_id,
+            'files': files,
+            'total': len(files),
+            'images': image_count,
+            'videos': video_count
+        })
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+@main_bp.route('/api/thumbnail/<user_id>/<filename>')
+@login_required
+def serve_thumbnail(user_id: str, filename: str):
+    """提供缩略图访问"""
+    try:
+        from config import Config
+        
+        thumb_path = os.path.join(Config.BASE_DIR, 'downloads', '.thumbnails', user_id, filename)
+        
+        if not os.path.exists(thumb_path):
+            return jsonify({'error': '缩略图不存在'}), 404
+        
+        return send_file(thumb_path, mimetype='image/jpeg')
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+@main_bp.route('/api/media-file/<user_id>/<filename>')
+@login_required
+def serve_media_file(user_id: str, filename: str):
+    """提供媒体文件访问"""
+    try:
+        from config import Config
+        
+        filepath = os.path.join(Config.BASE_DIR, 'downloads', user_id, filename)
+        
+        if not os.path.exists(filepath):
+            return jsonify({'error': '文件不存在'}), 404
+        
+        return send_file(filepath)
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 

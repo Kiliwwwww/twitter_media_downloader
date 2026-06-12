@@ -235,6 +235,24 @@
         "cleared": "日志已清空",
         "clearFailed": "清空失败"
     },
+    "detail": {
+        "title": "媒体详情",
+        "subtitle": "查看用户下载的所有媒体文件",
+        "images": "图片",
+        "videos": "视频",
+        "totalFiles": "总文件数",
+        "allTypes": "全部类型",
+        "imagesOnly": "仅图片",
+        "videosOnly": "仅视频",
+        "gridView": "网格视图",
+        "listView": "列表视图",
+        "noMedia": "暂无媒体文件",
+        "noMediaDesc": "该用户还没有下载任何媒体文件",
+        "image": "图片",
+        "video": "视频",
+        "download": "下载",
+        "fetchFailed": "获取媒体文件失败"
+    },
     "admin": {
         "title": "用户管理",
         "subtitle": "管理平台用户和邀请码",

@@ -235,6 +235,24 @@
         "cleared": "Logs cleared",
         "clearFailed": "Failed to clear logs"
     },
+    "detail": {
+        "title": "Media Details",
+        "subtitle": "View all downloaded media files of the user",
+        "images": "Images",
+        "videos": "Videos",
+        "totalFiles": "Total Files",
+        "allTypes": "All Types",
+        "imagesOnly": "Images Only",
+        "videosOnly": "Videos Only",
+        "gridView": "Grid View",
+        "listView": "List View",
+        "noMedia": "No Media Files",
+        "noMediaDesc": "This user hasn't downloaded any media files yet",
+        "image": "Image",
+        "video": "Video",
+        "download": "Download",
+        "fetchFailed": "Failed to fetch media files"
+    },
     "admin": {
         "title": "User Management",
         "subtitle": "Manage platform users and invitation codes",

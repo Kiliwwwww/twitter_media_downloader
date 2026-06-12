@@ -108,14 +108,18 @@
                 <div v-else class="history-list">
                     <div v-for="item in history" :key="item.task_id" class="history-item">
                         <div class="history-info">
-                            <div class="history-avatar">
-                                <img v-if="item.avatar_url" :src="item.avatar_url" :alt="item.user_name" @error="$event.target.style.display='none'; $event.target.nextElementSibling.style.display='flex'" />
-                                <span v-else class="avatar-fallback">{{ (item.user_name || item.user_id || '?').charAt(0).toUpperCase() }}</span>
-                            </div>
+                            <a :href="'/detail/' + encodeURIComponent(item.user_id)" class="history-avatar-link">
+                                <div class="history-avatar">
+                                    <img v-if="item.avatar_url" :src="item.avatar_url" :alt="item.user_name" @error="$event.target.style.display='none'; $event.target.nextElementSibling.style.display='flex'" />
+                                    <span v-else class="avatar-fallback">{{ (item.user_name || item.user_id || '?').charAt(0).toUpperCase() }}</span>
+                                </div>
+                            </a>
                             <div class="history-details">
                                 <div class="history-user">
-                                    {{ item.user_name || t('history.unknownUser') }}
-                                    <span class="history-user-id">@{{ item.user_id }}</span>
+                                    <a :href="'/detail/' + encodeURIComponent(item.user_id)" class="user-name-link">
+                                        {{ item.user_name || t('history.unknownUser') }}
+                                    </a>
+                                    <a :href="'/detail/' + encodeURIComponent(item.user_id)" class="history-user-id">@{{ item.user_id }}</a>
                                     <span 
                                         class="status-tag" 
                                         :class="'status-' + item.status"

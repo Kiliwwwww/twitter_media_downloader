@@ -214,13 +214,18 @@ class TwitterDownloader:
                     continue
                 if 'tweet' in i['entryId']:
                     if 'tweet' in i[x_label]['itemContent']['tweet_results']['result']:
-                        a = i[x_label]['itemContent']['tweet_results']['result']['tweet']['legacy']
-                        tweet_msecs = int(i[x_label]['itemContent']['tweet_results']['result']['tweet']['edit_control']['editable_until_msecs']) - 3600000
+                        tweet_result = i[x_label]['itemContent']['tweet_results']['result']['tweet']
+                        a = tweet_result['legacy']
+                        tweet_msecs = int(tweet_result['edit_control']['editable_until_msecs']) - 3600000
+                        tweet_id = tweet_result.get('rest_id', '')
                     else:
-                        a = i[x_label]['itemContent']['tweet_results']['result']['legacy']
-                        tweet_msecs = int(i[x_label]['itemContent']['tweet_results']['result']['edit_control']['editable_until_msecs']) - 3600000
+                        tweet_result = i[x_label]['itemContent']['tweet_results']['result']
+                        a = tweet_result['legacy']
+                        tweet_msecs = int(tweet_result['edit_control']['editable_until_msecs']) - 3600000
+                        tweet_id = tweet_result.get('rest_id', '')
                     
                     timestr = self.stamp2time(tweet_msecs)
+                    date_str = time.strftime("%Y-%m-%d", time.localtime(tweet_msecs / 1000))
                     result = self.time_comparison(tweet_msecs, self.start_time_stamp, self.end_time_stamp)
                     
                     if result[0]:
@@ -228,14 +233,15 @@ class TwitterDownloader:
                             name = self.user_info['name']
                             screen_name = self.user_info['screen_name']
                             if 'extended_entities' in a:
-                                for _media in a['extended_entities']['media']:
+                                media_list = a['extended_entities']['media']
+                                for idx, _media in enumerate(media_list):
                                     if 'video_info' in _media and self.has_video:
                                         url = self.get_heighest_video_quality(_media['video_info']['variants'])
-                                        photo_lst.append((url, f'{timestr}-vid', [tweet_msecs, name, f'@{screen_name}', _media['expanded_url'], 'Video', url, '', a['full_text']]))
+                                        photo_lst.append((url, date_str, tweet_id, idx, len(media_list), [tweet_msecs, name, f'@{screen_name}', _media['expanded_url'], 'Video', url, '', a['full_text']]))
                                         self.tweets_info.append({'time': timestr, 'name': name, 'screen_name': f'@{screen_name}', 'text': a['full_text'], 'type': 'Video', 'media_url': _media['expanded_url'], 'download_url': url})
                                     else:
                                         url = _media['media_url_https']
-                                        photo_lst.append((url, f'{timestr}-img', [tweet_msecs, name, f'@{screen_name}', _media['expanded_url'], 'Image', url, '', a['full_text']]))
+                                        photo_lst.append((url, date_str, tweet_id, idx, len(media_list), [tweet_msecs, name, f'@{screen_name}', _media['expanded_url'], 'Image', url, '', a['full_text']]))
                                         self.tweets_info.append({'time': timestr, 'name': name, 'screen_name': f'@{screen_name}', 'text': a['full_text'], 'type': 'Image', 'media_url': _media['expanded_url'], 'download_url': url})
                         elif self.has_retweet:
                             name = a['retweeted_status_result']['result']['core']['user_results']['result']['legacy']['name']
@@ -243,14 +249,15 @@ class TwitterDownloader:
                             full_text = a['retweeted_status_result']['result']['legacy']['full_text']
                             
                             if 'extended_entities' in a['retweeted_status_result']['result']['legacy'] and screen_name != self.user_info['screen_name']:
-                                for _media in a['retweeted_status_result']['result']['legacy']['extended_entities']['media']:
+                                media_list = a['retweeted_status_result']['result']['legacy']['extended_entities']['media']
+                                for idx, _media in enumerate(media_list):
                                     if 'video_info' in _media and self.has_video:
                                         url = self.get_heighest_video_quality(_media['video_info']['variants'])
-                                        photo_lst.append((url, f'{timestr}-vid-retweet', [tweet_msecs, name, f"@{screen_name}", _media['expanded_url'], 'Video', url, '', full_text]))
+                                        photo_lst.append((url, date_str, tweet_id, idx, len(media_list), [tweet_msecs, name, f"@{screen_name}", _media['expanded_url'], 'Video', url, '', full_text]))
                                         self.tweets_info.append({'time': timestr, 'name': name, 'screen_name': f'@{screen_name}', 'text': full_text, 'type': 'Video', 'media_url': _media['expanded_url'], 'download_url': url})
                                     else:
                                         url = _media['media_url_https']
-                                        photo_lst.append((url, f'{timestr}-img-retweet', [tweet_msecs, name, f"@{screen_name}", _media['expanded_url'], 'Image', url, '', full_text]))
+                                        photo_lst.append((url, date_str, tweet_id, idx, len(media_list), [tweet_msecs, name, f"@{screen_name}", _media['expanded_url'], 'Image', url, '', full_text]))
                                         self.tweets_info.append({'time': timestr, 'name': name, 'screen_name': f'@{screen_name}', 'text': full_text, 'type': 'Image', 'media_url': _media['expanded_url'], 'download_url': url})
                     elif not result[1]:
                         self.start_label = False
@@ -258,25 +265,31 @@ class TwitterDownloader:
                 
                 elif 'profile-conversation' in i['entryId']:
                     if 'tweet' in i[x_label]['items'][0]['item']['itemContent']['tweet_results']['result']:
-                        a = i[x_label]['items'][0]['item']['itemContent']['tweet_results']['result']['tweet']['legacy']
-                        tweet_msecs = int(i[x_label]['items'][0]['item']['itemContent']['tweet_results']['result']['tweet']['edit_control']['editable_until_msecs']) - 3600000
+                        tweet_result = i[x_label]['items'][0]['item']['itemContent']['tweet_results']['result']['tweet']
+                        a = tweet_result['legacy']
+                        tweet_msecs = int(tweet_result['edit_control']['editable_until_msecs']) - 3600000
+                        tweet_id = tweet_result.get('rest_id', '')
                     else:
-                        a = i[x_label]['items'][0]['item']['itemContent']['tweet_results']['result']['legacy']
-                        tweet_msecs = int(i[x_label]['items'][0]['item']['itemContent']['tweet_results']['result']['edit_control']['editable_until_msecs']) - 3600000
+                        tweet_result = i[x_label]['items'][0]['item']['itemContent']['tweet_results']['result']
+                        a = tweet_result['legacy']
+                        tweet_msecs = int(tweet_result['edit_control']['editable_until_msecs']) - 3600000
+                        tweet_id = tweet_result.get('rest_id', '')
                     
                     timestr = self.stamp2time(tweet_msecs)
+                    date_str = time.strftime("%Y-%m-%d", time.localtime(tweet_msecs / 1000))
                     result = self.time_comparison(tweet_msecs, self.start_time_stamp, self.end_time_stamp)
                     
                     if result[0]:
                         if 'extended_entities' in a:
-                            for _media in a['extended_entities']['media']:
+                            media_list = a['extended_entities']['media']
+                            for idx, _media in enumerate(media_list):
                                 if 'video_info' in _media and self.has_video:
                                     url = self.get_heighest_video_quality(_media['video_info']['variants'])
-                                    photo_lst.append((url, f'{timestr}-vid', [tweet_msecs, self.user_info['name'], f'@{self.user_info["screen_name"]}', _media['expanded_url'], 'Video', url, '', a['full_text']]))
+                                    photo_lst.append((url, date_str, tweet_id, idx, len(media_list), [tweet_msecs, self.user_info['name'], f'@{self.user_info["screen_name"]}', _media['expanded_url'], 'Video', url, '', a['full_text']]))
                                     self.tweets_info.append({'time': timestr, 'name': self.user_info['name'], 'screen_name': f'@{self.user_info["screen_name"]}', 'text': a['full_text'], 'type': 'Video', 'media_url': _media['expanded_url'], 'download_url': url})
                                 else:
                                     url = _media['media_url_https']
-                                    photo_lst.append((url, f'{timestr}-img', [tweet_msecs, self.user_info['name'], f'@{self.user_info["screen_name"]}', _media['expanded_url'], 'Image', url, '', a['full_text']]))
+                                    photo_lst.append((url, date_str, tweet_id, idx, len(media_list), [tweet_msecs, self.user_info['name'], f'@{self.user_info["screen_name"]}', _media['expanded_url'], 'Image', url, '', a['full_text']]))
                                     self.tweets_info.append({'time': timestr, 'name': self.user_info['name'], 'screen_name': f'@{self.user_info["screen_name"]}', 'text': a['full_text'], 'type': 'Image', 'media_url': _media['expanded_url'], 'download_url': url})
                     elif not result[1]:
                         self.start_label = False
@@ -368,23 +381,27 @@ class TwitterDownloader:
         
         return photo_lst
     
-    async def download_file(self, url: str, prefix: str, csv_info: list, order: int):
+    async def download_file(self, url: str, date_str: str, tweet_id: str, media_index: int, media_count: int, csv_info: list, order: int):
+        # 获取文件扩展名
         if '.mp4' in url:
-            file_name = f'{self.user_info["save_path"]}/{prefix}_{self.user_info["count"] + order}.mp4'
+            ext = 'mp4'
         else:
             try:
                 if self.orig_format:
-                    url += '?name=orig'
-                    file_name = f'{self.user_info["save_path"]}/{prefix}_{self.user_info["count"] + order}.{csv_info[5][-3:]}'
+                    ext = csv_info[5][-3:]
                 else:
-                    file_name = f'{self.user_info["save_path"]}/{prefix}_{self.user_info["count"] + order}.{self.img_format}'
-                    if self.img_format != 'png':
-                        url += '?format=jpg&name=4096x4096'
-                    else:
-                        url += '?format=png&name=4096x4096'
+                    ext = self.img_format
             except Exception as e:
                 print(url)
                 return False
+        
+        # 构建文件名
+        if media_count == 1:
+            # 单个文件：{date}_{tweet_id}.ext
+            file_name = f'{self.user_info["save_path"]}/{date_str}_{tweet_id}.{ext}'
+        else:
+            # 多个文件：{date}_{tweet_id}_{index+1}.ext
+            file_name = f'{self.user_info["save_path"]}/{date_str}_{tweet_id}_{media_index + 1}.{ext}'
         
         # 检查文件是否已存在
         if self._file_exists(file_name):
@@ -395,6 +412,10 @@ class TwitterDownloader:
                 progress = min(int(((self.downloaded_files + self.skipped_files) / max(self.total_files, 1)) * 100), 100)
                 self.progress_callback(progress, self.downloaded_files, self.total_files, self.skipped_files)
             return True
+        
+        # 处理URL
+        if '.mp4' not in url and self.orig_format:
+            url += '?name=orig'
         
         count = 0
         while True:
@@ -446,8 +467,9 @@ class TwitterDownloader:
             semaphore = asyncio.Semaphore(self.max_concurrent_requests)
             
             tasks = []
-            for order, url in enumerate(photo_lst):
-                task = self.download_file(url[0], url[1], url[2], order)
+            for order, item in enumerate(photo_lst):
+                # item = (url, date_str, tweet_id, media_index, media_count, csv_info)
+                task = self.download_file(item[0], item[1], item[2], item[3], item[4], item[5], order)
                 tasks.append(task)
             
             await asyncio.gather(*tasks)
