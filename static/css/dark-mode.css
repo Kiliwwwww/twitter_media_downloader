@@ -1271,3 +1271,64 @@ body {
 .history-user-id:hover {
     color: var(--icon-color) !important;
 }
+
+/* ===== 画廊页面暗黑模式 ===== */
+.gallery-card {
+    background: var(--card-bg) !important;
+    border-color: var(--card-border) !important;
+    box-shadow: var(--card-shadow) !important;
+}
+
+.gallery-user-card {
+    background: var(--item-bg) !important;
+    border-color: var(--card-border) !important;
+}
+
+.gallery-user-card:hover {
+    background: var(--item-hover-bg) !important;
+    border-color: var(--icon-color) !important;
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3) !important;
+}
+
+.gallery-avatar {
+    background: var(--icon-bg) !important;
+    color: var(--icon-color) !important;
+}
+
+.gallery-user-name {
+    color: var(--text-primary) !important;
+}
+
+.gallery-user-id {
+    color: var(--text-placeholder) !important;
+}
+
+.gallery-stat-item {
+    background: var(--progress-item-bg) !important;
+    border-color: var(--card-border) !important;
+}
+
+.gallery-stat-icon {
+    background: var(--icon-bg) !important;
+}
+
+.gallery-stat-icon svg {
+    color: var(--icon-color) !important;
+}
+
+.gallery-stat-value {
+    color: var(--text-primary) !important;
+}
+
+.gallery-stat-label {
+    color: var(--text-placeholder) !important;
+}
+
+.gallery-updated {
+    color: var(--text-placeholder) !important;
+    border-top-color: var(--card-border) !important;
+}
+
+.gallery-updated svg {
+    color: var(--text-placeholder) !important;
+}

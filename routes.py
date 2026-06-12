@@ -46,6 +46,13 @@ def detail_page(user_id: str):
     return render_template('detail.html', user_id=user_id)
 
 
+@main_bp.route('/gallery')
+@login_required
+def gallery_page():
+    """用户画廊页面"""
+    return render_template('gallery.html')
+
+
 @main_bp.route('/api/download', methods=['POST'])
 @login_required
 def start_download():
@@ -215,6 +222,42 @@ def delete_history(task_id: str):
         return jsonify({'message': '已删除'})
     except Exception as e:
         return jsonify({'error': str(e)}), 500
+
+
+# 用户画廊API
+@main_bp.route('/api/gallery/users')
+@login_required
+def get_gallery_users():
+    """获取画廊用户列表"""
+    page = request.args.get('page', 1, type=int)
+    per_page = request.args.get('per_page', 20, type=int)
+    keyword = request.args.get('keyword', '').strip()
+
+    offset = (page - 1) * per_page
+
+    current_user = get_current_user()
+    account_user_id = None
+    if current_user and current_user['role'] != 'admin':
+        account_user_id = current_user['id']
+
+    users = database.get_gallery_users(
+        keyword=keyword,
+        limit=per_page,
+        offset=offset,
+        account_user_id=account_user_id
+    )
+    total = database.get_gallery_users_count(
+        keyword=keyword,
+        account_user_id=account_user_id
+    )
+
+    return jsonify({
+        'data': users,
+        'total': total,
+        'page': page,
+        'per_page': per_page,
+        'total_pages': (total + per_page - 1) // per_page
+    })
 
 
 @main_bp.route('/api/cache', methods=['DELETE'])

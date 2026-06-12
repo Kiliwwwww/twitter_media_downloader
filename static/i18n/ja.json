@@ -32,6 +32,7 @@
     "nav": {
         "home": "ホーム",
         "history": "履歴",
+        "gallery": "ギャラリー",
         "config": "設定",
         "profile": "プロフィール",
         "admin": "ユーザー管理",
@@ -234,6 +235,17 @@
         "clearTitle": "クリア確認",
         "cleared": "ログをクリアしました",
         "clearFailed": "ログのクリアに失敗しました"
+    },
+    "gallery": {
+        "title": "ユーザーギャラリー",
+        "subtitle": "ダウンロード済みのすべてのクリエイターを閲覧",
+        "searchPlaceholder": "ユーザーIDまたは名前を検索...",
+        "noUsers": "ダウンロード済みユーザーなし",
+        "noUsersDesc": "ダウンロード後、ダウンロード済みのユーザーがここに表示されます",
+        "totalFiles": "合計ファイル",
+        "totalSize": "合計サイズ",
+        "lastUpdate": "最終更新",
+        "fetchFailed": "ユーザー一覧の取得に失敗しました"
     },
     "detail": {
         "title": "メディア詳細",

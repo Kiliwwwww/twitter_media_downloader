@@ -32,6 +32,7 @@
     "nav": {
         "home": "Home",
         "history": "History",
+        "gallery": "Gallery",
         "config": "Config",
         "profile": "Profile",
         "admin": "User Management",
@@ -234,6 +235,17 @@
         "clearTitle": "Confirm Clear",
         "cleared": "Logs cleared",
         "clearFailed": "Failed to clear logs"
+    },
+    "gallery": {
+        "title": "User Gallery",
+        "subtitle": "Browse all downloaded creators",
+        "searchPlaceholder": "Search user ID or name...",
+        "noUsers": "No downloaded users",
+        "noUsersDesc": "Downloaded users will be displayed here after downloading",
+        "totalFiles": "Total Files",
+        "totalSize": "Total Size",
+        "lastUpdate": "Last Update",
+        "fetchFailed": "Failed to fetch users"
     },
     "detail": {
         "title": "Media Details",

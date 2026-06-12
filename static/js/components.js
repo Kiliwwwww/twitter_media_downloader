@@ -36,6 +36,7 @@ const Navbar = {
                     <div class="nav-links">
                         <a href="/" :class="{ active: activePage === 'home' }">{{ t('nav.home') }}</a>
                         <a href="/history" :class="{ active: activePage === 'history' }">{{ t('nav.history') }}</a>
+                        <a href="/gallery" :class="{ active: activePage === 'gallery' }">{{ t('nav.gallery') }}</a>
                     </div>
                     <div class="locale-switcher" @mouseenter="showLocaleMenu = true" @mouseleave="showLocaleMenu = false">
                         <button class="locale-btn">

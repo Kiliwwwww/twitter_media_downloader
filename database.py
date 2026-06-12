@@ -379,6 +379,73 @@ def clear_all_download_history():
         cursor.execute('DELETE FROM download_history')
 
 
+def get_gallery_users(keyword: str = '', limit: int = 50, offset: int = 0, account_user_id: int = None) -> List[Dict[str, Any]]:
+    """获取画廊用户列表（按user_id聚合）"""
+    with get_db() as conn:
+        cursor = conn.cursor()
+
+        conditions = []
+        params = []
+
+        if keyword:
+            conditions.append("(user_id LIKE ? OR user_name LIKE ?)")
+            params.extend([f'%{keyword}%', f'%{keyword}%'])
+
+        if account_user_id:
+            conditions.append("account_user_id = ?")
+            params.append(account_user_id)
+
+        where_clause = " WHERE " + " AND ".join(conditions) if conditions else ""
+
+        sql = f'''
+            SELECT
+                user_id,
+                user_name,
+                MAX(avatar_url) as avatar_url,
+                COUNT(*) as download_count,
+                SUM(total_files) as total_files,
+                SUM(file_size) as total_size,
+                MAX(completed_at) as last_completed_at,
+                MAX(created_at) as last_created_at
+            FROM download_history
+            {where_clause}
+            GROUP BY user_id
+            ORDER BY last_created_at DESC
+            LIMIT ? OFFSET ?
+        '''
+        params.extend([limit, offset])
+
+        cursor.execute(sql, params)
+        return [dict(row) for row in cursor.fetchall()]
+
+
+def get_gallery_users_count(keyword: str = '', account_user_id: int = None) -> int:
+    """获取画廊用户总数"""
+    with get_db() as conn:
+        cursor = conn.cursor()
+
+        conditions = []
+        params = []
+
+        if keyword:
+            conditions.append("(user_id LIKE ? OR user_name LIKE ?)")
+            params.extend([f'%{keyword}%', f'%{keyword}%'])
+
+        if account_user_id:
+            conditions.append("account_user_id = ?")
+            params.append(account_user_id)
+
+        where_clause = " WHERE " + " AND ".join(conditions) if conditions else ""
+
+        sql = f'''
+            SELECT COUNT(DISTINCT user_id) as count
+            FROM download_history
+            {where_clause}
+        '''
+        cursor.execute(sql, params)
+        return cursor.fetchone()['count']
+
+
 def update_avatar_by_user_id(user_id: str, avatar_url: str):
     """根据用户ID更新头像"""
     with get_db() as conn:

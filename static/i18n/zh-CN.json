@@ -32,6 +32,7 @@
     "nav": {
         "home": "首页",
         "history": "历史",
+        "gallery": "画廊",
         "config": "配置管理",
         "profile": "个人设置",
         "admin": "用户管理",
@@ -234,6 +235,17 @@
         "clearTitle": "确认清空",
         "cleared": "日志已清空",
         "clearFailed": "清空失败"
+    },
+    "gallery": {
+        "title": "用户画廊",
+        "subtitle": "浏览所有已下载过的创作者",
+        "searchPlaceholder": "搜索用户ID或名称...",
+        "noUsers": "暂无下载用户",
+        "noUsersDesc": "开始下载后，已下载的用户将在此处展示",
+        "totalFiles": "总文件",
+        "totalSize": "总大小",
+        "lastUpdate": "最后更新",
+        "fetchFailed": "获取用户列表失败"
     },
     "detail": {
         "title": "媒体详情",
