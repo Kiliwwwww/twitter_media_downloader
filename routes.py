@@ -30,6 +30,20 @@ def count_media_files(user_id: str) -> int:
         count += len(glob.glob(os.path.join(user_folder, f'*{ext}')))
     return count
 
+
+def get_folder_size(user_id: str) -> int:
+    """获取用户文件夹的实际总大小"""
+    user_folder = os.path.join(Config.DOWNLOAD_FOLDER, user_id)
+    if not os.path.isdir(user_folder):
+        return 0
+    
+    total_size = 0
+    for ext in MEDIA_EXTENSIONS:
+        for f in glob.glob(os.path.join(user_folder, f'*{ext}')):
+            if os.path.isfile(f):
+                total_size += os.path.getsize(f)
+    return total_size
+
 # 创建蓝图
 main_bp = Blueprint('main', __name__)
 
@@ -267,9 +281,10 @@ def get_gallery_users():
         account_user_id=account_user_id
     )
 
-    # 使用文件夹中的实际媒体文件数量替代数据库统计
+    # 使用文件夹中的实际媒体文件数量和大小替代数据库统计
     for user in users:
         user['total_files'] = count_media_files(user['user_id'])
+        user['total_size'] = get_folder_size(user['user_id'])
 
     return jsonify({
         'data': users,
