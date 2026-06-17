@@ -1,4 +1,5 @@
 import os
+import glob
 import asyncio
 import re
 import json
@@ -13,6 +14,21 @@ from services import download_service
 from realtime_logger import log_manager
 import database
 from auth import login_required, get_current_user, admin_required
+
+# 媒体文件扩展名
+MEDIA_EXTENSIONS = {'.jpg', '.jpeg', '.png', '.gif', '.mp4', '.webm', '.webp'}
+
+
+def count_media_files(user_id: str) -> int:
+    """统计用户文件夹中的实际媒体文件数量"""
+    user_folder = os.path.join(Config.DOWNLOAD_FOLDER, user_id)
+    if not os.path.isdir(user_folder):
+        return 0
+    
+    count = 0
+    for ext in MEDIA_EXTENSIONS:
+        count += len(glob.glob(os.path.join(user_folder, f'*{ext}')))
+    return count
 
 # 创建蓝图
 main_bp = Blueprint('main', __name__)
@@ -250,6 +266,10 @@ def get_gallery_users():
         keyword=keyword,
         account_user_id=account_user_id
     )
+
+    # 使用文件夹中的实际媒体文件数量替代数据库统计
+    for user in users:
+        user['total_files'] = count_media_files(user['user_id'])
 
     return jsonify({
         'data': users,
