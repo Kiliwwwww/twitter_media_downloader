@@ -188,6 +188,17 @@
 .action-delete:hover {
     background: rgba(239, 68, 68, 0.2);
 }
+.action-zip {
+    background: rgba(16, 185, 129, 0.1);
+    color: #10B981;
+}
+.action-zip:hover {
+    background: rgba(16, 185, 129, 0.2);
+}
+.action-zip:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
 .action-clear {
     background: rgba(107, 114, 128, 0.1);
     color: #6B7280;

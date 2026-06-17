@@ -152,6 +152,29 @@
                                 </span>
                                 {{ t('home.exportXlsx') }}
                             </label>
+                            <label 
+                                class="type-option" 
+                                :class="{ active: createZip }"
+                            >
+                                <input 
+                                    type="checkbox" 
+                                    v-model="createZip"
+                                    :disabled="isDownloading"
+                                >
+                                <span class="custom-checkbox">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+                                        <polyline points="20 6 9 17 4 12"/>
+                                    </svg>
+                                </span>
+                                <span class="type-icon">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/>
+                                        <polyline points="7 10 12 15 17 10"/>
+                                        <line x1="12" y1="15" x2="12" y2="3"/>
+                                    </svg>
+                                </span>
+                                {{ t('home.createZip') }}
+                            </label>
                         </div>
                     </div>
                 </div>
@@ -284,6 +307,7 @@
                 const isDownloading = ref(false);
                 const downloadTypes = ref(['video', 'image']);
                 const exportXlsx = ref(true);
+                const createZip = ref(false);
                 
                 let progressInterval = null;
                 let timeInterval = null;
@@ -355,7 +379,8 @@
                             body: JSON.stringify({ 
                                 user_id: userId.value.trim(),
                                 download_type: downloadType,
-                                export_xlsx: exportXlsx.value
+                                export_xlsx: exportXlsx.value,
+                                create_zip: createZip.value
                             })
                         });
                         const data = await response.json();
@@ -392,7 +417,7 @@
                 
                 return {
                     userId, taskId, status, progress, totalFiles, downloadedFiles,
-                    elapsedTime, errorMessage, isDownloading, statusText, downloadTypes, exportXlsx,
+                    elapsedTime, errorMessage, isDownloading, statusText, downloadTypes, exportXlsx, createZip,
                     startDownload, downloadZip, t
                 };
             }

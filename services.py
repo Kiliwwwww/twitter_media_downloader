@@ -51,10 +51,10 @@ class DownloadService:
         
         return None
     
-    def create_task(self, user_id: str, download_type: str = 'all', account_user_id: int = None, export_xlsx: bool = False) -> DownloadTask:
+    def create_task(self, user_id: str, download_type: str = 'all', account_user_id: int = None, export_xlsx: bool = False, create_zip: bool = True) -> DownloadTask:
         """创建下载任务"""
         task_id = f"{user_id}_{int(time.time())}"
-        task = DownloadTask(task_id, user_id, download_type, account_user_id=account_user_id, export_xlsx=export_xlsx)
+        task = DownloadTask(task_id, user_id, download_type, account_user_id=account_user_id, export_xlsx=export_xlsx, create_zip=create_zip)
         
         with self._lock:
             self._tasks[task_id] = task
@@ -157,10 +157,13 @@ class DownloadService:
             finally:
                 loop.close()
             
-            # 创建ZIP文件
-            log_manager.info(task_id, task.user_id, '正在创建ZIP压缩文件...', 'system')
-            self._create_zip(task)
-            log_manager.success(task_id, task.user_id, f'ZIP文件创建完成: {os.path.basename(task.zip_path)}', 'system')
+            # 创建ZIP文件（如果启用）
+            if task.create_zip:
+                log_manager.info(task_id, task.user_id, '正在创建ZIP压缩文件...', 'system')
+                self._create_zip(task)
+                log_manager.success(task_id, task.user_id, f'ZIP文件创建完成: {os.path.basename(task.zip_path)}', 'system')
+            else:
+                log_manager.info(task_id, task.user_id, '跳过创建ZIP压缩包', 'system')
             
             task.status = 'completed'
             task.end_time = time.time()

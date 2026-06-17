@@ -91,6 +91,7 @@ def start_download():
     user_ids = data.get('user_id', '').strip()
     download_type = data.get('download_type', 'all')  # all, video, image
     export_xlsx = data.get('export_xlsx', False)  # 是否导出xlsx
+    create_zip = data.get('create_zip', False)  # 是否生成压缩包
     
     if not user_ids:
         return jsonify({'error': '请输入用户ID'}), 400
@@ -111,7 +112,7 @@ def start_download():
     # 创建下载任务
     tasks = []
     for user_id in user_id_list:
-        task = download_service.create_task(user_id, download_type, account_user_id, export_xlsx=export_xlsx)
+        task = download_service.create_task(user_id, download_type, account_user_id, export_xlsx=export_xlsx, create_zip=create_zip)
         tasks.append({
             'task_id': task.task_id,
             'user_id': user_id
@@ -161,6 +162,89 @@ def download_file(task_id: str):
         task.zip_path,
         as_attachment=True,
         download_name=download_name
+    )
+
+
+@main_bp.route('/api/zip/<user_id>', methods=['POST'])
+@login_required
+def create_user_zip(user_id: str):
+    """为指定用户创建ZIP压缩包"""
+    try:
+        user_dir = os.path.join(Config.DOWNLOAD_FOLDER, user_id)
+        
+        if not os.path.exists(user_dir) or not os.path.isdir(user_dir):
+            return jsonify({'error': '用户文件夹不存在'}), 404
+        
+        # 检查是否有媒体文件
+        media_extensions = {'.jpg', '.jpeg', '.png', '.gif', '.webp', '.mp4', '.mov', '.avi', '.mkv', '.webm'}
+        has_media = False
+        for filename in os.listdir(user_dir):
+            ext = os.path.splitext(filename)[1].lower()
+            if ext in media_extensions:
+                has_media = True
+                break
+        
+        if not has_media:
+            return jsonify({'error': '用户文件夹中没有媒体文件'}), 400
+        
+        # 获取用户信息
+        history = database.get_latest_download_by_user_id(user_id)
+        user_name = history.get('user_name') if history else None
+        
+        # 生成ZIP文件名
+        timestamp = time.strftime('%Y%m%d_%H%M%S')
+        name_prefix = f'{user_name}_{user_id}' if user_name else user_id
+        zip_filename = f'{name_prefix}_video_img_{timestamp}.zip'
+        zip_path = os.path.join(Config.DOWNLOAD_FOLDER, zip_filename)
+        
+        # 创建ZIP文件
+        video_exts = {'.mp4', '.mov', '.avi', '.mkv', '.webm', '.gif'}
+        image_exts = {'.jpg', '.jpeg', '.png', '.webp', '.bmp'}
+        
+        with zipfile.ZipFile(zip_path, 'w', zipfile.ZIP_DEFLATED) as zipf:
+            for filename in os.listdir(user_dir):
+                filepath = os.path.join(user_dir, filename)
+                if not os.path.isfile(filepath):
+                    continue
+                
+                ext = os.path.splitext(filename)[1].lower()
+                if ext not in media_extensions:
+                    continue
+                
+                # 分类到子文件夹
+                if ext in video_exts:
+                    arcname = f'{name_prefix}/videos/{filename}'
+                elif ext in image_exts:
+                    arcname = f'{name_prefix}/images/{filename}'
+                else:
+                    arcname = f'{name_prefix}/others/{filename}'
+                
+                zipf.write(filepath, arcname)
+        
+        # 返回下载链接
+        return jsonify({
+            'message': 'ZIP文件创建成功',
+            'zip_filename': zip_filename,
+            'download_url': f'/api/download-zip/{zip_filename}'
+        })
+        
+    except Exception as e:
+        return jsonify({'error': f'创建ZIP文件失败: {str(e)}'}), 500
+
+
+@main_bp.route('/api/download-zip/<filename>')
+@login_required
+def download_zip(filename: str):
+    """下载ZIP文件"""
+    zip_path = os.path.join(Config.DOWNLOAD_FOLDER, filename)
+    
+    if not os.path.exists(zip_path):
+        return jsonify({'error': '文件不存在'}), 404
+    
+    return send_file(
+        zip_path,
+        as_attachment=True,
+        download_name=filename
     )
 
 
