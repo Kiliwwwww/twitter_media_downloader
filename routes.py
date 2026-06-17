@@ -521,8 +521,8 @@ def get_user_media(user_id: str):
             
             all_files.append(file_info)
         
-        # 按修改时间倒序排列
-        all_files.sort(key=lambda x: x['modified'], reverse=True)
+        # 按文件名倒序排列（文件名包含日期，最新的在前）
+        all_files.sort(key=lambda x: x['name'], reverse=True)
         
         # 按类型筛选
         if file_type == 'image':
