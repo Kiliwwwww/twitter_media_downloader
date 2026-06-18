@@ -268,6 +268,10 @@
         "image": "Image",
         "video": "Video",
         "download": "Download",
+        "downloadZip": "Create ZIP",
+        "zipping": "Creating ZIP...",
+        "zipCreated": "ZIP file created successfully",
+        "zipFailed": "Failed to create ZIP file",
         "fetchFailed": "Failed to fetch media files"
     },
     "admin": {
