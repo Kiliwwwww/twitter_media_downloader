@@ -16,6 +16,7 @@ class TwitterDownloader:
                  cookie: str = "",
                  task_id: str = None,
                  progress_callback: Optional[Callable] = None,
+                 user_info_callback: Optional[Callable] = None,
                  skip_existing: bool = True,
                  max_retries: int = 50):
         self.user_id = user_id
@@ -24,6 +25,7 @@ class TwitterDownloader:
         self.cookie = cookie
         self.task_id = task_id
         self.progress_callback = progress_callback
+        self.user_info_callback = user_info_callback
         self.skip_existing = skip_existing
         self.max_retries = max_retries
         
@@ -184,6 +186,10 @@ class TwitterDownloader:
                 
                 self._log('info', f'获取用户信息成功: {self.user_info["name"]} (@{self.user_info["screen_name"]})', 'system')
                 self._log('info', f'媒体数量: {self.user_info["media_count"]}', 'system')
+                
+                # 调用用户信息回调函数
+                if self.user_info_callback:
+                    self.user_info_callback(self.user_info['name'], self.user_info['avatar_url'])
                 
                 return True
         except Exception as e:

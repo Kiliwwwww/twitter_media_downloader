@@ -104,6 +104,14 @@ class DownloadService:
                     total_files=total_files
                 )
             
+            # 用户信息回调函数
+            def user_info_callback(user_name: str, avatar_url: str):
+                database.update_download_history(
+                    task_id,
+                    user_name=user_name,
+                    avatar_url=avatar_url
+                )
+            
             # 从数据库获取配置（使用用户特定的配置）
             proxy = Config.get_proxy(user_id=task.account_user_id)
             cookie = Config.get_cookie(user_id=task.account_user_id)
@@ -116,6 +124,7 @@ class DownloadService:
                 cookie=cookie,
                 task_id=task_id,
                 progress_callback=progress_callback,
+                user_info_callback=user_info_callback,
                 skip_existing=True,
                 max_retries=50
             )
