@@ -216,6 +216,25 @@ def get_all_configs(user_id: int = None) -> List[Dict[str, Any]]:
                 # 重新查询
                 cursor.execute('SELECT key, value, description, updated_at FROM config WHERE user_id = ? ORDER BY key', (user_id,))
                 configs = [dict(row) for row in cursor.fetchall()]
+            else:
+                # 检查是否缺少新增的默认配置，如果缺少则自动添加
+                existing_keys = {cfg['key'] for cfg in configs}
+                default_configs = [
+                    ('zip_delete_delay', '20', 'ZIP文件延迟删除时间（分钟）'),
+                ]
+                
+                need_requery = False
+                for key, value, description in default_configs:
+                    if key not in existing_keys:
+                        cursor.execute('''
+                            INSERT INTO config (user_id, key, value, description)
+                            VALUES (?, ?, ?, ?)
+                        ''', (user_id, key, value, description))
+                        need_requery = True
+                
+                if need_requery:
+                    cursor.execute('SELECT key, value, description, updated_at FROM config WHERE user_id = ? ORDER BY key', (user_id,))
+                    configs = [dict(row) for row in cursor.fetchall()]
             
             return configs
         else:
