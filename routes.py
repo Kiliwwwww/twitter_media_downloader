@@ -361,6 +361,23 @@ def get_history():
 def delete_history(task_id: str):
     """删除下载历史"""
     try:
+        import shutil
+        
+        # 先获取下载记录，获取用户ID
+        history = database.get_download_by_task_id(task_id)
+        if history and history.get('user_id'):
+            user_id = history['user_id']
+            user_dir = os.path.join(Config.DOWNLOAD_FOLDER, user_id)
+            
+            # 检查是否还有其他下载记录使用同一个用户目录
+            other_records = database.get_download_history_by_user_id(user_id)
+            # 排除当前要删除的记录
+            other_records = [r for r in other_records if r['task_id'] != task_id]
+            
+            # 如果没有其他记录使用这个用户目录，则删除
+            if not other_records and os.path.exists(user_dir):
+                shutil.rmtree(user_dir)
+        
         database.delete_download_history(task_id)
         return jsonify({'message': '已删除'})
     except Exception as e:

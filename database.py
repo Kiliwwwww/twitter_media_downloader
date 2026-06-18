@@ -395,6 +395,14 @@ def get_latest_download_by_user_id(user_id: str) -> Optional[Dict[str, Any]]:
         return dict(row) if row else None
 
 
+def get_download_history_by_user_id(user_id: str) -> List[Dict[str, Any]]:
+    """获取用户的所有下载记录"""
+    with get_db() as conn:
+        cursor = conn.cursor()
+        cursor.execute('SELECT * FROM download_history WHERE user_id = ? ORDER BY created_at DESC', (user_id,))
+        return [dict(row) for row in cursor.fetchall()]
+
+
 def delete_download_history(task_id: str):
     """删除下载历史"""
     with get_db() as conn:
