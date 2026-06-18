@@ -237,18 +237,33 @@ def create_user_zip(user_id: str):
 @login_required
 def download_zip(filename: str):
     """下载ZIP文件"""
+    import threading
+    
     zip_path = os.path.join(Config.DOWNLOAD_FOLDER, filename)
     
     if not os.path.exists(zip_path):
         return jsonify({'error': '文件不存在'}), 404
     
-    @after_this_request
-    def remove_file(response):
+    # 获取删除延迟时间配置（默认20分钟）
+    current_user = get_current_user()
+    account_user_id = current_user['id'] if current_user else None
+    delete_delay = database.get_config('zip_delete_delay', account_user_id)
+    delete_minutes = int(delete_delay) if delete_delay else 20
+    
+    # 定时删除ZIP文件
+    def delete_zip_later():
+        import time
+        time.sleep(delete_minutes * 60)
         try:
-            os.remove(zip_path)
+            if os.path.exists(zip_path):
+                os.remove(zip_path)
+                print(f'已删除ZIP文件: {filename}')
         except Exception as e:
             print(f'删除ZIP文件失败: {e}')
-        return response
+    
+    thread = threading.Thread(target=delete_zip_later)
+    thread.daemon = True
+    thread.start()
     
     return send_file(
         zip_path,

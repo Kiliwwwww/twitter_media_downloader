@@ -204,6 +204,7 @@ def get_all_configs(user_id: int = None) -> List[Dict[str, Any]]:
                     ('proxy', '', '代理地址（如: http://127.0.0.1:7890）'),
                     ('auth_token', '', 'auth_token'),
                     ('ct0', '', 'ct0'),
+                    ('zip_delete_delay', '20', 'ZIP文件延迟删除时间（分钟）'),
                 ]
                 
                 for key, value, description in default_configs:
@@ -240,7 +241,8 @@ def update_config(key: str, value: str, user_id: int = None):
                     'proxy': '代理地址（如: http://127.0.0.1:7890）',
                     'auth_token': 'auth_token',
                     'ct0': 'ct0',
-                    'secret_key': 'Flask session密钥（自动生成）'
+                    'secret_key': 'Flask session密钥（自动生成）',
+                    'zip_delete_delay': 'ZIP文件延迟删除时间（分钟）'
                 }
                 description = descriptions.get(key, key)
                 cursor.execute('''
