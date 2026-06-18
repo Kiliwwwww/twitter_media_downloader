@@ -8,7 +8,7 @@ import time
 import queue
 import httpx
 from datetime import datetime
-from flask import Blueprint, render_template, request, jsonify, send_file, g, Response
+from flask import Blueprint, render_template, request, jsonify, send_file, g, Response, after_this_request
 
 from config import Config
 from services import download_service
@@ -241,6 +241,14 @@ def download_zip(filename: str):
     
     if not os.path.exists(zip_path):
         return jsonify({'error': '文件不存在'}), 404
+    
+    @after_this_request
+    def remove_file(response):
+        try:
+            os.remove(zip_path)
+        except Exception as e:
+            print(f'删除ZIP文件失败: {e}')
+        return response
     
     return send_file(
         zip_path,
