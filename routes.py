@@ -1,5 +1,6 @@
 import os
 import glob
+import zipfile
 import asyncio
 import re
 import json
@@ -318,6 +319,11 @@ def get_history():
         date=date,
         account_user_id=account_user_id
     )
+    
+    # 检查本地是否存在ZIP文件，如果不存在则清空zip_path
+    for item in history:
+        if item.get('zip_path') and not os.path.exists(item['zip_path']):
+            item['zip_path'] = None
     
     return jsonify({
         'data': history,
