@@ -47,3 +47,7 @@ Thumbs.db
 # Temporary files
 tmp/
 temp/
+
+# Vue build output and dependencies
+/vue/dist
+/vue/node_modules

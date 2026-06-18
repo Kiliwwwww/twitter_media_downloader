@@ -1,0 +1,324 @@
+/* 个人资料页样式 */
+
+.profile-card {
+    background: rgba(255, 255, 255, 0.85);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-radius: 16px;
+    border: 1px solid rgba(229, 231, 235, 0.5);
+    box-shadow: 
+        0 4px 6px -1px rgba(74, 108, 247, 0.1),
+        0 2px 4px -2px rgba(74, 108, 247, 0.1),
+        inset 0 1px 0 rgba(255, 255, 255, 0.5);
+    padding: 32px;
+    margin-bottom: 24px;
+    animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.profile-card-title {
+    font-size: 18px;
+    font-weight: 600;
+    color: #1F2937;
+    margin-bottom: 24px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.profile-card-title svg {
+    width: 20px;
+    height: 20px;
+    color: #4A6CF7;
+}
+
+.profile-card-title .el-icon {
+    font-size: 20px;
+    color: #4A6CF7;
+}
+
+/* 头像区域 */
+.avatar-section {
+    display: flex;
+    align-items: center;
+    gap: 24px;
+    margin-bottom: 32px;
+    padding-bottom: 32px;
+    border-bottom: 1px solid rgba(229, 231, 235, 0.5);
+}
+
+.avatar-wrapper {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    overflow: hidden;
+    background: linear-gradient(135deg, rgba(74, 108, 247, 0.1), rgba(123, 97, 255, 0.1));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    border: 3px solid rgba(74, 108, 247, 0.2);
+    position: relative;
+}
+
+.avatar-wrapper img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.avatar-fallback {
+    font-size: 40px;
+    font-weight: 600;
+    color: #4A6CF7;
+    background: linear-gradient(135deg, rgba(74, 108, 247, 0.15), rgba(123, 97, 255, 0.15));
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.avatar-info {
+    flex: 1;
+}
+
+.avatar-info h3 {
+    font-size: 20px;
+    font-weight: 600;
+    color: #1F2937;
+    margin-bottom: 4px;
+}
+
+.avatar-info p {
+    font-size: 14px;
+    color: #9CA3AF;
+}
+
+.avatar-info .role-tag {
+    display: inline-block;
+    padding: 4px 10px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 500;
+    margin-top: 8px;
+}
+
+.role-tag.admin {
+    background: rgba(74, 108, 247, 0.1);
+    color: #4A6CF7;
+}
+
+.role-tag.user {
+    background: rgba(107, 114, 128, 0.1);
+    color: #6B7280;
+}
+
+/* 表单样式 */
+.profile-form {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.form-label {
+    font-size: 14px;
+    font-weight: 500;
+    color: #374151;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.form-label svg {
+    width: 16px;
+    height: 16px;
+    color: #9CA3AF;
+}
+
+.form-input {
+    width: 100%;
+    height: 44px;
+    padding: 0 14px;
+    border: 1.5px solid rgba(229, 231, 235, 0.8);
+    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.9);
+    font-size: 14px;
+    color: #1F2937;
+    outline: none;
+    transition: all 0.25s ease;
+    font-family: inherit;
+}
+
+.form-input:hover {
+    border-color: rgba(74, 108, 247, 0.4);
+    background: white;
+}
+
+.form-input:focus {
+    border-color: #4A6CF7;
+    background: white;
+    box-shadow: 0 0 0 4px rgba(74, 108, 247, 0.08), 0 2px 8px rgba(74, 108, 247, 0.1);
+}
+
+.form-input::placeholder {
+    color: #9CA3AF;
+}
+
+.form-hint {
+    font-size: 12px;
+    color: #9CA3AF;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.form-hint svg {
+    width: 14px;
+    height: 14px;
+}
+
+/* 推特ID配置 */
+.twitter-section {
+    background: rgba(249, 250, 251, 0.8);
+    border-radius: 12px;
+    padding: 20px;
+    margin-top: 8px;
+}
+
+.twitter-input-row {
+    display: flex;
+    gap: 12px;
+}
+
+.twitter-input-row .form-input {
+    flex: 1;
+}
+
+.fetch-avatar-btn {
+    height: 44px;
+    padding: 0 20px;
+    background: linear-gradient(135deg, #1DA1F2, #0D8ECF);
+    color: white;
+    border: none;
+    border-radius: 10px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    white-space: nowrap;
+}
+
+.fetch-avatar-btn:hover:not(:disabled) {
+    background: linear-gradient(135deg, #0D8ECF, #0B7FC4);
+    transform: translateY(-1px);
+}
+
+.fetch-avatar-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.fetch-avatar-btn svg {
+    width: 16px;
+    height: 16px;
+}
+
+/* 保存按钮 */
+.save-btn {
+    height: 48px;
+    background: linear-gradient(135deg, #4A6CF7, #7B61FF);
+    color: white;
+    border: none;
+    border-radius: 12px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    box-shadow: 0 4px 16px rgba(74, 108, 247, 0.3);
+    margin-top: 12px;
+}
+
+.save-btn svg {
+    width: 18px;
+    height: 18px;
+}
+
+.save-btn:hover:not(:disabled) {
+    background: linear-gradient(135deg, #3B5DE7, #6B51E0);
+    box-shadow: 0 6px 20px rgba(74, 108, 247, 0.4);
+    transform: translateY(-1px);
+}
+
+.save-btn:active:not(:disabled) {
+    transform: translateY(0);
+}
+
+.save-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.save-btn .spinner {
+    width: 20px;
+    height: 20px;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-top-color: white;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+/* 分隔线 */
+.divider {
+    height: 1px;
+    background: rgba(229, 231, 235, 0.5);
+    margin: 8px 0;
+}
+
+/* 响应式 */
+@media (max-width: 768px) {
+    .form-row {
+        grid-template-columns: 1fr;
+    }
+    
+    .avatar-section {
+        flex-direction: column;
+        text-align: center;
+    }
+    
+    .twitter-input-row {
+        flex-direction: column;
+    }
+    
+    .fetch-avatar-btn {
+        width: 100%;
+        justify-content: center;
+    }
+}

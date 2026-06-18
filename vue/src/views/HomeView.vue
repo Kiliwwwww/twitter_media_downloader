@@ -1,0 +1,298 @@
+<script setup lang="ts">
+import { ref, computed, onUnmounted } from 'vue'
+import Navbar from '../components/Navbar.vue'
+import PageHeader from '../components/PageHeader.vue'
+import i18n from '../utils/i18n'
+import { getStatusText, formatElapsedTime } from '../utils/utils'
+import { ElMessage } from 'element-plus'
+
+const t = (key: string, params: Record<string, any> = {}) => i18n.t(key, params)
+
+const userId = ref('')
+const taskId = ref('')
+const status = ref('pending')
+const progress = ref(0)
+const totalFiles = ref(0)
+const downloadedFiles = ref(0)
+const elapsedTime = ref('0' + t('time.seconds'))
+const errorMessage = ref('')
+const isDownloading = ref(false)
+
+let progressInterval: ReturnType<typeof setInterval> | null = null
+let timeInterval: ReturnType<typeof setInterval> | null = null
+let startTime: Date | null = null
+
+const statusText = computed(() => getStatusText(status.value))
+
+const updateElapsedTime = () => {
+  if (!startTime) return
+  const diff = Math.floor((new Date().getTime() - startTime.getTime()) / 1000)
+  elapsedTime.value = formatElapsedTime(diff)
+}
+
+const stopTimers = () => {
+  if (progressInterval) { clearInterval(progressInterval); progressInterval = null; }
+  if (timeInterval) { clearInterval(timeInterval); timeInterval = null; }
+}
+
+const fetchProgress = async () => {
+  if (!taskId.value) return
+  try {
+    const response = await fetch(`/api/progress/${taskId.value}`)
+    const data = await response.json()
+    if (response.ok) {
+      status.value = data.status
+      progress.value = data.progress
+      totalFiles.value = data.total_files
+      downloadedFiles.value = data.downloaded_files
+      errorMessage.value = data.error_message || ''
+      if (data.status === 'completed' || data.status === 'failed') {
+        isDownloading.value = false
+        stopTimers()
+      }
+    }
+  } catch (error) {
+    console.error(t('home.requestFailed'), error)
+  }
+}
+
+const startDownload = async () => {
+  if (!userId.value.trim()) {
+    ElMessage.warning(t('home.enterUserId'))
+    return
+  }
+  isDownloading.value = true
+  status.value = 'pending'
+  progress.value = 0
+  totalFiles.value = 0
+  downloadedFiles.value = 0
+  errorMessage.value = ''
+  elapsedTime.value = '0' + t('time.seconds')
+  startTime = new Date()
+
+  try {
+    const response = await fetch('/api/download', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ 
+        user_id: userId.value.trim(),
+        download_type: 'all',
+        export_xlsx: true
+      })
+    })
+    const data = await response.json()
+    if (response.ok) {
+      if (data.task_id) {
+        taskId.value = data.task_id
+        status.value = 'downloading'
+        progressInterval = setInterval(fetchProgress, 1000)
+        timeInterval = setInterval(updateElapsedTime, 1000)
+      } else if (data.tasks && data.tasks.length > 0) {
+        ElMessage.success(data.message)
+        isDownloading.value = false
+        setTimeout(() => {
+          window.location.href = '/history'
+        }, 1500)
+        return
+      }
+      ElMessage.success(data.message)
+    } else {
+      ElMessage.error(data.error || t('home.downloadFailed'))
+      isDownloading.value = false
+    }
+  } catch (error) {
+    ElMessage.error(t('home.requestFailed') + (error as Error).message)
+    isDownloading.value = false
+  }
+}
+
+const downloadZip = async () => {
+  if (!userId.value.trim()) return
+
+  try {
+    const response = await fetch(`/api/zip/${encodeURIComponent(userId.value.trim())}`, { method: 'POST' })
+    const data = await response.json()
+
+    if (response.ok) {
+      if (data.download_url) {
+        window.location.href = data.download_url
+      }
+    } else {
+      ElMessage.error(data.error || t('home.zipFailed'))
+    }
+  } catch (error) {
+    ElMessage.error(t('home.zipFailed'))
+  }
+}
+
+onUnmounted(() => stopTimers())
+</script>
+
+<template>
+  <Navbar active-page="home" />
+  
+  <div class="main-container" style="max-width: 800px;">
+    <div class="banner-card">
+      <div class="banner-content">
+        <h1 class="banner-title">{{ t('home.title') }}</h1>
+        <p class="banner-subtitle">{{ t('home.subtitle') }}</p>
+      </div>
+      <div class="banner-illustration">
+        <svg viewBox="0 0 200 160" fill="none">
+          <rect x="60" y="20" width="80" height="90" rx="8" stroke="#4A6CF7" stroke-width="2" fill="rgba(74,108,247,0.05)"/>
+          <path d="M100 45v35m0 0l-12-12m12 12l12-12" stroke="#4A6CF7" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M75 95h50" stroke="#4A6CF7" stroke-width="2" stroke-linecap="round"/>
+          <rect x="30" y="60" width="25" height="20" rx="3" stroke="#7B61FF" stroke-width="1.5" fill="rgba(123,97,255,0.05)"/>
+          <circle cx="38" cy="68" r="3" stroke="#7B61FF" stroke-width="1.5"/>
+          <path d="M32 76l6-4 4 3 6-5 5 4" stroke="#7B61FF" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          <rect x="145" y="55" width="25" height="25" rx="3" stroke="#00D4FF" stroke-width="1.5" fill="rgba(0,212,255,0.05)"/>
+          <path d="M152 62l5 5m0-5l-5 5" stroke="#00D4FF" stroke-width="1.5" stroke-linecap="round"/>
+          <path d="M150 74l3-2 2 1.5 3-2.5 3 2" stroke="#00D4FF" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M20 130c30-10 60 5 90-5s60 10 70 0" stroke="#4A6CF7" stroke-width="1" opacity="0.2"/>
+        </svg>
+      </div>
+    </div>
+    
+    <div class="input-section">
+      <div class="input-wrapper">
+        <div class="input-field-wrapper">
+          <div class="input-label">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/>
+              <circle cx="12" cy="7" r="4"/>
+            </svg>
+            推特用户ID
+          </div>
+          <div class="input-row">
+            <div class="input-icon-wrapper">
+              <span class="input-icon">@</span>
+              <input 
+                type="text" 
+                class="input-field" 
+                v-model="userId" 
+                :placeholder="t('home.userIdPlaceholder')"
+                :disabled="isDownloading"
+                @keyup.enter="startDownload"
+              >
+            </div>
+            <button 
+              class="download-btn"
+              :class="{ loading: isDownloading }"
+              :disabled="!userId.trim() || isDownloading"
+              @click="startDownload"
+            >
+              <span v-if="isDownloading" class="btn-spinner"></span>
+              <svg v-else width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                <path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+              </svg>
+              {{ isDownloading ? t('home.downloading') : t('home.startDownload') }}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <div v-if="taskId" class="progress-section">
+      <div class="progress-header">
+        <h3 class="progress-title">{{ t('home.downloadProgress') }}</h3>
+        <span class="progress-status" :class="'status-' + status">{{ statusText }}</span>
+      </div>
+      <div class="progress-bar-wrapper">
+        <div class="progress-bar-bg">
+          <div class="progress-bar-fill" :style="{ width: progress + '%' }"></div>
+        </div>
+        <div class="progress-percentage">{{ progress }}%</div>
+      </div>
+      <div class="progress-info">
+        <div class="progress-item">
+          <div class="progress-item-label">{{ t('home.downloaded') }}</div>
+          <div class="progress-item-value">{{ downloadedFiles }}</div>
+        </div>
+        <div class="progress-item">
+          <div class="progress-item-label">{{ t('home.totalFiles') }}</div>
+          <div class="progress-item-value">{{ totalFiles }}</div>
+        </div>
+        <div class="progress-item">
+          <div class="progress-item-label">{{ t('home.elapsedTime') }}</div>
+          <div class="progress-item-value">{{ elapsedTime }}</div>
+        </div>
+      </div>
+      <button v-if="status === 'completed'" class="download-complete-btn" @click="downloadZip">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/>
+          <polyline points="7 10 12 15 17 10"/>
+          <line x1="12" y1="15" x2="12" y2="3"/>
+        </svg>
+        {{ t('home.downloadZip') }}
+      </button>
+      <div v-if="status === 'failed' && errorMessage" class="error-message">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="10"/>
+          <line x1="12" y1="8" x2="12" y2="12"/>
+          <line x1="12" y1="16" x2="12.01" y2="16"/>
+        </svg>
+        {{ errorMessage }}
+      </div>
+    </div>
+    
+    <div class="guide-section">
+      <h2 class="guide-title">
+        <el-icon style="color: #4A6CF7;"><Warning /></el-icon>
+        {{ t('home.guide') }}
+      </h2>
+      <div class="guide-steps">
+        <div class="guide-step">
+          <div class="step-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M16 12a4 4 0 10-8 0 4 4 0 008 0zm0 0v1.5a2.5 2.5 0 005 0V12a9 9 0 10-9 9m4.5-1.206a8.959 8.959 0 01-4.5 1.207"/>
+            </svg>
+          </div>
+          <div class="step-content">
+            <h4>{{ t('home.guideStep1') }}</h4>
+            <p>{{ t('home.guideStep1Desc') }}</p>
+          </div>
+        </div>
+        <div class="guide-step">
+          <div class="step-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M12 2L2 7l10 5 10-5-10-5z"/>
+              <path d="M2 17l10 5 10-5"/>
+              <path d="M2 12l10 5 10-5"/>
+            </svg>
+          </div>
+          <div class="step-content">
+            <h4>{{ t('home.guideStep2') }}</h4>
+            <p>{{ t('home.guideStep2Desc') }}</p>
+          </div>
+        </div>
+        <div class="guide-step">
+          <div class="step-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+            </svg>
+          </div>
+          <div class="step-content">
+            <h4>{{ t('home.guideStep3') }}</h4>
+            <p>{{ t('home.guideStep3Desc') }}</p>
+          </div>
+        </div>
+        <div class="guide-step">
+          <div class="step-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/>
+              <polyline points="7 10 12 15 17 10"/>
+              <line x1="12" y1="15" x2="12" y2="3"/>
+            </svg>
+          </div>
+          <div class="step-content">
+            <h4>{{ t('home.guideStep4') }}</h4>
+            <p>{{ t('home.guideStep4Desc') }}</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</template>
+
+<style scoped>
+</style>
