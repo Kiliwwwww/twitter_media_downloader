@@ -72,6 +72,7 @@
         "enterUserId": "请输入用户ID",
         "selectDownloadType": "请选择下载类型",
         "downloadFailed": "下载失败",
+        "zipFailed": "创建ZIP文件失败",
         "requestFailed": "请求失败: "
     },
     "history": {

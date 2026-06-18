@@ -72,6 +72,7 @@
         "enterUserId": "Please enter user ID",
         "selectDownloadType": "Please select download type",
         "downloadFailed": "Download failed",
+        "zipFailed": "Failed to create ZIP file",
         "requestFailed": "Request failed: "
     },
     "history": {

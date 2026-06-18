@@ -72,6 +72,7 @@
         "enterUserId": "ユーザーIDを入力してください",
         "selectDownloadType": "ダウンロードタイプを選択してください",
         "downloadFailed": "ダウンロード失敗",
+        "zipFailed": "ZIPファイルの作成に失敗しました",
         "requestFailed": "リクエスト失敗: "
     },
     "history": {

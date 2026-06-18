@@ -298,8 +298,23 @@
                     }
                 };
                 
-                const downloadZip = () => {
-                    if (taskId.value) window.location.href = `/api/download/${taskId.value}`;
+                const downloadZip = async () => {
+                    if (!userId.value.trim()) return;
+                    
+                    try {
+                        const response = await fetch(`/api/zip/${encodeURIComponent(userId.value.trim())}`, { method: 'POST' });
+                        const data = await response.json();
+                        
+                        if (response.ok) {
+                            if (data.download_url) {
+                                window.location.href = data.download_url;
+                            }
+                        } else {
+                            ElementPlus.ElMessage.error(data.error || t('home.zipFailed'));
+                        }
+                    } catch (error) {
+                        ElementPlus.ElMessage.error(t('home.zipFailed'));
+                    }
                 };
                 
                 onUnmounted(() => stopTimers());
