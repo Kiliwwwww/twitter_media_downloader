@@ -532,6 +532,14 @@ body {
     background: rgba(239, 68, 68, 0.2);
 }
 
+.btn-success {
+    background: rgba(16, 185, 129, 0.1);
+    color: #10B981;
+}
+.btn-success:hover {
+    background: rgba(16, 185, 129, 0.2);
+}
+
 .btn svg {
     width: 18px;
     height: 18px;

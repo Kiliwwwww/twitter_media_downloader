@@ -273,6 +273,10 @@
         "zipCreated": "ZIPファイルが作成されました",
         "zipFailed": "ZIPファイルの作成に失敗しました",
         "viewOnTwitter": "Twitterで表示",
+        "update": "更新",
+        "updating": "更新中...",
+        "updateStarted": "更新タスクが開始されました",
+        "updateFailed": "更新に失敗しました",
         "fetchFailed": "メディアファイルの取得に失敗しました"
     },
     "admin": {

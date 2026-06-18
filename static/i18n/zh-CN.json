@@ -273,6 +273,10 @@
         "zipCreated": "ZIP文件创建成功",
         "zipFailed": "创建ZIP文件失败",
         "viewOnTwitter": "在Twitter上查看",
+        "update": "更新",
+        "updating": "更新中...",
+        "updateStarted": "更新任务已创建",
+        "updateFailed": "更新失败",
         "fetchFailed": "获取媒体文件失败"
     },
     "admin": {
