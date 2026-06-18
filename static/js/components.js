@@ -35,7 +35,6 @@ const Navbar = {
                 <div class="nav-right">
                     <div class="nav-links">
                         <a href="/" :class="{ active: activePage === 'home' }">{{ t('nav.home') }}</a>
-                        <a href="/history" :class="{ active: activePage === 'history' }">{{ t('nav.history') }}</a>
                         <a href="/gallery" :class="{ active: activePage === 'gallery' }">{{ t('nav.gallery') }}</a>
                     </div>
                     <div class="locale-switcher" @mouseenter="showLocaleMenu = true" @mouseleave="showLocaleMenu = false">
@@ -91,6 +90,13 @@ const Navbar = {
                                 </div>
                             </div>
                             <div class="dropdown-divider"></div>
+                            <a href="/history" class="dropdown-item">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <circle cx="12" cy="12" r="10"/>
+                                    <polyline points="12 6 12 12 16 14"/>
+                                </svg>
+                                {{ t('nav.history') }}
+                            </a>
                             <a href="/profile" class="dropdown-item">
                                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                     <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/>
