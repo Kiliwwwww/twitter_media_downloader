@@ -318,3 +318,9 @@
         transform: none;
     }
 }
+
+/* 修复按钮样式 */
+.history-actions .action-btn {
+    min-width: 80px;
+    justify-content: center;
+}

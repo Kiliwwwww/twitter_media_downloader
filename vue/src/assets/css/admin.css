@@ -620,3 +620,9 @@
         overflow-x: auto;
     }
 }
+
+/* 修复操作按钮样式 */
+.action-buttons .action-btn {
+    min-width: 32px;
+    min-height: 32px;
+}
