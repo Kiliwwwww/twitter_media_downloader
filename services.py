@@ -53,14 +53,31 @@ class DownloadService:
     
     def create_task(self, user_id: str, download_type: str = 'all', account_user_id: int = None, export_xlsx: bool = False, create_zip: bool = True) -> DownloadTask:
         """创建下载任务"""
-        task_id = f"{user_id}_{int(time.time())}"
+        # 检查是否已有该用户的下载记录
+        existing_record = database.get_latest_download_by_user_id(user_id)
+        
+        if existing_record:
+            # 复用之前的task_id
+            task_id = existing_record['task_id']
+            # 重置状态为downloading
+            database.update_download_history(
+                task_id,
+                status='downloading',
+                downloaded_files=0,
+                total_files=0,
+                error_message=None,
+                completed_at=None
+            )
+        else:
+            # 创建新的task_id
+            task_id = f"{user_id}_{int(time.time())}"
+            # 添加到数据库
+            database.add_download_history(task_id, user_id, account_user_id=account_user_id)
+        
         task = DownloadTask(task_id, user_id, download_type, account_user_id=account_user_id, export_xlsx=export_xlsx, create_zip=create_zip)
         
         with self._lock:
             self._tasks[task_id] = task
-        
-        # 添加到数据库
-        database.add_download_history(task_id, user_id, account_user_id=account_user_id)
         
         # 记录实时日志
         log_manager.info(task_id, user_id, f'下载任务已创建: {user_id}', 'system')
