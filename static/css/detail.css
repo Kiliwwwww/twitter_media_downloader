@@ -54,11 +54,37 @@
     flex: 1;
 }
 
+.user-name-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 12px;
+}
+
 .user-name-display {
     font-size: 22px;
     font-weight: 700;
     color: #1F2937;
-    margin-bottom: 12px;
+    margin: 0;
+}
+
+.twitter-link {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    background: rgba(0, 0, 0, 0.05);
+    color: #1F2937;
+    text-decoration: none;
+    transition: all 0.2s ease;
+}
+
+.twitter-link:hover {
+    background: rgba(0, 0, 0, 0.1);
+    color: #1DA1F2;
+    transform: scale(1.05);
 }
 
 .user-stats {

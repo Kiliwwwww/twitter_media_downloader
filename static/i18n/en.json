@@ -272,6 +272,7 @@
         "zipping": "Creating ZIP...",
         "zipCreated": "ZIP file created successfully",
         "zipFailed": "Failed to create ZIP file",
+        "viewOnTwitter": "View on Twitter",
         "fetchFailed": "Failed to fetch media files"
     },
     "admin": {

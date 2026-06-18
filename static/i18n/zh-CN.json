@@ -272,6 +272,7 @@
         "zipping": "打包中...",
         "zipCreated": "ZIP文件创建成功",
         "zipFailed": "创建ZIP文件失败",
+        "viewOnTwitter": "在Twitter上查看",
         "fetchFailed": "获取媒体文件失败"
     },
     "admin": {
