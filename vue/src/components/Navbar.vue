@@ -118,6 +118,13 @@ onMounted(() => {
               </svg>
               {{ t('nav.profile') }}
             </a>
+            <a href="#" class="dropdown-item" @click.prevent="userStore.togglePrivacyMode">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                <circle cx="12" cy="12" r="3"/>
+              </svg>
+              {{ userStore.privacyMode ? t('nav.privacyModeOff') : t('nav.privacyModeOn') }}
+            </a>
             <a href="/config" class="dropdown-item">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <circle cx="12" cy="12" r="3"/>

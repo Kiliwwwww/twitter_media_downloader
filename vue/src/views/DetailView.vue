@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useRoute } from 'vue-router'
+import { useUserStore } from '../stores/user'
 import Navbar from '../components/Navbar.vue'
 import PageHeader from '../components/PageHeader.vue'
 import LoadingState from '../components/LoadingState.vue'
@@ -12,6 +13,7 @@ import { ElMessage } from 'element-plus'
 
 const t = (key: string, params: Record<string, any> = {}) => i18n.t(key, params)
 const route = useRoute()
+const userStore = useUserStore()
 const userId = ref(route.params.userId as string)
 
 const user = ref<any>(null)
@@ -381,9 +383,9 @@ onUnmounted(() => {
           @click="openPreview(file)"
         >
           <div class="media-thumbnail">
-            <img v-if="file.type === 'image'" :src="file.path" :alt="file.name" loading="lazy" />
+            <img v-if="file.type === 'image'" :src="file.path" :alt="file.name" loading="lazy" :class="{ 'privacy-blur': userStore.privacyMode }" />
             <div v-else class="video-thumbnail">
-              <img :src="file.thumb || file.path" :alt="file.name" loading="lazy" />
+              <img :src="file.thumb || file.path" :alt="file.name" loading="lazy" :class="{ 'privacy-blur': userStore.privacyMode }" />
               <div class="video-play-icon">
                 <svg viewBox="0 0 24 24" fill="currentColor">
                   <polygon points="5 3 19 12 5 21 5 3"/>
@@ -407,9 +409,9 @@ onUnmounted(() => {
           @click="openPreview(file)"
         >
           <div class="media-list-thumb">
-            <img v-if="file.type === 'image'" :src="file.path" :alt="file.name" loading="lazy" />
+            <img v-if="file.type === 'image'" :src="file.path" :alt="file.name" loading="lazy" :class="{ 'privacy-blur': userStore.privacyMode }" />
             <div v-else class="video-thumb-small">
-              <img :src="file.thumb || file.path" :alt="file.name" loading="lazy" />
+              <img :src="file.thumb || file.path" :alt="file.name" loading="lazy" :class="{ 'privacy-blur': userStore.privacyMode }" />
               <svg viewBox="0 0 24 24" fill="currentColor" class="play-icon-small">
                 <polygon points="5 3 19 12 5 21 5 3"/>
               </svg>
@@ -466,7 +468,7 @@ onUnmounted(() => {
         </button>
       </div>
       <div class="preview-main">
-        <img v-if="previewFile.type === 'image'" :src="previewFile.path" :alt="previewFile.name" />
+        <img v-if="previewFile.type === 'image'" :src="previewFile.path" :alt="previewFile.name" :class="{ 'privacy-blur': userStore.privacyMode }" />
         <video v-else controls autoplay>
           <source :src="previewFile.path" :type="getVideoType(previewFile.name)">
         </video>

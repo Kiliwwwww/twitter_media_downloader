@@ -51,3 +51,4 @@ temp/
 # Vue build output and dependencies
 /vue/dist
 /vue/node_modules
+/vue/.vite

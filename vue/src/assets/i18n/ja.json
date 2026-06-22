@@ -41,7 +41,9 @@
         "login": "ログイン",
         "register": "登録",
         "lightMode": "ライトモードに切り替え",
-        "darkMode": "ダークモードに切り替え"
+        "darkMode": "ダークモードに切り替え",
+        "privacyModeOn": "プライバシーモードを有効にする",
+        "privacyModeOff": "プライバシーモードを無効にする"
     },
     "home": {
         "title": "Twitterメディアダウンローダー",

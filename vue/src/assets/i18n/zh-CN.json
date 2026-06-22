@@ -41,7 +41,9 @@
         "login": "登录",
         "register": "注册",
         "lightMode": "切换到浅色模式",
-        "darkMode": "切换到深色模式"
+        "darkMode": "切换到深色模式",
+        "privacyModeOn": "开启隐私模式",
+        "privacyModeOff": "关闭隐私模式"
     },
     "home": {
         "title": "推特媒体下载器",

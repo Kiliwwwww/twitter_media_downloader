@@ -41,7 +41,9 @@
         "login": "Login",
         "register": "Register",
         "lightMode": "Switch to Light Mode",
-        "darkMode": "Switch to Dark Mode"
+        "darkMode": "Switch to Dark Mode",
+        "privacyModeOn": "Enable Privacy Mode",
+        "privacyModeOff": "Disable Privacy Mode"
     },
     "home": {
         "title": "Twitter Media Downloader",

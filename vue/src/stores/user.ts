@@ -16,6 +16,7 @@ export interface User {
 export const useUserStore = defineStore('user', () => {
   const user = ref<User | null>(null)
   const loading = ref(false)
+  const privacyMode = ref(localStorage.getItem('privacyMode') === 'true')
   
   const isLoggedIn = computed(() => !!user.value)
   const isAdmin = computed(() => user.value?.role === 'admin')
@@ -48,12 +49,19 @@ export const useUserStore = defineStore('user', () => {
     }
   }
   
+  function togglePrivacyMode() {
+    privacyMode.value = !privacyMode.value
+    localStorage.setItem('privacyMode', String(privacyMode.value))
+  }
+  
   return {
     user,
     loading,
+    privacyMode,
     isLoggedIn,
     isAdmin,
     fetchUser,
-    logout
+    logout,
+    togglePrivacyMode
   }
 })
