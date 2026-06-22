@@ -184,27 +184,36 @@ def create_user_zip(user_id: str):
         # 获取可选的UUID参数
         uuid = request.args.get('uuid')
         
-        # 如果提供了UUID，检查缓存
-        if uuid and uuid in zip_cache:
-            cache_entry = zip_cache[uuid]
-            zip_path = cache_entry['zip_path']
-            zip_filename = cache_entry['zip_filename']
-            
-            # 检查缓存是否过期
-            if time.time() - cache_entry['created_at'] < CACHE_EXPIRY:
-                # 检查文件是否存在
-                if os.path.exists(zip_path):
-                    return jsonify({
-                        'message': 'ZIP文件已存在（缓存）',
-                        'zip_filename': zip_filename,
-                        'download_url': f'/api/download-zip/{zip_filename}'
-                    })
-                else:
-                    # 文件已删除，清除缓存
-                    del zip_cache[uuid]
-            else:
-                # 缓存过期，清除
-                del zip_cache[uuid]
+        # 获取用户信息
+        history = database.get_latest_download_by_user_id(user_id)
+        user_name = history.get('user_name') if history else None
+        name_prefix = f'{user_name}_{user_id}' if user_name else user_id
+        
+        # 生成ZIP文件名
+        if uuid:
+            # 使用UUID作为文件名的一部分，确保相同UUID生成相同文件名
+            zip_filename = f'{name_prefix}_video_img_{uuid}.zip'
+        else:
+            # 没有UUID，使用时间戳
+            timestamp = time.strftime('%Y%m%d_%H%M%S')
+            zip_filename = f'{name_prefix}_video_img_{timestamp}.zip'
+        
+        zip_path = os.path.join(Config.DOWNLOAD_FOLDER, zip_filename)
+        
+        # 如果文件已存在，直接返回
+        if os.path.exists(zip_path):
+            # 如果提供了UUID，更新缓存
+            if uuid:
+                zip_cache[uuid] = {
+                    'zip_path': zip_path,
+                    'zip_filename': zip_filename,
+                    'created_at': time.time()
+                }
+            return jsonify({
+                'message': 'ZIP文件已存在',
+                'zip_filename': zip_filename,
+                'download_url': f'/api/download-zip/{zip_filename}'
+            })
         
         user_dir = os.path.join(Config.DOWNLOAD_FOLDER, user_id)
         
@@ -223,39 +232,41 @@ def create_user_zip(user_id: str):
         if not has_media:
             return jsonify({'error': '用户文件夹中没有媒体文件'}), 400
         
-        # 获取用户信息
-        history = database.get_latest_download_by_user_id(user_id)
-        user_name = history.get('user_name') if history else None
-        
-        # 生成ZIP文件名
-        timestamp = time.strftime('%Y%m%d_%H%M%S')
-        name_prefix = f'{user_name}_{user_id}' if user_name else user_id
-        zip_filename = f'{name_prefix}_video_img_{timestamp}.zip'
-        zip_path = os.path.join(Config.DOWNLOAD_FOLDER, zip_filename)
-        
         # 创建ZIP文件
         video_exts = {'.mp4', '.mov', '.avi', '.mkv', '.webm', '.gif'}
         image_exts = {'.jpg', '.jpeg', '.png', '.webp', '.bmp'}
         
-        with zipfile.ZipFile(zip_path, 'w', zipfile.ZIP_DEFLATED) as zipf:
-            for filename in os.listdir(user_dir):
-                filepath = os.path.join(user_dir, filename)
-                if not os.path.isfile(filepath):
-                    continue
-                
-                ext = os.path.splitext(filename)[1].lower()
-                if ext not in media_extensions:
-                    continue
-                
-                # 分类到子文件夹
-                if ext in video_exts:
-                    arcname = f'{name_prefix}/videos/{filename}'
-                elif ext in image_exts:
-                    arcname = f'{name_prefix}/images/{filename}'
-                else:
-                    arcname = f'{name_prefix}/others/{filename}'
-                
-                zipf.write(filepath, arcname)
+        # 先创建临时文件，完成后再重命名
+        temp_zip_path = zip_path + '.tmp'
+        try:
+            with zipfile.ZipFile(temp_zip_path, 'w', zipfile.ZIP_DEFLATED) as zipf:
+                for filename in os.listdir(user_dir):
+                    filepath = os.path.join(user_dir, filename)
+                    if not os.path.isfile(filepath):
+                        continue
+                    
+                    ext = os.path.splitext(filename)[1].lower()
+                    if ext not in media_extensions:
+                        continue
+                    
+                    # 分类到子文件夹
+                    if ext in video_exts:
+                        arcname = f'{name_prefix}/videos/{filename}'
+                    elif ext in image_exts:
+                        arcname = f'{name_prefix}/images/{filename}'
+                    else:
+                        arcname = f'{name_prefix}/others/{filename}'
+                    
+                    zipf.write(filepath, arcname)
+            
+            # 完成后重命名
+            os.rename(temp_zip_path, zip_path)
+            
+        except Exception as e:
+            # 清理临时文件
+            if os.path.exists(temp_zip_path):
+                os.remove(temp_zip_path)
+            raise e
         
         # 如果提供了UUID，缓存结果
         if uuid:
