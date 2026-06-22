@@ -8,7 +8,7 @@ import time
 import queue
 import httpx
 from datetime import datetime
-from flask import Blueprint, render_template, request, jsonify, send_file, g, Response, after_this_request
+from flask import Blueprint, render_template, request, jsonify, send_file, send_from_directory, g, Response, after_this_request
 
 from config import Config
 from services import download_service
@@ -82,6 +82,12 @@ def detail_page(user_id: str):
 def gallery_page():
     """用户画廊页面"""
     return send_file('vue/dist/index.html')
+
+
+@main_bp.route('/assets/<path:filename>')
+def serve_vue_assets(filename):
+    """服务Vue应用的静态资源"""
+    return send_from_directory('vue/dist/assets', filename)
 
 
 @main_bp.route('/api/download', methods=['POST'])
