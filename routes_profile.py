@@ -1,5 +1,5 @@
 import asyncio
-from flask import Blueprint, render_template, request, jsonify, g
+from flask import Blueprint, render_template, request, jsonify, g, send_file
 
 import database
 from auth import login_required, get_current_user
@@ -13,7 +13,7 @@ profile_bp = Blueprint('profile', __name__)
 @login_required
 def profile_page():
     """个人资料页面"""
-    return render_template('profile.html')
+    return send_file('vue/dist/index.html')
 
 
 @profile_bp.route('/api/profile')

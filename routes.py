@@ -53,35 +53,35 @@ main_bp = Blueprint('main', __name__)
 @login_required
 def index():
     """首页"""
-    return render_template('index.html')
+    return send_file('vue/dist/index.html')
 
 
 @main_bp.route('/config')
 @login_required
 def config_page():
     """配置管理页面"""
-    return render_template('config.html')
+    return send_file('vue/dist/index.html')
 
 
 @main_bp.route('/history')
 @login_required
 def history_page():
     """下载历史页面"""
-    return render_template('history.html')
+    return send_file('vue/dist/index.html')
 
 
 @main_bp.route('/detail/<user_id>')
 @login_required
 def detail_page(user_id: str):
     """用户媒体详情页面"""
-    return render_template('detail.html', user_id=user_id)
+    return send_file('vue/dist/index.html')
 
 
 @main_bp.route('/gallery')
 @login_required
 def gallery_page():
     """用户画廊页面"""
-    return render_template('gallery.html')
+    return send_file('vue/dist/index.html')
 
 
 @main_bp.route('/api/download', methods=['POST'])

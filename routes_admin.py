@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, request, jsonify
+from flask import Blueprint, render_template, request, jsonify, send_file
 
 import database
 from auth import admin_required, get_current_user
@@ -12,14 +12,14 @@ admin_bp = Blueprint('admin', __name__)
 @admin_required
 def admin_page():
     """管理后台页面"""
-    return render_template('admin.html')
+    return send_file('vue/dist/index.html')
 
 
 @admin_bp.route('/logs')
 @admin_required
 def logs_page():
     """下载日志页面"""
-    return render_template('logs.html')
+    return send_file('vue/dist/index.html')
 
 
 # ==================== 用户管理API ====================

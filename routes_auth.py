@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, request, jsonify, session, redirect, url_for
+from flask import Blueprint, render_template, request, jsonify, session, redirect, url_for, send_file
 from werkzeug.security import check_password_hash
 from datetime import timedelta
 
@@ -15,7 +15,7 @@ def login_page():
     # 如果已登录，重定向到首页
     if session.get('user_id'):
         return redirect(url_for('main.index'))
-    return render_template('login.html')
+    return send_file('vue/dist/index.html')
 
 
 @auth_bp.route('/api/auth/login', methods=['POST'])
