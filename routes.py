@@ -293,6 +293,7 @@ def download_zip(filename: str):
     """下载ZIP文件"""
     import threading
     import mimetypes
+    import urllib.parse
     
     zip_path = os.path.join(Config.DOWNLOAD_FOLDER, filename)
     
@@ -326,6 +327,10 @@ def download_zip(filename: str):
     # 设置响应头
     mime_type = mimetypes.guess_type(filename)[0] or 'application/octet-stream'
     
+    # 对文件名进行URL编码，处理中文字符
+    encoded_filename = urllib.parse.quote(filename, safe='')
+    content_disposition = f"attachment; filename*=UTF-8''{encoded_filename}"
+    
     def generate():
         with open(zip_path, 'rb') as f:
             while True:
@@ -338,7 +343,7 @@ def download_zip(filename: str):
         generate(),
         mimetype=mime_type,
         headers={
-            'Content-Disposition': f'attachment; filename="{filename}"',
+            'Content-Disposition': content_disposition,
             'Content-Length': str(file_size),
             'Content-Type': mime_type,
             'Connection': 'keep-alive',
