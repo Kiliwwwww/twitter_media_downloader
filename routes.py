@@ -19,6 +19,10 @@ from auth import login_required, get_current_user, admin_required
 # 媒体文件扩展名
 MEDIA_EXTENSIONS = {'.jpg', '.jpeg', '.png', '.gif', '.mp4', '.webm', '.webp'}
 
+# ZIP文件缓存：{uuid: {'zip_path': str, 'zip_filename': str, 'created_at': float}}
+zip_cache = {}
+CACHE_EXPIRY = 3600  # 缓存过期时间（秒）
+
 
 def count_media_files(user_id: str) -> int:
     """统计用户文件夹中的实际媒体文件数量"""
@@ -177,6 +181,31 @@ def download_file(task_id: str):
 def create_user_zip(user_id: str):
     """为指定用户创建ZIP压缩包"""
     try:
+        # 获取可选的UUID参数
+        uuid = request.args.get('uuid')
+        
+        # 如果提供了UUID，检查缓存
+        if uuid and uuid in zip_cache:
+            cache_entry = zip_cache[uuid]
+            zip_path = cache_entry['zip_path']
+            zip_filename = cache_entry['zip_filename']
+            
+            # 检查缓存是否过期
+            if time.time() - cache_entry['created_at'] < CACHE_EXPIRY:
+                # 检查文件是否存在
+                if os.path.exists(zip_path):
+                    return jsonify({
+                        'message': 'ZIP文件已存在（缓存）',
+                        'zip_filename': zip_filename,
+                        'download_url': f'/api/download-zip/{zip_filename}'
+                    })
+                else:
+                    # 文件已删除，清除缓存
+                    del zip_cache[uuid]
+            else:
+                # 缓存过期，清除
+                del zip_cache[uuid]
+        
         user_dir = os.path.join(Config.DOWNLOAD_FOLDER, user_id)
         
         if not os.path.exists(user_dir) or not os.path.isdir(user_dir):
@@ -227,6 +256,14 @@ def create_user_zip(user_id: str):
                     arcname = f'{name_prefix}/others/{filename}'
                 
                 zipf.write(filepath, arcname)
+        
+        # 如果提供了UUID，缓存结果
+        if uuid:
+            zip_cache[uuid] = {
+                'zip_path': zip_path,
+                'zip_filename': zip_filename,
+                'created_at': time.time()
+            }
         
         # 返回下载链接
         return jsonify({

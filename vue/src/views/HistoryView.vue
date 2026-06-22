@@ -137,13 +137,34 @@ const deleteHistory = async (taskId: string) => {
   }
 }
 
+// 生成UUID
+const generateUUID = () => {
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
+    const r = Math.random() * 16 | 0
+    const v = c === 'x' ? r : (r & 0x3 | 0x8)
+    return v.toString(16)
+  })
+}
+
+// 获取或生成用户UUID
+const getUserUUID = (userId: string) => {
+  const storageKey = `zip_uuid_${userId}`
+  let uuid = localStorage.getItem(storageKey)
+  if (!uuid) {
+    uuid = generateUUID()
+    localStorage.setItem(storageKey, uuid)
+  }
+  return uuid
+}
+
 const createZip = async (userId: string) => {
   if (zippingUsers.value.includes(userId)) return
 
   zippingUsers.value.push(userId)
 
   try {
-    const response = await fetch(`/api/zip/${encodeURIComponent(userId)}`, { method: 'POST' })
+    const uuid = getUserUUID(userId)
+    const response = await fetch(`/api/zip/${encodeURIComponent(userId)}?uuid=${uuid}`, { method: 'POST' })
     const data = await response.json()
 
     if (response.ok) {
