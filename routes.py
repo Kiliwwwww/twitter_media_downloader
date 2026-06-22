@@ -292,6 +292,7 @@ def create_user_zip(user_id: str):
 def download_zip(filename: str):
     """下载ZIP文件"""
     import threading
+    import mimetypes
     
     zip_path = os.path.join(Config.DOWNLOAD_FOLDER, filename)
     
@@ -319,11 +320,33 @@ def download_zip(filename: str):
     thread.daemon = True
     thread.start()
     
-    return send_file(
-        zip_path,
-        as_attachment=True,
-        download_name=filename
+    # 获取文件大小
+    file_size = os.path.getsize(zip_path)
+    
+    # 设置响应头
+    mime_type = mimetypes.guess_type(filename)[0] or 'application/octet-stream'
+    
+    def generate():
+        with open(zip_path, 'rb') as f:
+            while True:
+                chunk = f.read(8192)
+                if not chunk:
+                    break
+                yield chunk
+    
+    response = Response(
+        generate(),
+        mimetype=mime_type,
+        headers={
+            'Content-Disposition': f'attachment; filename="{filename}"',
+            'Content-Length': str(file_size),
+            'Content-Type': mime_type,
+            'Connection': 'keep-alive',
+            'Accept-Ranges': 'bytes'
+        }
     )
+    
+    return response
 
 
 # 配置管理API
