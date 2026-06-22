@@ -348,6 +348,14 @@ def get_history():
         if item.get('zip_path') and not os.path.exists(item['zip_path']):
             item['zip_path'] = None
     
+    # 计算每个用户文件夹的实际大小
+    user_folder_sizes = {}
+    for item in history:
+        user_id = item.get('user_id')
+        if user_id and user_id not in user_folder_sizes:
+            user_folder_sizes[user_id] = get_folder_size(user_id)
+        item['folder_size'] = user_folder_sizes.get(user_id, 0)
+    
     return jsonify({
         'data': history,
         'total': total,
