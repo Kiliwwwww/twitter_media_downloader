@@ -59,14 +59,15 @@ class DownloadService:
         if existing_record:
             # 复用之前的task_id
             task_id = existing_record['task_id']
-            # 重置状态为downloading
+            # 重置状态为downloading，同时更新created_at为当前时间
             database.update_download_history(
                 task_id,
                 status='downloading',
                 downloaded_files=0,
                 total_files=0,
                 error_message=None,
-                completed_at=None
+                completed_at=None,
+                created_at=time.strftime('%Y-%m-%d %H:%M:%S')
             )
         else:
             # 创建新的task_id
