@@ -448,7 +448,7 @@ def get_gallery_users(keyword: str = '', limit: int = 50, offset: int = 0, accou
             FROM download_history
             {where_clause}
             GROUP BY user_id
-            ORDER BY last_created_at DESC
+            ORDER BY last_completed_at DESC
             LIMIT ? OFFSET ?
         '''
         params.extend([limit, offset])
