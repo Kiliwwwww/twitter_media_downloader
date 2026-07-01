@@ -187,6 +187,9 @@ def create_user_zip(user_id: str):
         # 获取用户信息
         history = database.get_latest_download_by_user_id(user_id)
         user_name = history.get('user_name') if history else None
+        # 清理用户名中不安全的文件系统字符
+        if user_name:
+            user_name = re.sub(r'[/\\:*?"<>|]', '_', user_name).strip()
         name_prefix = f'{user_name}_{user_id}' if user_name else user_id
         
         # 生成ZIP文件名

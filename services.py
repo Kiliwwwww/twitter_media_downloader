@@ -1,4 +1,5 @@
 import os
+import re
 import time
 import zipfile
 import asyncio
@@ -306,6 +307,10 @@ class DownloadService:
         from database import get_download_by_task_id
         history = get_download_by_task_id(task.task_id)
         user_name = history.get('user_name') if history else None
+        
+        # 清理用户名中不安全的文件系统字符
+        if user_name:
+            user_name = re.sub(r'[/\\:*?"<>|]', '_', user_name).strip()
         
         # 构建名称：用户名_用户ID（如果有用户名）
         name_prefix = f'{user_name}_{task.user_id}' if user_name else task.user_id
